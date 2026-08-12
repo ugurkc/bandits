@@ -162,7 +162,11 @@ export function Playground() {
         <TrialDayBoard trial={trial} campaignLabels={pitchOutcome.labels} onPick={trial.playPick} />
 
         {trial.complete && (
-          <BanditBridge totalInstalls={trial.totalInstalls} onContinue={enterRace} />
+          <BanditBridge
+            totalInstalls={trial.totalInstalls}
+            installsLeftOnTable={trial.installsLeftOnTable}
+            onContinue={enterRace}
+          />
         )}
       </div>
     )

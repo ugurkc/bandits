@@ -167,27 +167,47 @@ reveals that day's installs. Re-picking the same campaign on a later day
 draws a *different* number — the noise itself is the lesson before any
 algorithm shows up to handle it.
 
-Reward sampling reuses the Act-2-shaped engine unchanged: a "day" is played
-via `playWeek(day, oneHotAllocation(campaignId), rates, seed)` from
-`src/lib/campaign/simulate.ts` (the `week` parameter is just an integer
-index into the deterministic RNG stream — nothing about it implies a
-7-day cadence). `installs(impressions, rate)` is a Normal approximation to
-Binomial(impressions, rate) — mean `impressions × rate`, sd
-`√(impressions × rate × (1 − rate))` — reusing `sampleNormal` from
-`rng.ts` (not a second hand-rolled Box–Muller; the review pass on the race
-engine already flagged that duplication once). Deterministic via the
-existing counter-based `hash01`/`makeRng` streams, keyed on
-`(seed, day, arm)` — same replayability guarantee as the race.
+Reward sampling calls `sampleInstalls` from `src/lib/campaign/simulate.ts`
+directly — **not** `playWeek`, which is gated on Act 2's $500 weekly budget
+and translates dollars to impressions via the $25 CPM. Act 1's volume is
+calibrated for noise, not a literal ad spend, so it bypasses that
+translation entirely: `TRIAL_DAY_IMPRESSIONS = 300`
+(`src/state/useTrialDays.ts`), deliberately far below Act 2's ~20,000
+impressions/week. At 20,000 impressions a single day already reads a rate
+almost noise-free (SE ≈ 0.2pp at the rates this simulator uses), so a
+clearly-better pitch separates instantly and the "manual guessing is
+costly" lesson never lands — caught by testing the tool, 2026-08-12. At 300
+impressions the SE (~1.5–2pp) sits close to the gap between two
+merely-different campaigns: telling them apart from a handful of noisy days
+is genuinely hard, while an obviously-better campaign is still usually —
+not certainly — findable by day 5. `installs(impressions, rate)` is a
+Normal approximation to Binomial(impressions, rate) — mean
+`impressions × rate`, sd `√(impressions × rate × (1 − rate))` — reusing
+`sampleNormal` from `rng.ts` (not a second hand-rolled Box–Muller; the
+review pass on the race engine already flagged that duplication once).
+Deterministic via the existing counter-based `hash01`/`makeRng` streams,
+keyed on `(seed, day, arm)` — same replayability guarantee as the race.
+
+**Quantifying the cost**: alongside the raw install counts, `useTrialDays`
+computes `installsLeftOnTable` — the gap between what an oracle who already
+knew the best campaign would have expected over the reader's own played
+days (`playedDays × TRIAL_DAY_IMPRESSIONS × bestRate`) and what the reader
+actually got. Clamped to ≥ 0 (a lucky noisy run beating the oracle's
+*expectation* is luck, not something "left on the table"). This gives the
+bridge a concrete, honest number even when the reader's own noise happened
+to be kind — the calibrated ambiguity above and this quantified number are
+two independent reinforcements of the same point, not redundant.
 
 **The bridge**, after day 5 (`src/components/BanditBridge.tsx`): a short
-recap of the reader's own noisy results, then the question — *"How do we
-plan the weeks ahead of us?"* — followed by naming what they just did: this
-is the **k-armed bandit problem** (k = 3 campaigns here) with **Bernoulli
-rewards** — every pull returns a single yes/no outcome (did this impression
-convert, or not) drawn from a fixed but unknown probability, and each
-"day" was really thousands of those pulls happening at once. The three
-strategies below are three different answers to "which arm do I pull next".
-CTA hands off into the existing, unmodified automated race.
+recap of the reader's own noisy results, the installs-left-on-the-table
+figure, then the question — *"How do we plan the weeks ahead of us?"* —
+followed by naming what they just did: this is the **k-armed bandit
+problem** (k = 3 campaigns here) with **Bernoulli rewards** — every pull
+returns a single yes/no outcome (did this impression convert, or not)
+drawn from a fixed but unknown probability, and each "day" was really
+hundreds of those pulls happening at once. The three strategies below are
+three different answers to "which arm do I pull next". CTA hands off into
+the existing, unmodified automated race.
 
 Drag-and-drop is custom pointer-event tracking (pointerdown/move/up), not
 native HTML5 DnD (no real touch support) and not a new dependency. A
