@@ -1,0 +1,53 @@
+backend:
+  name: github
+  repo: ugurkc/bandit
+  branch: main
+  # Token sign-in only: the OAuth button needs a server-side gateway this
+  # static site doesn't run, so it would land on a Not Found page.
+  auth_methods: [token]
+
+# /bandit/ prefix: this site deploys as a GitHub project page under
+# ugurkc.github.io/bandit/, so a bare /uploads public path would 404.
+media_folder: public/uploads
+public_folder: /bandit/uploads
+
+# Quote all string output: an unquoted date like 2026-08-03 would be read
+# back by js-yaml (YAML 1.1 timestamp rule) as a Date object and break
+# string-typed frontmatter consumers.
+output:
+  yaml:
+    quote: double
+
+# ğ→g, ü→u transliteration so Turkish-character titles yield readable ASCII
+# URLs instead of percent-encoded ones.
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  - name: sections
+    label: Essay sections
+    folder: src/content/sections
+    create: true
+    extension: md
+    identifier_field: heading
+    sortable_fields:
+      fields: [order]
+      default: { field: order, direction: ascending }
+    fields:
+      - { name: order, label: Order, widget: number, value_type: int, required: true }
+      - { name: id, label: "Anchor id (optional, e.g. transition-matrix)", widget: string, required: false, pattern: ['^[a-z][a-z0-9-]*$', 'lowercase-with-dashes'] }
+      - { name: label, label: "Sidebar label (optional; requires an anchor id)", widget: string, required: false }
+      - { name: heading, label: "Heading (optional)", widget: string, required: false }
+      - { name: body, label: Body, widget: markdown }
+
+  - name: meta
+    label: Essay header
+    files:
+      - name: meta
+        label: Header text
+        file: src/content/meta.md
+        fields:
+          - { name: eyebrow, label: Eyebrow, widget: string }
+          - { name: title, label: Title, widget: string }
+          - { name: body, label: "Subtitle (single paragraph)", widget: markdown }
