@@ -89,17 +89,23 @@ the tooltip clamps in real pixels.
 
 ## The pitch phase (landing)
 
-The playground's opening state. The reader *becomes the studio*: a scenario
-card briefs them ("you run live-ops for X; sentiment says something's wrong;
-you have three feature slots"), they describe three features in free text,
-and the gap between what they wrote and a **hidden truth text** (what players
-actually want, shipped per scenario) becomes the arms' hidden conversion
-rates. The bandit race then answers "which of my guesses was best"; the
-reveal answers "how good were my guesses at all".
+The playground's opening state. The reader *becomes the studio's marketing
+lead*: a scenario card briefs them ("you have a quarter to find which
+campaign gets people installing"), they write three ad campaign pitches
+(headline/hook copy) in free text, and the gap between what they wrote and a
+**hidden truth text** (what messaging actually resonates with this
+playerbase, shipped per scenario) becomes the campaigns' hidden install
+rates. Campaigns, not features: the whole premise of a bandit is cheap,
+reversible, weekly switching between arms — a feature ships and can't be
+un-shipped mid-quarter, but an ad creative can rotate every week. That's why
+the domain is ad campaigns and the reward is installs, not "feature
+reception".
 
 Flow: scenario brief → three pitch boxes (editable example placeholders; the
-first words become the arm labels) → Score → the existing race with k=3 and
-the derived rates → reveal: the truth text, per-pitch similarity, and the
+first words become the arm/campaign labels) → Score → **the manual campaign
+calendar** (below) → the existing automated race with k=3 and the derived
+rates, reframed as "how the algorithms would have run your same quarter, at
+full speed" → reveal: the truth text, per-pitch similarity, and the
 preference distribution.
 
 Similarity engine — two implementations behind one interface
@@ -129,6 +135,77 @@ Similarity → rates, two mappings used together:
 Privacy: everything runs client-side; pitches are never stored or sent
 anywhere (the model download is a static asset fetch). This is stated
 visibly under the pitch boxes.
+
+## The manual campaign calendar
+
+Between scoring and the automated race: the reader runs the quarter by hand
+first, so the algorithms solve a problem the reader has *already felt*
+rather than an abstract one. One 13-week grid (`WEEKS_PER_QUARTER = 13`)
+used throughout, weeks unlocking **sequentially** — only the next unplayed
+week is interactive; played weeks lock in and show their result; future
+weeks stay greyed. Planning the whole quarter up front was considered and
+rejected: it collapses into "commit to a fixed schedule", which just
+reenacts the fixed-split strategy by hand and loses the point — seeing a
+noisy result and changing your mind mid-quarter.
+
+One underlying weekly simulation, not two: a week is always **a 3-way dollar
+split** across the campaigns, `WEEKLY_BUDGET = $500`. Phase 1's "pick one
+campaign" is the degenerate case — the full $500 on a single campaign, a
+one-hot split. This means Phase 1 and Phase 2 share one reward function and
+are numerically comparable (a full-budget week in either phase yields the
+same ~20,000 impressions via `IMPRESSIONS_PER_DOLLAR = budget / CPM`,
+`CPM = $25`).
+
+- **Weeks 1–4 — "which campaign works?"** The reader can change which single
+  campaign runs each week. Drag a campaign card onto the current (unlocked)
+  week; dropping commits the week (whole budget, one-hot split) and reveals
+  that week's installs. Re-running the same campaign in a later week draws a
+  *different* number — the noise itself is the lesson before any algorithm
+  shows up to handle it.
+- **Weeks 5–13 — "how do you divide the budget?"** The decision changes from
+  *what* to run to *how much* to spend on each: a per-week panel with three
+  amounts that must sum to $500. Same reward function, now with impressions
+  split across up to three campaigns — hedge evenly and you learn a little
+  about all three but confidently about none; concentrate and you learn a
+  lot about one and nothing about the others. That tension is exactly what
+  the bandit algorithms exist to resolve.
+- **Scoreboard**, after week 13: total installs across the reader's own
+  quarter, before the handoff line into the automated race ("let the
+  algorithm run this same quarter, at full speed").
+
+Reward sampling: `installs(impressions, rate)` is a Normal approximation to
+Binomial(impressions, rate) — mean `impressions × rate`, sd
+`√(impressions × rate × (1 − rate))` — reusing `sampleNormal` from
+`rng.ts` (not a second hand-rolled Box–Muller; the review pass on the race
+engine already flagged that duplication once). Rounded to an integer,
+clamped to `[0, impressions]`. Deterministic via the existing counter-based
+`hash01`/`makeRng` streams, keyed on `(seed, week, arm)` — same
+replayability guarantee as the race.
+
+Drag-and-drop is custom pointer-event tracking (pointerdown/move/up), not
+native HTML5 DnD (no real touch support) and not a new dependency. A
+click-to-select-a-card, click-to-place-on-the-week fallback covers keyboard
+and switch users, matching the a11y level already built into the rest of
+the simulator.
+
+Campaign identity gets its own validated 3-color categorical palette,
+**distinct from the reserved strategy colors** (`--series-fixed/egreedy/
+thompson` are never reassigned — see the chart spec above). Validated with
+the dataviz six-checks script in both modes on 2026-08-12:
+
+| campaign | light | dark |
+|---|---|---|
+| `--campaign-a` (rose) | `#be123c` | `#e11d48` |
+| `--campaign-b` (sky) | `#0369a1` | `#0284c7` |
+| `--campaign-c` (lime) | `#65a30d` | `#65a30d` |
+
+The automated race's engine is **not** rebuilt to be continuously
+budget-denominated — a true fractional-allocation bandit is a different,
+harder problem, and the existing discrete-pull engine already expresses a
+budget in aggregate (a strategy's share of pulls over many rounds *is* its
+long-run budget split — that's what the ArmCard share bars already show).
+The manual calendar and the automated race connect through framing and
+shared vocabulary, not a shared implementation.
 
 ## Out of scope for v1
 

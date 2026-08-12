@@ -23,6 +23,8 @@ export const STREAM = {
   BASE_RATES: 5,
   /** Tie-nudging for pitch-derived rates (similarity mapping). */
   TIE: 6,
+  /** Weekly install draw for the manual campaign calendar, keyed on (week, arm). */
+  WEEKLY_REWARD: 7,
 } as const
 
 /** splitmix32-style avalanche finalizer over a 32-bit word. */

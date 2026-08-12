@@ -22,6 +22,11 @@
   --series-fixed: #b45309;
   --series-egreedy: #0d9488;
   --series-thompson: #4f46e5;
+  /* Campaign colors — validated (dataviz six checks, light surface),
+     deliberately distinct from the reserved strategy colors above. */
+  --campaign-a: #be123c;
+  --campaign-b: #0369a1;
+  --campaign-c: #65a30d;
   --shadow-sm: 0 1px 2px rgba(22, 24, 29, 0.05), 0 1px 1px rgba(22, 24, 29, 0.03);
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -42,6 +47,11 @@
   --series-fixed: #d97706;
   --series-egreedy: #0d9488;
   --series-thompson: #7a72ef;
+  /* Campaign colors — validated against the dark surface, deliberately
+     distinct from the reserved strategy colors above. */
+  --campaign-a: #e11d48;
+  --campaign-b: #0284c7;
+  --campaign-c: #65a30d;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
