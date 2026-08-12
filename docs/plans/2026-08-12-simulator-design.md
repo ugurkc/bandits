@@ -128,9 +128,7 @@ Similarity → rates, two mappings used together:
 
 Privacy: everything runs client-side; pitches are never stored or sent
 anywhere (the model download is a static asset fetch). This is stated
-visibly under the pitch boxes. The hidden truth ships in the bundle —
-view-source spoils it; acknowledged with a wink in the reveal copy, no
-obfuscation.
+visibly under the pitch boxes.
 
 ## Out of scope for v1
 

@@ -51,7 +51,7 @@ export function TruthReveal({ outcome }: TruthRevealProps) {
         Scored by {result.engine === 'semantic'
           ? 'the sentence-embedding model, in your browser'
           : 'the lexical fallback scorer (the semantic model wasn’t ready in time)'}
-        . And yes — the truth ships in the page source; view-source is the fourth strategy.
+        .
       </p>
     </aside>
   )
