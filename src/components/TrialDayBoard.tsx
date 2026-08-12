@@ -8,8 +8,10 @@ import './trial.css'
 
 export interface TrialDayBoardProps {
   trial: TrialDays
-  /** Length 3, from PitchOutcome.labels. */
+  /** Length 3, from PitchOutcome.labels — short, used on cards and day cells. */
   campaignLabels: string[]
+  /** Length 3, from PitchOutcome.pitches — the reader's full text, shown in the confirm bar. */
+  campaignPitches: string[]
   onPick: (campaignId: CampaignId) => void
 }
 
@@ -38,7 +40,7 @@ const DRAG_THRESHOLD = 6
  * drop-zone and a status readout — so the confirming action always has a
  * real, labeled button, not an implicit "click the calendar" gesture.
  */
-export function TrialDayBoard({ trial, campaignLabels, onPick }: TrialDayBoardProps) {
+export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }: TrialDayBoardProps) {
   const { days, currentDay, complete } = trial
   const [selected, setSelected] = useState<CampaignId | null>(null)
   const [drag, setDrag] = useState<DragState | null>(null)
@@ -198,7 +200,7 @@ export function TrialDayBoard({ trial, campaignLabels, onPick }: TrialDayBoardPr
             <div className="td-confirm" role="status">
               <span className="td-confirm-chip" style={{ background: CAMPAIGN_COLOR_VARS[selected] }} aria-hidden="true" />
               <span className="td-confirm-text">
-                Run <strong>{campaignLabels[selected]}</strong> on day {currentDay}?
+                Run on day {currentDay}: <strong>{campaignPitches[selected]}</strong>
               </span>
               <button type="button" className="ct-button td-confirm-cta" onClick={() => confirmPick(selected)}>
                 Lock it in →

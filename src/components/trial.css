@@ -37,11 +37,13 @@
 
 /* The explicit confirm action once a card is selected — the day cell is
    never a click target, so this button is the one obvious way to lock a
-   pick in (drag onto the day cell remains the other). */
+   pick in (drag onto the day cell remains the other). Shows the reader's
+   full pitch text, so the text row wraps freely and the button sits on its
+   own row rather than fighting for space beside a long sentence. */
 .td-confirm {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
   padding: 10px 14px;
   background: var(--accent-soft);
@@ -50,19 +52,23 @@
 }
 
 .td-confirm-chip {
+  display: inline-block;
   width: 10px;
   height: 10px;
+  margin-right: 8px;
   border-radius: 3px;
   flex: none;
+  vertical-align: middle;
 }
 
 .td-confirm-text {
   font-size: 13px;
+  line-height: 1.5;
   color: var(--ink);
 }
 
 .td-confirm-cta {
-  margin-left: auto;
+  align-self: flex-end;
   font-weight: 700;
   white-space: nowrap;
 }

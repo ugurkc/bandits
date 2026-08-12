@@ -159,7 +159,12 @@ export function Playground() {
           </button>
         </div>
 
-        <TrialDayBoard trial={trial} campaignLabels={pitchOutcome.labels} onPick={trial.playPick} />
+        <TrialDayBoard
+          trial={trial}
+          campaignLabels={pitchOutcome.labels}
+          campaignPitches={pitchOutcome.pitches}
+          onPick={trial.playPick}
+        />
 
         {trial.complete && (
           <BanditBridge
