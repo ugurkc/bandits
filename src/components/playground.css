@@ -385,3 +385,261 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* ---------- PitchPhase ---------- */
+
+.pp {
+  display: grid;
+  gap: 18px;
+}
+
+.pp-intro {
+  margin: 0;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.pp-scenario {
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.pp-scenario-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pp-scenario-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.pp-brief {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.pp-boxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.pp-box {
+  display: grid;
+  gap: 6px;
+}
+
+.pp-box-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pp-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 84px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.pp-textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.pp-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pp-score {
+  font-weight: 700;
+}
+
+.pp-engine {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.pp-skip {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  padding: 4px 2px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.pp-skip:hover,
+.pp-skip:focus-visible {
+  color: var(--accent);
+}
+
+.pp-skip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.pp-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.pp-privacy {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+/* ---------- Race topline (pitch context + back link) ---------- */
+
+.pg-topline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pg-context {
+  font-size: 13.5px;
+  color: var(--muted);
+  max-width: 680px;
+}
+
+.ct-note {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  align-self: center;
+}
+
+/* ---------- TruthReveal ---------- */
+
+.rv {
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--accent-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 12px;
+}
+
+.rv-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rv-truth {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.rv-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.rv-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) minmax(80px, 1fr) max-content;
+  gap: 6px 12px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.rv-label {
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rv-meter {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.rv-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.rv-nums {
+  display: flex;
+  gap: 10px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rv-sim {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.rv-terms {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 12.5px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.rv-term {
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.rv-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+}

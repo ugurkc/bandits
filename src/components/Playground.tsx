@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { STRATEGY_COLOR_VARS, STRATEGY_LABELS, STRATEGY_SHORT_LABELS } from '../lib/bandit/types'
 import { statsAt } from '../lib/bandit/simulate'
+import { scenarioAt } from '../lib/similarity/scenarios'
 import { estimateOf, shareOf, useSimulation } from '../state/useSimulation'
 import { RegretChart } from './RegretChart'
 import type { RegretChartSeries } from './RegretChart'
 import { ArmCard } from './ArmCard'
 import type { ArmCardRow } from './ArmCard'
 import { Controls } from './Controls'
+import { PitchPhase } from './PitchPhase'
+import type { PitchOutcome } from './PitchPhase'
+import { TruthReveal } from './TruthReveal'
 
 /** Minimum wall-time between statsAt recomputes while playing (it's O(t)). */
 const STATS_INTERVAL_MS = 250
@@ -31,6 +35,28 @@ export function Playground() {
   const sim = useSimulation()
   const { config, result, t, playing } = sim
   const { k, horizon } = config
+
+  // The pitch phase is the opening state; scoring (or skipping) enters the
+  // race. A pitch-derived race carries its outcome for labels + the reveal.
+  const [mode, setMode] = useState<'pitch' | 'race'>('pitch')
+  const [scenarioIndex, setScenarioIndex] = useState(0)
+  const [pitchOutcome, setPitchOutcome] = useState<PitchOutcome | null>(null)
+
+  const handleScored = (outcome: PitchOutcome) => {
+    setPitchOutcome(outcome)
+    sim.applyPitchRates(outcome.rates)
+    setMode('race')
+  }
+
+  const handleSkip = () => {
+    setPitchOutcome(null)
+    setMode('race')
+  }
+
+  const backToPitches = () => {
+    sim.reset()
+    setMode('pitch')
+  }
 
   // Series arrays are built once per result (they reference the full
   // precomputed regret arrays); the chart clips to the playhead itself.
@@ -89,8 +115,34 @@ export function Playground() {
   const rateRow = result.rates[Math.max(0, Math.min(t, horizon - 1))]
   const bestArm = argmax(rateRow)
 
+  if (mode === 'pitch') {
+    return (
+      <PitchPhase
+        scenario={scenarioAt(scenarioIndex)}
+        seed={config.seed}
+        onScored={handleScored}
+        onNextScenario={() => setScenarioIndex((i) => i + 1)}
+        onSkip={handleSkip}
+      />
+    )
+  }
+
   return (
     <div className="pg">
+      <div className="pg-topline">
+        {pitchOutcome ? (
+          <span className="pg-context">
+            Your three pitches are the arms — {STRATEGY_LABELS['fixed-split']}, ε-greedy and
+            Thompson are testing them on the {pitchOutcome.scenario.title.toLowerCase()}{' '}
+            playerbase. Reveal true rates to see the hidden truth.
+          </span>
+        ) : (
+          <span className="pg-context">Sandbox mode — hidden rates are randomly drawn.</span>
+        )}
+        <button type="button" className="pp-skip" onClick={backToPitches}>
+          ← Pitch features instead
+        </button>
+      </div>
       <Controls
         playing={playing}
         onPlayPause={sim.playPause}
@@ -112,16 +164,18 @@ export function Playground() {
         onDrift={sim.setDrift}
         revealed={sim.revealed}
         onReveal={sim.setRevealed}
+        pitchMode={pitchOutcome !== null}
       />
       <div className="pg-chart">
         <RegretChart series={series} t={t} horizon={horizon} />
       </div>
+      {sim.revealed && pitchOutcome && <TruthReveal outcome={pitchOutcome} />}
       <div className="pg-arms">
         {cardRows.map((rows, arm) => (
           <ArmCard
             key={arm}
             index={arm}
-            label={armLabel(arm)}
+            label={pitchOutcome ? pitchOutcome.labels[arm] : armLabel(arm)}
             trueRate={rateRow[arm]}
             revealed={sim.revealed}
             best={arm === bestArm}

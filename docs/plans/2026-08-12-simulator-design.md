@@ -87,6 +87,51 @@ measures its container (ResizeObserver) and derives the viewBox width from it
 so 1 viewBox unit = 1 CSS px — text keeps its declared size at any width and
 the tooltip clamps in real pixels.
 
+## The pitch phase (landing)
+
+The playground's opening state. The reader *becomes the studio*: a scenario
+card briefs them ("you run live-ops for X; sentiment says something's wrong;
+you have three feature slots"), they describe three features in free text,
+and the gap between what they wrote and a **hidden truth text** (what players
+actually want, shipped per scenario) becomes the arms' hidden conversion
+rates. The bandit race then answers "which of my guesses was best"; the
+reveal answers "how good were my guesses at all".
+
+Flow: scenario brief → three pitch boxes (editable example placeholders; the
+first words become the arm labels) → Score → the existing race with k=3 and
+the derived rates → reveal: the truth text, per-pitch similarity, and the
+preference distribution.
+
+Similarity engine — two implementations behind one interface
+(`SimilarityEngine.score(pitches, truth)`):
+
+- **semantic** (primary): transformers.js + a quantized MiniLM-class
+  sentence encoder, in-browser, weights from the Hugging Face CDN (free; no
+  backend). Prefetch starts when the pitch phase mounts — the download rides
+  under the reader's typing time. WebGPU when available, WASM otherwise.
+- **lexical** (fallback): zero-dep TF-cosine + Jaccard blend over
+  normalized/stemmed tokens, with stopwords removed; also returns matched
+  terms for the reveal's explainability. Used automatically when the model
+  isn't ready ~4s after Score, fails to load, or the device can't run it.
+  The reveal names which engine scored the round.
+
+Similarity → rates, two mappings used together:
+
+- **Preference distribution (display):** softmax over the three similarities
+  (temperature knob) — "if players saw all three roadmaps…". Sums to 1.
+- **Arm conversion rates (simulation):** absolute affine map
+  `rate = 0.02 + 0.10 × similarity`, clamped to the existing 2–12% band, and
+  deliberately NOT normalized across pitches: three bad pitches all get low
+  rates, and the bandit finds the best of a bad lot — the essay's core
+  caveat (a bandit only optimizes among the options you gave it). Seeded
+  ±0.3pp tie-nudge keeps the race from degenerating on identical scores.
+
+Privacy: everything runs client-side; pitches are never stored or sent
+anywhere (the model download is a static asset fetch). This is stated
+visibly under the pitch boxes. The hidden truth ships in the bundle —
+view-source spoils it; acknowledged with a wink in the reveal copy, no
+obfuscation.
+
 ## Out of scope for v1
 
 Essay prose (placeholder section stays), whale/delay UI toggles, the

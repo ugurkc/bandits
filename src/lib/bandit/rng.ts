@@ -21,6 +21,8 @@ export const STREAM = {
   DRIFT: 4,
   /** Default base-rate generation. */
   BASE_RATES: 5,
+  /** Tie-nudging for pitch-derived rates (similarity mapping). */
+  TIE: 6,
 } as const
 
 /** splitmix32-style avalanche finalizer over a 32-bit word. */

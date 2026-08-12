@@ -71,6 +71,11 @@ export interface Simulation {
   reset: () => void
   /** New random seed: fresh hidden rates, playhead back to 0. */
   reshuffle: () => void
+  /**
+   * Enter a pitch-derived world: k = rates.length, the given rates as the
+   * hidden truth, rates hidden again, playhead back to 0.
+   */
+  applyPitchRates: (rates: number[]) => void
   setSpeed: (v: number) => void
   setEpsilon: (v: number) => void
   setK: (v: number) => void
@@ -153,6 +158,16 @@ export function useSimulation(): Simulation {
     setConfig((c) => ({ ...c, seed, baseRates: defaultBaseRates(c.k, seed) }))
   }, [rewind])
 
+  const applyPitchRates = useCallback(
+    (rates: number[]) => {
+      setPlaying(false)
+      setRevealed(false)
+      rewind()
+      setConfig((c) => ({ ...c, k: rates.length, baseRates: rates }))
+    },
+    [rewind],
+  )
+
   // Every config change rewinds: a half-played run of a world that no longer
   // exists would be misleading. Playback (if running) continues from 0.
   //
@@ -206,6 +221,7 @@ export function useSimulation(): Simulation {
     step,
     reset,
     reshuffle,
+    applyPitchRates,
     setSpeed,
     setEpsilon,
     setK,

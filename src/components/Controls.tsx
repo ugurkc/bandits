@@ -21,6 +21,12 @@ export interface ControlsProps {
   onDrift: (v: boolean) => void
   revealed: boolean
   onReveal: (v: boolean) => void
+  /**
+   * When the arms' rates came from the reader's pitches, reshuffling rates
+   * or changing the arm count would silently break that mapping — both
+   * controls are hidden and a small note takes their place.
+   */
+  pitchMode?: boolean
 }
 
 const K_CHOICES = [2, 3, 4, 5, 6]
@@ -46,6 +52,7 @@ export function Controls({
   onDrift,
   revealed,
   onReveal,
+  pitchMode = false,
 }: ControlsProps) {
   const atEnd = t >= horizon
   return (
@@ -65,9 +72,11 @@ export function Controls({
         <button type="button" className="ct-button" onClick={onReset}>
           Reset
         </button>
-        <button type="button" className="ct-button" onClick={onReshuffle}>
-          Reshuffle rates
-        </button>
+        {!pitchMode && (
+          <button type="button" className="ct-button" onClick={onReshuffle}>
+            Reshuffle rates
+          </button>
+        )}
         <span className="ct-readout">
           <span className="sr-only">Round </span>
           {t.toLocaleString()} / {horizon.toLocaleString()}
@@ -90,20 +99,24 @@ export function Controls({
           />
           <span className="ct-value">{epsilon.toFixed(2)}</span>
         </label>
-        <label className="ct-field">
-          <span className="ct-field-label">Arms</span>
-          <select
-            className="ct-select"
-            value={k}
-            onChange={(e) => onK(Number(e.target.value))}
-          >
-            {K_CHOICES.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-        </label>
+        {pitchMode ? (
+          <span className="ct-note">rates from your pitches</span>
+        ) : (
+          <label className="ct-field">
+            <span className="ct-field-label">Arms</span>
+            <select
+              className="ct-select"
+              value={k}
+              onChange={(e) => onK(Number(e.target.value))}
+            >
+              {K_CHOICES.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="ct-field">
           <span className="ct-field-label">Horizon</span>
           <select
