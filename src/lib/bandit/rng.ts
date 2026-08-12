@@ -25,6 +25,8 @@ export const STREAM = {
   TIE: 6,
   /** Weekly install draw for the manual campaign calendar, keyed on (week, arm). */
   WEEKLY_REWARD: 7,
+  /** Budgeted-strategy internal randomness (Act 2 posterior sampling). */
+  BUDGET_STRATEGY: 8,
 } as const
 
 /** splitmix32-style avalanche finalizer over a 32-bit word. */

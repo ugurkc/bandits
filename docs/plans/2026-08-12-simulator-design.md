@@ -234,26 +234,63 @@ long-run budget split — that's what the ArmCard share bars already show).
 Act 1 and the automated race connect through framing and shared
 vocabulary, not a shared implementation.
 
-## Act 2: the budgeted quarter (built, not yet wired in)
+## Act 2: the budgeted quarter
 
-A full 13-week budgeted continuation already exists in the codebase —
-`src/state/useCampaignQuarter.ts`, `src/components/CampaignCalendar.tsx`
-(a 13-week grid, `WEEKS_PER_QUARTER = 13`, `PICK_PHASE_WEEKS = 4`),
-`src/components/BudgetSplitPanel.tsx` (a per-week 3-way dollar split,
-`WEEKLY_BUDGET = $500`, must sum exactly) — tested and gated green, but
-**not composed into `Playground.tsx`**. It is reserved for Act 2: once the
-budget dimension is shown, "what to run" becomes "how much to spend on
-each", surfacing the explore/hedge tension explicitly (spread the budget
-evenly and you learn a little about every arm but confidently about none;
-concentrate it and you learn a lot about one and nothing about the others).
-Its reward math is identical to Act 1's — Act 1's single-pick day *is* this
-system's one-hot allocation, so the two acts stay numerically comparable
-whenever Act 2 gets built. Building this act, and deciding how it hands off
-from Act 1 (a second race framed around budget share instead of pull
-count? a separate page?) is future work, not scoped here.
+Entered from Act 1's race screen (pitch-derived races only) via an explicit
+CTA — Act 1 remains a complete arc on its own; Act 2 fulfills the bridge's
+promise to "bring back the budgeting constraint".
+
+**The problem shift**: in Act 1 the decision was *what to run*; in Act 2 it
+is *how to divide the money*. Every week of a 13-week quarter the reader
+splits `WEEKLY_BUDGET = $500` across all three campaigns
+(`useCampaignQuarter` with `pickWeeks = 0` — the pick phase is Act 1's job
+now; `derivePhase` takes `pickWeeks` as a parameter). Same hidden rates,
+same reward engine, same deterministic per-(week, arm) draws as the
+reader's Act 1 world. The explore/hedge tension is the lesson: spread the
+budget evenly and you learn a little about every arm but confidently about
+none; concentrate it and you learn a lot about one and nothing about the
+others.
+
+**The handoff mechanic** — the act's payoff. After the reader has split at
+least `HANDOFF_MIN_WEEKS = 2` weeks by hand (they must feel the tension
+before being rescued from it), a card offers to hand the *remaining* weeks
+to one of the three strategies they met in Act 1 — now in budgeted form,
+and crucially **seeded with the reader's own accumulated data** (the
+strategy inherits the tallies from the manual weeks, so it finishes *your*
+quarter, it doesn't start a fresh one). Budgeted variants
+(`src/lib/campaign/budgetStrategies.ts`, weekly allocation from cumulative
+per-arm impression/install tallies):
+
+- **fixed-split** → even thirds every week, forever.
+- **epsilon-greedy** → (1−ε) of the budget on the best current estimate
+  (untried arms count as best, ties to lowest index), ε split evenly
+  across the rest. ε = 0.1.
+- **thompson** → probability matching: S = 200 Beta(1+installs,
+  1+failures) posterior draws per arm (via the deterministic `sampleBeta`
+  stream `STREAM.BUDGET_STRATEGY = 8`), budget allocated proportional to
+  win counts. Starts near-even under ignorance and concentrates as
+  evidence accumulates — the visible signature of the strategy.
+
+Allocations are rounded to cents with the remainder assigned to the
+largest share, so they always satisfy `playWeek`'s exact-sum gate. Because
+`sampleInstalls` draws depend only on `(seed, week, arm)` (plus
+impressions for scale), the strategy's auto-completed weeks face the same
+world the reader's manual weeks would have — same replayability, and a
+fair "it finished your quarter" claim.
+
+**Quarter results**, once week 13 is played (by hand or by handoff):
+totals; installs left on the table vs. a perfect-foresight oracle
+($500 all-in on the truly best arm every week); a per-week **allocation
+timeline** (stacked bars in the campaign colors, handoff point marked) that
+makes the reader's hedging visually contrast with a strategy's
+concentration; and a **full-quarter comparison** — each strategy re-run
+over all 13 weeks from scratch, next to the reader's own total and the
+oracle. Strategy identity uses the reserved strategy colors; the reader's
+own bar uses the accent token; the oracle is muted — never color-alone,
+every bar direct-labeled with its value.
 
 ## Out of scope for v1
 
 Essay prose (placeholder section stays), whale/delay UI toggles, the
 essay↔tool bridge (`#tool:` links), OG image, mobile-first polish beyond
-basic responsiveness, Act 2's integration into Playground.
+basic responsiveness.

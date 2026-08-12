@@ -2,6 +2,8 @@
  * Styling for the manual campaign calendar:
  *   cc-  CampaignCalendar
  *   bs-  BudgetSplitPanel
+ *   hc-  HandoffCard
+ *   qr-  QuarterResults
  *
  * Every color comes from the theme tokens in src/index.css (--ink, --muted,
  * --accent, --border, --card, --paper, --campaign-a/b/c, ...), so both
@@ -115,6 +117,13 @@
 
 .cc-cell--played {
   box-shadow: var(--shadow-sm);
+}
+
+/* A played week that a handed-off strategy ran, not the reader. The border
+   color comes inline (the strategy's color var); its aria-label names the
+   strategy, so color is never the only cue. */
+.cc-cell--auto {
+  border-left: 2px solid var(--border-strong);
 }
 
 .cc-cell-chips {
@@ -310,4 +319,292 @@
 .bs-run:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* ---------- HandoffCard ---------- */
+
+.hc-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--accent-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.hc-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.hc-copy {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.hc-copy strong {
+  color: var(--ink);
+}
+
+.hc-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hc-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hc-button:hover {
+  border-color: var(--border-strong);
+}
+
+.hc-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.hc-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+/* ---------- QuarterResults ---------- */
+
+.qr-wrap {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.qr-head {
+  display: grid;
+  gap: 8px;
+}
+
+.qr-headline {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.qr-left {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.qr-left strong {
+  color: var(--ink);
+}
+
+.qr-section {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.qr-subhead {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.qr-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.qr-timeline {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Fixed ch-width side columns (not max-content) so the 13 independent row
+   grids stay aligned as one table; tabular numerals do the rest. Every row
+   carries a transparent 2px left border so handed-off rows — which color
+   theirs via inline style — never shift the columns. */
+.qr-row {
+  display: grid;
+  grid-template-columns: 3.5ch minmax(0, 1fr) 6ch;
+  gap: 10px;
+  align-items: center;
+  padding-left: 6px;
+  border-left: 2px solid transparent;
+  font-size: 12px;
+}
+
+.qr-week {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.qr-alloc {
+  display: flex;
+  min-width: 0;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+/* The ac-bar-fill 2px surface-gap technique, adapted for stacked segments:
+   each segment's negative-offset shadow paints a 2px card-colored gap over
+   the segment before it (later siblings paint above earlier ones), and the
+   first segment's shadow is cropped by the track's overflow: hidden. */
+.qr-seg {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  box-shadow: -2px 0 0 var(--card);
+}
+
+.qr-installs {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The labeled break between the reader's manual weeks and the strategy's
+   auto-completed ones. Padding matches the rows' border + padding so the
+   label sits flush with the week column. */
+.qr-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 2px;
+  padding-left: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.qr-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-strong);
+}
+
+.qr-divider-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.qr-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.qr-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.qr-legend-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.qr-compare {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qr-bar-row {
+  display: grid;
+  grid-template-columns: minmax(72px, 148px) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  font-size: 12.5px;
+}
+
+.qr-bar-name {
+  color: var(--ink);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The oracle's row: identity stays legible, but it reads as a reference
+   line, not a competitor. */
+.qr-bar-name--muted {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.qr-bar-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.qr-bar-fill {
+  flex: none;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.qr-bar-value {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }

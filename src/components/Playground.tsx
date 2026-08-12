@@ -1,16 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { STRATEGY_COLOR_VARS, STRATEGY_LABELS, STRATEGY_SHORT_LABELS } from '../lib/bandit/types'
+import { STRATEGY_COLOR_VARS, STRATEGY_IDS, STRATEGY_LABELS, STRATEGY_SHORT_LABELS } from '../lib/bandit/types'
 import { statsAt } from '../lib/bandit/simulate'
+import {
+  oracleQuarterInstalls,
+  quarterLeftOnTable,
+  runBudgetQuarter,
+} from '../lib/campaign/budgetStrategies'
+import { WEEKS_PER_QUARTER } from '../lib/campaign/types'
 import { scenarioAt } from '../lib/similarity/scenarios'
 import { estimateOf, shareOf, useSimulation } from '../state/useSimulation'
+import { sumInstalls, useCampaignQuarter } from '../state/useCampaignQuarter'
 import { useTrialDays } from '../state/useTrialDays'
 import { RegretChart } from './RegretChart'
 import type { RegretChartSeries } from './RegretChart'
 import { ArmCard } from './ArmCard'
 import type { ArmCardRow } from './ArmCard'
+import { BudgetSplitPanel } from './BudgetSplitPanel'
+import { CampaignCalendar } from './CampaignCalendar'
 import { Controls } from './Controls'
+import { HandoffCard } from './HandoffCard'
 import { PitchPhase } from './PitchPhase'
 import type { PitchOutcome } from './PitchPhase'
+import { QuarterResults } from './QuarterResults'
+import type { StrategyComparison } from './QuarterResults'
 import { TrialDayBoard } from './TrialDayBoard'
 import { BanditBridge } from './BanditBridge'
 import { TruthReveal } from './TruthReveal'
@@ -27,6 +39,13 @@ const armLabel = (i: number) => `Offer ${String.fromCharCode(65 + i)}`
  * it out for the real rates the moment scoring happens.
  */
 const NO_OUTCOME_RATES = [0.05, 0.05, 0.05]
+
+/**
+ * Act 2's handoff gate (the design doc's `HANDOFF_MIN_WEEKS`): the reader
+ * must split at least this many weeks by hand — feeling the tension — before
+ * the card offering to hand the rest to a strategy appears.
+ */
+const HANDOFF_MIN_WEEKS = 2
 
 /** Index of the largest value; ties break to the lowest index. */
 function argmax(values: number[]): number {
@@ -50,13 +69,20 @@ export function Playground() {
   // The pitch phase is the opening state. Scoring hands off to Act 1's five
   // manual trial days (run a handful of picks by hand first); finishing the
   // trial hands off to a bridge that names the k-armed bandit problem before
-  // the automated race. Skipping the pitch bypasses all of it and goes
+  // the automated race. From a pitch-derived race, a CTA opens Act 2 — the
+  // budgeted quarter. Skipping the pitch bypasses all of it and goes
   // straight to the sandbox race. A pitch-derived race carries its outcome
   // for labels + the reveal.
-  const [mode, setMode] = useState<'pitch' | 'trial' | 'race'>('pitch')
+  const [mode, setMode] = useState<'pitch' | 'trial' | 'race' | 'act2'>('pitch')
   const [scenarioIndex, setScenarioIndex] = useState(0)
   const [pitchOutcome, setPitchOutcome] = useState<PitchOutcome | null>(null)
   const trial = useTrialDays(pitchOutcome?.rates ?? NO_OUTCOME_RATES, config.seed)
+
+  // Act 2's quarter. Same NO_OUTCOME_RATES placeholder trick as useTrialDays
+  // above (rules of hooks); pickWeeks = 0 — every week is a budget split,
+  // the pick phase was Act 1's job.
+  const campaignRates = pitchOutcome?.rates ?? NO_OUTCOME_RATES
+  const quarter = useCampaignQuarter(campaignRates, config.seed, 0)
 
   const handleScored = (outcome: PitchOutcome) => {
     setPitchOutcome(outcome)
@@ -72,6 +98,7 @@ export function Playground() {
   const backToPitches = () => {
     sim.reset()
     trial.reset()
+    quarter.reset()
     setMode('pitch')
   }
 
@@ -134,6 +161,20 @@ export function Playground() {
   const rateRow = result.rates[Math.max(0, Math.min(t, horizon - 1))]
   const bestArm = argmax(rateRow)
 
+  // Act 2's full-quarter comparison: each budgeted strategy re-run over all
+  // 13 weeks from scratch, in the same deterministic world the reader
+  // played. Only (rates, seed) feed it, so it's memoized on exactly those.
+  const comparisons = useMemo<StrategyComparison[]>(
+    () =>
+      STRATEGY_IDS.map((id) => ({
+        id,
+        label: STRATEGY_LABELS[id],
+        colorVar: STRATEGY_COLOR_VARS[id],
+        totalInstalls: sumInstalls(runBudgetQuarter(id, campaignRates, config.seed, 1, [])),
+      })),
+    [campaignRates, config.seed],
+  )
+
   if (mode === 'pitch') {
     return (
       <PitchPhase
@@ -172,6 +213,79 @@ export function Playground() {
             installsLeftOnTable={trial.installsLeftOnTable}
             onContinue={enterRace}
           />
+        )}
+      </div>
+    )
+  }
+
+  if (mode === 'act2' && pitchOutcome) {
+    const handoffMarker = quarter.handoff
+      ? {
+          fromWeek: quarter.handoff.fromWeek,
+          colorVar: STRATEGY_COLOR_VARS[quarter.handoff.strategyId],
+          label: STRATEGY_LABELS[quarter.handoff.strategyId],
+        }
+      : null
+    return (
+      <div className="pg">
+        <div className="pg-topline">
+          <span className="pg-context">
+            Act 2 — the budgeted quarter. Split $500 across your three campaigns each week. Hedge
+            and you learn slowly; concentrate and you might be feeding the wrong ad.
+          </span>
+          <button type="button" className="pp-skip" onClick={() => setMode('race')}>
+            ← Back to the race
+          </button>
+        </div>
+
+        <CampaignCalendar
+          quarter={quarter}
+          campaignLabels={pitchOutcome.labels}
+          onPickWeek={quarter.playPick}
+          handoff={handoffMarker}
+        >
+          {quarter.phase === 'budget' && (
+            <BudgetSplitPanel
+              week={quarter.currentWeek}
+              campaignLabels={pitchOutcome.labels}
+              onCommit={quarter.playWeek}
+            />
+          )}
+        </CampaignCalendar>
+
+        {quarter.weeks.length >= HANDOFF_MIN_WEEKS && quarter.phase !== 'complete' && (
+          <HandoffCard
+            remainingWeeks={WEEKS_PER_QUARTER - quarter.weeks.length}
+            onHandOff={quarter.handOff}
+          />
+        )}
+
+        {quarter.phase === 'complete' && (
+          <>
+            <QuarterResults
+              weeks={quarter.weeks}
+              handoff={quarter.handoff}
+              campaignLabels={pitchOutcome.labels}
+              totalInstalls={quarter.totalInstalls}
+              leftOnTable={quarterLeftOnTable(
+                quarter.totalInstalls,
+                WEEKS_PER_QUARTER,
+                campaignRates,
+              )}
+              comparisons={comparisons}
+              oracleInstalls={Math.round(
+                oracleQuarterInstalls(WEEKS_PER_QUARTER, Math.max(...campaignRates)),
+              )}
+            />
+            <div className="pg-act2-actions">
+              <button type="button" className="ct-button" onClick={quarter.reset}>
+                Restart the quarter
+              </button>
+              <button type="button" className="pp-skip" onClick={() => setMode('race')}>
+                ← Back to the race
+              </button>
+            </div>
+          </>
         )}
       </div>
     )
@@ -233,6 +347,18 @@ export function Playground() {
           />
         ))}
       </div>
+      {pitchOutcome && (
+        <section className="pg-act2-cta" aria-label="Act 2 — the budgeted quarter">
+          <h3 className="pg-act2-title">Act 2 — now add the budget</h3>
+          <p className="pg-act2-copy">
+            In real life you never run one campaign at a time — every week you split a shared
+            budget across all three. Same campaigns, same hidden truth.
+          </p>
+          <button type="button" className="ct-button pg-act2-button" onClick={() => setMode('act2')}>
+            Start the budgeted quarter →
+          </button>
+        </section>
+      )}
     </div>
   )
 }

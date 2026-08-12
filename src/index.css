@@ -197,3 +197,43 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
   gap: 16px;
 }
+
+/* --- Act 2 composition (Playground-owned): the race screen's entry CTA and
+   the completed quarter's action row. The Act 2 components themselves
+   (calendar, split panel, handoff, results) carry their own styles in
+   campaign.css. --- */
+
+.pg-act2-cta {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--accent-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.pg-act2-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pg-act2-copy {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.pg-act2-button {
+  justify-self: start;
+  font-weight: 700;
+}
+
+.pg-act2-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}

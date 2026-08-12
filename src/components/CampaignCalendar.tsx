@@ -20,6 +20,13 @@ export interface CampaignCalendarProps {
    * (week, labels, onCommit), so it can just build the element itself.
    */
   children?: ReactNode
+  /**
+   * Act 2 handoff marker: once set, played weeks at or after `fromWeek`
+   * render as strategy-run — a subtle 2px left border in the strategy's
+   * color and a ", run by {label}" suffix on the cell's aria-label. Purely
+   * presentational; nothing else about the calendar changes.
+   */
+  handoff?: { fromWeek: number; colorVar: string; label: string } | null
 }
 
 const CAMPAIGN_IDS: CampaignId[] = [0, 1, 2]
@@ -45,7 +52,7 @@ const DRAG_THRESHOLD = 6
  * as a full pointer-free fallback. During the budget phase the current cell
  * hosts `children` (the BudgetSplitPanel) instead.
  */
-export function CampaignCalendar({ quarter, campaignLabels, onPickWeek, children }: CampaignCalendarProps) {
+export function CampaignCalendar({ quarter, campaignLabels, onPickWeek, children, handoff }: CampaignCalendarProps) {
   const { weeks, currentWeek, phase } = quarter
   const [selected, setSelected] = useState<CampaignId | null>(null)
   const [drag, setDrag] = useState<DragState | null>(null)
@@ -143,8 +150,14 @@ export function CampaignCalendar({ quarter, campaignLabels, onPickWeek, children
 
     if (played) {
       const armIds = CAMPAIGN_IDS.filter((id) => (played.allocation[id] ?? 0) > 0)
+      const isAuto = handoff != null && week >= handoff.fromWeek
       weekCells.push(
-        <li key={week} className="cc-cell cc-cell--played" aria-label={`Week ${week}: played`}>
+        <li
+          key={week}
+          className={`cc-cell cc-cell--played${isAuto ? ' cc-cell--auto' : ''}`}
+          style={isAuto ? { borderLeftColor: handoff.colorVar } : undefined}
+          aria-label={`Week ${week}: played${isAuto ? `, run by ${handoff.label}` : ''}`}
+        >
           <span className="cc-cell-week">Week {week}</span>
           <span className="cc-cell-chips" aria-hidden="true">
             {armIds.map((id) => (

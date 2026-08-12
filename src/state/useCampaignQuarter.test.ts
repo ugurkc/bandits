@@ -22,6 +22,21 @@ describe('derivePhase', () => {
     expect(derivePhase(14)).toBe('complete')
     expect(derivePhase(20)).toBe('complete')
   })
+
+  it('with pickWeeks = 0 every week is budget (Act 2)', () => {
+    expect(derivePhase(1, 0)).toBe('budget')
+    expect(derivePhase(7, 0)).toBe('budget')
+    expect(derivePhase(13, 0)).toBe('budget')
+  })
+
+  it('with pickWeeks = 0 completion is unchanged', () => {
+    expect(derivePhase(14, 0)).toBe('complete')
+  })
+
+  it('an explicit pickWeeks moves the pick/budget boundary', () => {
+    expect(derivePhase(2, 2)).toBe('pick')
+    expect(derivePhase(3, 2)).toBe('budget')
+  })
 })
 
 function week(totalInstalls: number): CampaignWeekResult {
