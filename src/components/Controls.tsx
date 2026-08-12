@@ -68,7 +68,8 @@ export function Controls({
         <button type="button" className="ct-button" onClick={onReshuffle}>
           Reshuffle rates
         </button>
-        <span className="ct-readout" aria-label="Current round of horizon">
+        <span className="ct-readout">
+          <span className="sr-only">Round </span>
           {t.toLocaleString()} / {horizon.toLocaleString()}
         </span>
       </div>
@@ -83,6 +84,8 @@ export function Controls({
             max={0.5}
             step={0.01}
             value={epsilon}
+            aria-label="Exploration rate epsilon"
+            aria-valuetext={epsilon.toFixed(2)}
             onChange={(e) => onEpsilon(Number(e.target.value))}
           />
           <span className="ct-value">{epsilon.toFixed(2)}</span>

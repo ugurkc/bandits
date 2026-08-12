@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { STRATEGY_COLOR_VARS, STRATEGY_LABELS } from '../lib/bandit/types'
+import { STRATEGY_COLOR_VARS, STRATEGY_LABELS, STRATEGY_SHORT_LABELS } from '../lib/bandit/types'
 import { statsAt } from '../lib/bandit/simulate'
 import { estimateOf, shareOf, useSimulation } from '../state/useSimulation'
 import { RegretChart } from './RegretChart'
@@ -59,9 +59,15 @@ export function Playground() {
     }
   }, [playing, t, statsT])
 
+  // Never past the playhead: when a config change swaps `result` and rewinds
+  // `t` in the same commit, statsT still holds the old throttled value until
+  // its effect fires — clamping here keeps the cards from painting one frame
+  // of the new run at the old round.
+  const statsRound = Math.min(statsT, t)
+
   const armStats = useMemo(
-    () => result.strategies.map((run) => statsAt(run, statsT, k)),
-    [result, statsT, k],
+    () => result.strategies.map((run) => statsAt(run, statsRound, k)),
+    [result, statsRound, k],
   )
 
   const cardRows = useMemo<ArmCardRow[][]>(
@@ -69,14 +75,14 @@ export function Playground() {
       Array.from({ length: k }, (_, arm) =>
         result.strategies.map((run, s) => ({
           id: run.id,
-          label: STRATEGY_LABELS[run.id],
+          label: STRATEGY_SHORT_LABELS[run.id],
           colorVar: STRATEGY_COLOR_VARS[run.id],
           pulls: armStats[s].pulls[arm],
-          share: shareOf(armStats[s].pulls[arm], statsT),
+          share: shareOf(armStats[s].pulls[arm], statsRound),
           estimate: estimateOf(armStats[s].successes[arm], armStats[s].pulls[arm]),
         })),
       ),
-    [result, armStats, statsT, k],
+    [result, armStats, statsRound, k],
   )
 
   // True rates at the playhead (they move under drift); cheap per frame.

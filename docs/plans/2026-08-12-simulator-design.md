@@ -82,7 +82,10 @@ reassigned; 2px line weight; one y-axis (regret); recessive grid in
 `--border`; legend always present AND direct labels at line ends; text always
 in ink/muted tokens, never series colors; crosshair + tooltip on hover
 (values for all three series at the hovered round); share bars get 2px
-surface gaps and 4px rounded data-ends; no per-point value labels.
+surface gaps and 4px rounded data-ends; no per-point value labels. The chart
+measures its container (ResizeObserver) and derives the viewBox width from it
+so 1 viewBox unit = 1 CSS px — text keeps its declared size at any width and
+the tooltip clamps in real pixels.
 
 ## Out of scope for v1
 

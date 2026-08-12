@@ -4,7 +4,7 @@
  */
 
 import type { SimulationConfig } from './types'
-import { hash01, makeRng, STREAM } from './rng'
+import { hash01, makeRng, sampleNormal, STREAM } from './rng'
 
 /** Rates live in a conversion-like band under drift. */
 export const RATE_MIN = 0.005
@@ -55,12 +55,19 @@ export function defaultBaseRates(k: number, seed: number): number[] {
   return rates
 }
 
-/** Reflect x back into [lo, hi] (one bounce), then clamp for safety. */
+/**
+ * Reflect x back into [lo, hi], bouncing until it lands inside — a step
+ * larger than the band width reflects off both walls instead of pinning a
+ * point mass onto one. Each bounce strictly shrinks the excursion, so the
+ * loop terminates for any finite x.
+ */
 function reflect(x: number, lo: number, hi: number): number {
   let v = x
-  if (v < lo) v = lo + (lo - v)
-  if (v > hi) v = hi - (v - hi)
-  return Math.min(hi, Math.max(lo, v))
+  while (v < lo || v > hi) {
+    if (v < lo) v = lo + (lo - v)
+    if (v > hi) v = hi - (v - hi)
+  }
+  return v
 }
 
 /**
@@ -84,11 +91,10 @@ export function computeRates(config: SimulationConfig): number[][] {
   for (let t = 1; t < horizon; t++) {
     const row = new Array<number>(k)
     for (let arm = 0; arm < k; arm++) {
-      // Box–Muller from two per-(t, arm) counter draws.
-      let u1 = hash01(seed, STREAM.DRIFT, t, arm, 0)
-      if (u1 <= 0) u1 = 0.5 / 4294967296
-      const u2 = hash01(seed, STREAM.DRIFT, t, arm, 1)
-      const gauss = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+      // The shared Box–Muller, fed by the per-(t, arm) counter stream:
+      // draw c is hash01(seed, DRIFT, t, arm, c).
+      let c = 0
+      const gauss = sampleNormal(() => hash01(seed, STREAM.DRIFT, t, arm, c++))
       row[arm] = reflect(prev[arm] + gauss * drift.volatility, RATE_MIN, RATE_MAX)
     }
     rates[t] = row

@@ -17,6 +17,13 @@ export const STRATEGY_LABELS: Record<StrategyId, string> = {
   thompson: 'Thompson sampling',
 }
 
+/** Compact labels for tight rows (arm cards), where the chip carries identity. */
+export const STRATEGY_SHORT_LABELS: Record<StrategyId, string> = {
+  'fixed-split': 'Fixed',
+  'epsilon-greedy': 'ε-greedy',
+  thompson: 'Thompson',
+}
+
 /** CSS custom property carrying each strategy's validated series color. */
 export const STRATEGY_COLOR_VARS: Record<StrategyId, string> = {
   'fixed-split': 'var(--series-fixed)',

@@ -3,9 +3,11 @@ import { Playground } from './components/Playground'
 import { ThemeToggle } from './components/ThemeToggle'
 import { useTheme } from './state/useTheme'
 
+// Static per build (?raw imports): parse once at module load, not per render.
+const meta = loadMeta()
+const sections = loadSections()
+
 function App() {
-  const meta = loadMeta()
-  const sections = loadSections()
   const [theme, setTheme] = useTheme()
 
   return (

@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, memo } from 'react'
 import type { StrategyId } from '../lib/bandit/types'
 import './playground.css'
 
@@ -28,8 +28,18 @@ const pct = (v: number) => `${(v * 100).toFixed(1)}%`
  * One offer variant: the (reveal-able) true rate up top, then one row per
  * strategy showing how much of that strategy's traffic this arm gets and
  * what the strategy currently believes the rate is.
+ *
+ * Memoized: the rows array keeps its identity between throttled stats
+ * updates, so cards skip the per-playhead-frame re-render entirely.
  */
-export function ArmCard({ index, label, trueRate, revealed, best, rows }: ArmCardProps) {
+export const ArmCard = memo(function ArmCard({
+  index,
+  label,
+  trueRate,
+  revealed,
+  best,
+  rows,
+}: ArmCardProps) {
   return (
     <section className="ac-card" aria-label={`Arm ${index + 1}: ${label}`}>
       <header className="ac-header">
@@ -37,6 +47,8 @@ export function ArmCard({ index, label, trueRate, revealed, best, rows }: ArmCar
         {revealed && best && <span className="ac-badge">best</span>}
         <span
           className={`ac-rate${revealed ? '' : ' ac-rate--hidden'}`}
+          role="img"
+          aria-label={revealed ? `True conversion rate ${pct(trueRate)}` : 'True rate hidden'}
           title={revealed ? 'True conversion rate' : 'True rate hidden'}
         >
           {revealed ? pct(trueRate) : '?'}
@@ -52,18 +64,26 @@ export function ArmCard({ index, label, trueRate, revealed, best, rows }: ArmCar
               role="img"
               aria-label={`${row.label} sends ${pct(row.share)} of its pulls here`}
             >
+              {/* Nonzero shares keep a 4px visual floor so tiny allocations
+                  stay visible; zero share intentionally renders an empty
+                  track, distinguishing "no traffic" from "a sliver". */}
               <span
                 className="ac-bar-fill"
                 style={{
-                  width: `${Math.min(100, Math.max(0, row.share * 100))}%`,
+                  width:
+                    row.share > 0
+                      ? `max(4px, ${Math.min(100, row.share * 100)}%)`
+                      : '0%',
                   background: row.colorVar,
                 }}
               />
             </span>
             <span className="ac-meta" title="Pulls">
+              <span className="sr-only">pulls </span>
               {row.pulls.toLocaleString()}
             </span>
             <span className="ac-meta" title="Estimated conversion rate">
+              <span className="sr-only">estimate </span>
               {row.estimate === null ? '—' : pct(row.estimate)}
             </span>
           </Fragment>
@@ -71,4 +91,4 @@ export function ArmCard({ index, label, trueRate, revealed, best, rows }: ArmCar
       </div>
     </section>
   )
-}
+})

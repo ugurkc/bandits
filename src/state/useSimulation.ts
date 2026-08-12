@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SimulationConfig, SimulationResult } from '../lib/bandit/types'
 import { defaultBaseRates } from '../lib/bandit/arms'
 import { simulate } from '../lib/bandit/simulate'
@@ -15,8 +15,11 @@ const DEFAULT_HORIZON = 5000
 const DEFAULT_EPSILON = 0.1
 const DEFAULT_DRIFT_VOLATILITY = 0.002
 
-/** Assumed frames-per-second for the playback loop's per-frame advance. */
-const FPS = 60
+/**
+ * Longest frame delta the playback loop honors, in ms. A background-tab
+ * resume or long main-thread stall counts as one slow frame, not a jump.
+ */
+const MAX_FRAME_DT_MS = 100
 
 function defaultConfig(): SimulationConfig {
   return {
@@ -31,11 +34,14 @@ function defaultConfig(): SimulationConfig {
 }
 
 /**
- * One playback frame: advance the fractional playhead by `speed / FPS`
- * rounds, clamped to the horizon.
+ * One playback frame: advance the fractional playhead by `speed` rounds per
+ * second of elapsed wall time (`dtMs`, clamped to MAX_FRAME_DT_MS), clamped
+ * to the horizon. Wall-clock based, so playback speed is independent of the
+ * display's refresh rate.
  */
-export function advancePlayhead(pos: number, speed: number, horizon: number): number {
-  return Math.min(horizon, pos + speed / FPS)
+export function advancePlayhead(pos: number, speed: number, dtMs: number, horizon: number): number {
+  const dt = Math.min(MAX_FRAME_DT_MS, dtMs)
+  return Math.min(horizon, pos + (speed * dt) / 1000)
 }
 
 /** Share of a strategy's first `t` pulls that went to one arm, 0–1. */
@@ -103,8 +109,11 @@ export function useSimulation(): Simulation {
   useEffect(() => {
     if (!playing) return
     let raf = 0
-    const tick = () => {
-      posRef.current = advancePlayhead(posRef.current, speed, horizon)
+    let lastTs: number | null = null
+    const tick = (ts: number) => {
+      const dtMs = lastTs === null ? 0 : ts - lastTs
+      lastTs = ts
+      posRef.current = advancePlayhead(posRef.current, speed, dtMs, horizon)
       const next = Math.floor(posRef.current)
       setT(next)
       if (next >= horizon) {
@@ -146,10 +155,16 @@ export function useSimulation(): Simulation {
 
   // Every config change rewinds: a half-played run of a world that no longer
   // exists would be misleading. Playback (if running) continues from 0.
+  //
+  // The slider fires continuously during a drag and every value reruns
+  // simulate(), so the update goes through startTransition: intermediate
+  // drag values stay interruptible instead of janking the main thread.
   const setEpsilon = useCallback(
     (epsilon: number) => {
-      rewind()
-      setConfig((c) => ({ ...c, epsilon }))
+      startTransition(() => {
+        rewind()
+        setConfig((c) => ({ ...c, epsilon }))
+      })
     },
     [rewind],
   )

@@ -60,7 +60,7 @@ export function makeRng(seed: number, ...stream: number[]): () => number {
 }
 
 /** Standard normal via Box–Muller, consuming two uniforms from `rand`. */
-function sampleNormal(rand: () => number): number {
+export function sampleNormal(rand: () => number): number {
   let u1 = rand()
   while (u1 <= 0) u1 = rand() // hash01 can return exactly 0; log needs > 0
   return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * rand())
