@@ -39,9 +39,9 @@ export const SCENARIOS: Scenario[] = [
       'everything they own. Campaigns that lead with fairness and forgiveness outperform ' +
       'ones that just show flashy kills.',
     placeholders: [
-      'Chase the ladder: seasonal ranked rewards and exclusive skins for the top of the leaderboard.',
-      'Finally, a fair fight: solo queue with skill-based matchmaking, so lone players stop getting steamrolled by squads.',
-      'New biome, new blood: a desert map with dynamic weather and destructible cover.',
+      "Prove you're #1: a highlight-reel trailer following a top squad's climb up the leaderboard, selling the fantasy of ranked glory.",
+      'No squad, no problem: a testimonial ad from a solo player on finally getting a fair, skill-matched fight instead of getting steamrolled by full squads.',
+      "A world worth exploring: a moody environment-reveal ad showcasing the new desert biome's weather and destructible terrain.",
     ],
   },
   {
@@ -63,9 +63,9 @@ export const SCENARIOS: Scenario[] = [
       'behind. Campaigns that acknowledge burnout and sell relaxation outperform ones that ' +
       'sell urgency or competition.',
     placeholders: [
-      'Climb the harvest board: a competitive weekly leaderboard with bonus currency for streaks.',
-      'Build at your own pace: expanded furniture and decoration tools with free placement, no timers attached.',
-      'New neighbors, new stories: a village expansion with NPCs, quests and a romance storyline.',
+      'Climb the harvest board: an energetic ad selling weekly streaks and leaderboard bragging rights.',
+      'No rush, ever: a slow, ASMR-style ad showing a player decorating their farm at their own pace — no timers, no streaks, just build what you want, whenever you want.',
+      'New neighbors, new stories: a narrative trailer introducing new villagers and a romance storyline.',
     ],
   },
   {
@@ -86,9 +86,9 @@ export const SCENARIOS: Scenario[] = [
       'promise a welcoming, guided first week outperform ones that sell skill ceiling or ' +
       'esports spectacle.',
     placeholders: [
-      'Earn your legend: a hero mastery system with skill trees and prestige levels for veterans.',
-      'Never get thrown in the deep end: a guided training mode with bot matches and post-game tips built for new players.',
-      'Watch the pros, chase the drops: a spectator esports mode with tournament brackets and viewer rewards.',
+      'Earn your legend: a highlight-reel montage of veteran plays and prestige ranks, selling the fantasy of mastery.',
+      "We'll teach you: a warm, mentor-voiced ad promising guided first matches, real coaching, and no flaming — built for players who've never touched the game.",
+      'Watch the pros: a high-energy broadcast-style ad cutting between tournament highlights and hype-caster commentary.',
     ],
   },
 ]
