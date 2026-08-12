@@ -3,6 +3,7 @@ import { STRATEGY_COLOR_VARS, STRATEGY_LABELS, STRATEGY_SHORT_LABELS } from '../
 import { statsAt } from '../lib/bandit/simulate'
 import { scenarioAt } from '../lib/similarity/scenarios'
 import { estimateOf, shareOf, useSimulation } from '../state/useSimulation'
+import { useTrialDays } from '../state/useTrialDays'
 import { RegretChart } from './RegretChart'
 import type { RegretChartSeries } from './RegretChart'
 import { ArmCard } from './ArmCard'
@@ -10,12 +11,22 @@ import type { ArmCardRow } from './ArmCard'
 import { Controls } from './Controls'
 import { PitchPhase } from './PitchPhase'
 import type { PitchOutcome } from './PitchPhase'
+import { TrialDayBoard } from './TrialDayBoard'
+import { BanditBridge } from './BanditBridge'
 import { TruthReveal } from './TruthReveal'
 
 /** Minimum wall-time between statsAt recomputes while playing (it's O(t)). */
 const STATS_INTERVAL_MS = 250
 
 const armLabel = (i: number) => `Offer ${String.fromCharCode(65 + i)}`
+
+/**
+ * useTrialDays must be called unconditionally (rules of hooks), but it only
+ * means anything once a pitch has been scored — this stable placeholder
+ * keeps it harmless before that, and its rewind-on-rates-change logic swaps
+ * it out for the real rates the moment scoring happens.
+ */
+const NO_OUTCOME_RATES = [0.05, 0.05, 0.05]
 
 /** Index of the largest value; ties break to the lowest index. */
 function argmax(values: number[]): number {
@@ -36,16 +47,21 @@ export function Playground() {
   const { config, result, t, playing } = sim
   const { k, horizon } = config
 
-  // The pitch phase is the opening state; scoring (or skipping) enters the
-  // race. A pitch-derived race carries its outcome for labels + the reveal.
-  const [mode, setMode] = useState<'pitch' | 'race'>('pitch')
+  // The pitch phase is the opening state. Scoring hands off to Act 1's five
+  // manual trial days (run a handful of picks by hand first); finishing the
+  // trial hands off to a bridge that names the k-armed bandit problem before
+  // the automated race. Skipping the pitch bypasses all of it and goes
+  // straight to the sandbox race. A pitch-derived race carries its outcome
+  // for labels + the reveal.
+  const [mode, setMode] = useState<'pitch' | 'trial' | 'race'>('pitch')
   const [scenarioIndex, setScenarioIndex] = useState(0)
   const [pitchOutcome, setPitchOutcome] = useState<PitchOutcome | null>(null)
+  const trial = useTrialDays(pitchOutcome?.rates ?? NO_OUTCOME_RATES, config.seed)
 
   const handleScored = (outcome: PitchOutcome) => {
     setPitchOutcome(outcome)
     sim.applyPitchRates(outcome.rates)
-    setMode('race')
+    setMode('trial')
   }
 
   const handleSkip = () => {
@@ -55,8 +71,11 @@ export function Playground() {
 
   const backToPitches = () => {
     sim.reset()
+    trial.reset()
     setMode('pitch')
   }
+
+  const enterRace = () => setMode('race')
 
   // Series arrays are built once per result (they reference the full
   // precomputed regret arrays); the chart clips to the playhead itself.
@@ -127,20 +146,42 @@ export function Playground() {
     )
   }
 
+  if (mode === 'trial' && pitchOutcome) {
+    return (
+      <div className="pg">
+        <div className="pg-topline">
+          <span className="pg-context">
+            You need to find which campaign works. Each day, you can decide to change the campaign
+            you run — try one, see what happens, switch if it’s not working.
+          </span>
+          <button type="button" className="pp-skip" onClick={backToPitches}>
+            ← Pitch campaigns instead
+          </button>
+        </div>
+
+        <TrialDayBoard trial={trial} campaignLabels={pitchOutcome.labels} onPick={trial.playPick} />
+
+        {trial.complete && (
+          <BanditBridge totalInstalls={trial.totalInstalls} onContinue={enterRace} />
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="pg">
       <div className="pg-topline">
         {pitchOutcome ? (
           <span className="pg-context">
-            Your three pitches are the arms — {STRATEGY_LABELS['fixed-split']}, ε-greedy and
-            Thompson are testing them on the {pitchOutcome.scenario.title.toLowerCase()}{' '}
-            playerbase. Reveal true rates to see the hidden truth.
+            Your three campaigns are the arms — {STRATEGY_LABELS['fixed-split']}, ε-greedy and
+            Thompson are running them on the {pitchOutcome.scenario.title.toLowerCase()}{' '}
+            playerbase, at full speed. Reveal true rates to see the hidden truth.
           </span>
         ) : (
           <span className="pg-context">Sandbox mode — hidden rates are randomly drawn.</span>
         )}
         <button type="button" className="pp-skip" onClick={backToPitches}>
-          ← Pitch features instead
+          ← Pitch campaigns instead
         </button>
       </div>
       <Controls

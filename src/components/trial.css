@@ -1,0 +1,223 @@
+/*
+ * Styling for Act 1's trial board:
+ *   td-  TrialDayBoard
+ *   bb-  BanditBridge
+ *
+ * Deliberately not shared with campaign.css's cc-/bs- classes even though
+ * the visual language matches — see "Two acts — do not merge them" in the
+ * design doc. Every color comes from the theme tokens in src/index.css, so
+ * both themes work by construction.
+ */
+
+/* ---------- TrialDayBoard ---------- */
+
+.td-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.td-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.td-picker-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.td-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.td-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: grab;
+  touch-action: none;
+}
+
+.td-card:active {
+  cursor: grabbing;
+}
+
+.td-card--selected {
+  background: var(--accent-soft);
+}
+
+.td-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.td-card-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.td-card-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 22ch;
+}
+
+.td-grid-wrap {
+  min-width: 0;
+}
+
+.td-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.td-cell {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  min-height: 72px;
+  padding: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+.td-cell-day {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.td-cell--played {
+  box-shadow: var(--shadow-sm);
+}
+
+.td-cell-chip {
+  width: 14px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.td-cell-installs {
+  color: var(--ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.td-cell-unit {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.td-cell--current {
+  border-color: var(--accent);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-sm);
+  cursor: pointer;
+}
+
+.td-cell--current:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.td-cell-current-hint {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.td-cell--future {
+  color: var(--muted);
+  opacity: 0.55;
+}
+
+.td-cell--future .td-cell-day {
+  color: var(--muted);
+}
+
+.td-drag-ghost {
+  position: fixed;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  transform: translate(-50%, -130%);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  pointer-events: none;
+}
+
+/* ---------- BanditBridge ---------- */
+
+.bb-wrap {
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--accent-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 14px;
+}
+
+.bb-recap {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.bb-recap strong {
+  color: var(--ink);
+}
+
+.bb-question {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.bb-explainer {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.bb-explainer strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.bb-cta {
+  justify-self: start;
+  font-weight: 700;
+}

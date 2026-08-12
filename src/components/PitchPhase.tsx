@@ -89,8 +89,8 @@ export function PitchPhase({ scenario, seed, onScored, onNextScenario, onSkip }:
       <p className="pp-intro">
         Every ad campaign is a bet on what players actually want to hear. Pitch three campaign
         concepts for the scenario below — a hidden truth about this playerbase decides how well
-        each one converts to installs, and you'll get to run your quarter by hand before three
-        strategies race to find your best bet automatically.
+        each one converts to installs, and you'll get to try them by hand before three strategies
+        race to find your best bet automatically.
       </p>
 
       <div className="pp-scenario">

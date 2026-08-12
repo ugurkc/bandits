@@ -136,55 +136,62 @@ Privacy: everything runs client-side; pitches are never stored or sent
 anywhere (the model download is a static asset fetch). This is stated
 visibly under the pitch boxes.
 
-## The manual campaign calendar
+## Two acts — do not merge them
 
-Between scoring and the automated race: the reader runs the quarter by hand
-first, so the algorithms solve a problem the reader has *already felt*
-rather than an abstract one. One 13-week grid (`WEEKS_PER_QUARTER = 13`)
-used throughout, weeks unlocking **sequentially** — only the next unplayed
-week is interactive; played weeks lock in and show their result; future
-weeks stay greyed. Planning the whole quarter up front was considered and
-rejected: it collapses into "commit to a fixed schedule", which just
-reenacts the fixed-split strategy by hand and loses the point — seeing a
-noisy result and changing your mind mid-quarter.
+The manual, hands-on section and the budgeted variant are two separate
+narrative acts, not two halves of one continuous calendar. **Act 1 is a
+complete, self-contained arc** — pitch → 5 manual trial days → a bridge that
+names the k-armed bandit problem with Bernoulli rewards → the full automated
+race — and it ships and works on its own before Act 2 exists. **Act 2
+(budgets) is a separate, later addition**, built as its own arc after Act 1
+is solid, not interleaved into the same UI.
 
-One underlying weekly simulation, not two: a week is always **a 3-way dollar
-split** across the campaigns, `WEEKLY_BUDGET = $500`. Phase 1's "pick one
-campaign" is the degenerate case — the full $500 on a single campaign, a
-one-hot split. This means Phase 1 and Phase 2 share one reward function and
-are numerically comparable (a full-budget week in either phase yields the
-same ~20,000 impressions via `IMPRESSIONS_PER_DOLLAR = budget / CPM`,
-`CPM = $25`).
+## Act 1: five trial days, then the automated race
 
-- **Weeks 1–4 — "which campaign works?"** The reader can change which single
-  campaign runs each week. Drag a campaign card onto the current (unlocked)
-  week; dropping commits the week (whole budget, one-hot split) and reveals
-  that week's installs. Re-running the same campaign in a later week draws a
-  *different* number — the noise itself is the lesson before any algorithm
-  shows up to handle it.
-- **Weeks 5–13 — "how do you divide the budget?"** The decision changes from
-  *what* to run to *how much* to spend on each: a per-week panel with three
-  amounts that must sum to $500. Same reward function, now with impressions
-  split across up to three campaigns — hedge evenly and you learn a little
-  about all three but confidently about none; concentrate and you learn a
-  lot about one and nothing about the others. That tension is exactly what
-  the bandit algorithms exist to resolve.
-- **Scoreboard**, after week 13: total installs across the reader's own
-  quarter, before the handoff line into the automated race ("let the
-  algorithm run this same quarter, at full speed").
+Between scoring and the automated race: the reader runs a handful of trials
+by hand first, so the algorithms solve a problem the reader has *already
+felt* rather than an abstract one. A 5-cell day board (`TRIAL_DAYS = 5`,
+`src/state/useTrialDays.ts` + `src/components/TrialDayBoard.tsx`), days
+unlocking **sequentially** — only the next unplayed day is interactive;
+played days lock in and show their result; future days stay greyed.
+Planning all 5 days up front was considered and rejected (same reasoning as
+below): it collapses into "commit to a fixed schedule", which just reenacts
+the fixed-split strategy by hand and loses the point — seeing a noisy result
+and changing your mind.
 
-Reward sampling: `installs(impressions, rate)` is a Normal approximation to
+Every day is a **single-campaign pick** — Act 1 never shows a budget or a
+split; the dollar amount behind a pick is an implementation detail, not
+something the reader sees. Drag a campaign card onto the current (unlocked)
+day, or select-then-confirm as a full pointer-free fallback; dropping
+reveals that day's installs. Re-picking the same campaign on a later day
+draws a *different* number — the noise itself is the lesson before any
+algorithm shows up to handle it.
+
+Reward sampling reuses the Act-2-shaped engine unchanged: a "day" is played
+via `playWeek(day, oneHotAllocation(campaignId), rates, seed)` from
+`src/lib/campaign/simulate.ts` (the `week` parameter is just an integer
+index into the deterministic RNG stream — nothing about it implies a
+7-day cadence). `installs(impressions, rate)` is a Normal approximation to
 Binomial(impressions, rate) — mean `impressions × rate`, sd
 `√(impressions × rate × (1 − rate))` — reusing `sampleNormal` from
 `rng.ts` (not a second hand-rolled Box–Muller; the review pass on the race
-engine already flagged that duplication once). Rounded to an integer,
-clamped to `[0, impressions]`. Deterministic via the existing counter-based
-`hash01`/`makeRng` streams, keyed on `(seed, week, arm)` — same
-replayability guarantee as the race.
+engine already flagged that duplication once). Deterministic via the
+existing counter-based `hash01`/`makeRng` streams, keyed on
+`(seed, day, arm)` — same replayability guarantee as the race.
+
+**The bridge**, after day 5 (`src/components/BanditBridge.tsx`): a short
+recap of the reader's own noisy results, then the question — *"How do we
+plan the weeks ahead of us?"* — followed by naming what they just did: this
+is the **k-armed bandit problem** (k = 3 campaigns here) with **Bernoulli
+rewards** — every pull returns a single yes/no outcome (did this impression
+convert, or not) drawn from a fixed but unknown probability, and each
+"day" was really thousands of those pulls happening at once. The three
+strategies below are three different answers to "which arm do I pull next".
+CTA hands off into the existing, unmodified automated race.
 
 Drag-and-drop is custom pointer-event tracking (pointerdown/move/up), not
 native HTML5 DnD (no real touch support) and not a new dependency. A
-click-to-select-a-card, click-to-place-on-the-week fallback covers keyboard
+click-to-select-a-card, click-to-place-on-the-day fallback covers keyboard
 and switch users, matching the a11y level already built into the rest of
 the simulator.
 
@@ -204,11 +211,29 @@ budget-denominated — a true fractional-allocation bandit is a different,
 harder problem, and the existing discrete-pull engine already expresses a
 budget in aggregate (a strategy's share of pulls over many rounds *is* its
 long-run budget split — that's what the ArmCard share bars already show).
-The manual calendar and the automated race connect through framing and
-shared vocabulary, not a shared implementation.
+Act 1 and the automated race connect through framing and shared
+vocabulary, not a shared implementation.
+
+## Act 2: the budgeted quarter (built, not yet wired in)
+
+A full 13-week budgeted continuation already exists in the codebase —
+`src/state/useCampaignQuarter.ts`, `src/components/CampaignCalendar.tsx`
+(a 13-week grid, `WEEKS_PER_QUARTER = 13`, `PICK_PHASE_WEEKS = 4`),
+`src/components/BudgetSplitPanel.tsx` (a per-week 3-way dollar split,
+`WEEKLY_BUDGET = $500`, must sum exactly) — tested and gated green, but
+**not composed into `Playground.tsx`**. It is reserved for Act 2: once the
+budget dimension is shown, "what to run" becomes "how much to spend on
+each", surfacing the explore/hedge tension explicitly (spread the budget
+evenly and you learn a little about every arm but confidently about none;
+concentrate it and you learn a lot about one and nothing about the others).
+Its reward math is identical to Act 1's — Act 1's single-pick day *is* this
+system's one-hot allocation, so the two acts stay numerically comparable
+whenever Act 2 gets built. Building this act, and deciding how it hands off
+from Act 1 (a second race framed around budget share instead of pull
+count? a separate page?) is future work, not scoped here.
 
 ## Out of scope for v1
 
 Essay prose (placeholder section stays), whale/delay UI toggles, the
 essay↔tool bridge (`#tool:` links), OG image, mobile-first polish beyond
-basic responsiveness.
+basic responsiveness, Act 2's integration into Playground.
