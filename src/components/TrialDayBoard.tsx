@@ -30,9 +30,13 @@ const DRAG_THRESHOLD = 6
 /**
  * Act 1's 5-day trial board: single-campaign picks only, no budget branch.
  * Days unlock sequentially — played days lock in and show their result, the
- * current day is the only interactive one, future days stay greyed. Same
- * pointer-drag-with-click-fallback interaction as Act 2's CampaignCalendar,
- * deliberately not shared code — see "Two acts — do not merge them".
+ * current day is the only interactive one, future days stay greyed.
+ *
+ * Two ways to lock in a pick: drag a card onto the current day, or select a
+ * card and use the explicit "Lock it in" button that appears next to the
+ * cards. The day cell itself is never a click target — it's only a drag
+ * drop-zone and a status readout — so the confirming action always has a
+ * real, labeled button, not an implicit "click the calendar" gesture.
  */
 export function TrialDayBoard({ trial, campaignLabels, onPick }: TrialDayBoardProps) {
   const { days, currentDay, complete } = trial
@@ -104,17 +108,6 @@ export function TrialDayBoard({ trial, campaignLabels, onPick }: TrialDayBoardPr
     }
   }
 
-  const onDropZoneActivate = () => {
-    if (selected !== null) confirmPick(selected)
-  }
-
-  const onDropZoneKeyDown = (e: ReactKeyboardEvent<HTMLLIElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onDropZoneActivate()
-    }
-  }
-
   const dayCells = []
   for (let day = 1; day <= TRIAL_DAYS; day++) {
     const played = days[day - 1]
@@ -149,15 +142,11 @@ export function TrialDayBoard({ trial, campaignLabels, onPick }: TrialDayBoardPr
           key={day}
           ref={dropRef}
           className="td-cell td-cell--current"
-          role="button"
-          tabIndex={0}
           aria-label={
             selected !== null
-              ? `Run ${campaignLabels[selected]} on day ${day}`
-              : `Day ${day}: current day. Select a campaign above, then activate this cell to run it here, or drag a campaign card here.`
+              ? `Day ${day}: drop zone for ${campaignLabels[selected]}`
+              : `Day ${day}: current day, not yet decided`
           }
-          onClick={onDropZoneActivate}
-          onKeyDown={onDropZoneKeyDown}
         >
           <span className="td-cell-day">Day {day}</span>
           <span className="td-cell-current-hint">
@@ -182,7 +171,7 @@ export function TrialDayBoard({ trial, campaignLabels, onPick }: TrialDayBoardPr
       {!complete && (
         <div className="td-picker" role="group" aria-label="Campaigns you can run today">
           <p className="td-picker-hint">
-            Drag a campaign onto day {currentDay}, or select one below, then choose the day.
+            Drag a campaign onto day {currentDay}, or select one below and lock it in.
           </p>
           <div className="td-cards">
             {CAMPAIGN_IDS.map((id) => (
@@ -192,7 +181,7 @@ export function TrialDayBoard({ trial, campaignLabels, onPick }: TrialDayBoardPr
                 className={`td-card${selected === id ? ' td-card--selected' : ''}`}
                 style={{ borderColor: selected === id ? CAMPAIGN_COLOR_VARS[id] : undefined }}
                 aria-pressed={selected === id}
-                aria-label={`${campaignLabels[id]} — select, then choose day ${currentDay}; or drag onto day ${currentDay}`}
+                aria-label={`${campaignLabels[id]} — select, then use the Lock it in button; or drag onto day ${currentDay}`}
                 onPointerDown={onCardPointerDown(id)}
                 onPointerMove={onCardPointerMove}
                 onPointerUp={onCardPointerUp}
@@ -204,6 +193,18 @@ export function TrialDayBoard({ trial, campaignLabels, onPick }: TrialDayBoardPr
               </button>
             ))}
           </div>
+
+          {selected !== null && (
+            <div className="td-confirm" role="status">
+              <span className="td-confirm-chip" style={{ background: CAMPAIGN_COLOR_VARS[selected] }} aria-hidden="true" />
+              <span className="td-confirm-text">
+                Run <strong>{campaignLabels[selected]}</strong> on day {currentDay}?
+              </span>
+              <button type="button" className="ct-button td-confirm-cta" onClick={() => confirmPick(selected)}>
+                Lock it in →
+              </button>
+            </div>
+          )}
         </div>
       )}
 
