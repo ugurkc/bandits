@@ -1,0 +1,371 @@
+/*
+ * Styling for the simulator's presentational components:
+ *   rc-  RegretChart
+ *   ac-  ArmCard
+ *   ct-  Controls
+ *
+ * Every color comes from the theme tokens in src/index.css (--ink, --muted,
+ * --accent, --border, --card, --paper, --series-*, ...), so both themes work
+ * by construction — nothing here needs a dark-mode override.
+ */
+
+/* ---------- RegretChart ---------- */
+
+.rc-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.rc-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Lines get a line-shaped key, mirroring the mark. */
+.rc-legend-chip {
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.rc-chart-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.rc-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.rc-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.rc-axis {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.rc-tick {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.rc-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* 2px surface ring keeps dots legible where they sit on their line. */
+.rc-end-dot,
+.rc-hover-dot {
+  stroke: var(--card);
+  stroke-width: 2;
+}
+
+/* Identity comes from the dot beside it; the text itself stays in ink. */
+.rc-end-label {
+  fill: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rc-crosshair {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.rc-tooltip {
+  position: absolute;
+  top: 10px;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 4px;
+  min-width: 160px;
+  padding: 8px 10px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.rc-tooltip-round {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.rc-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rc-tooltip-row strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.rc-tooltip-label {
+  color: var(--muted);
+}
+
+.rc-tooltip-chip {
+  width: 10px;
+  height: 3px;
+  border-radius: 1.5px;
+  flex: none;
+}
+
+/* ---------- ArmCard ---------- */
+
+.ac-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+.ac-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ac-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ac-badge {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ac-rate {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-rate--hidden {
+  color: var(--muted);
+}
+
+/* One grid for all rows so chips, bars, and numbers align down the card. */
+.ac-rows {
+  display: grid;
+  grid-template-columns: 10px max-content minmax(48px, 1fr) max-content max-content;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.ac-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.ac-strategy {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.ac-bar {
+  display: block;
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+/* The 2px box-shadow is the surface gap between the fill's data end and the
+   rest of the track; overflow:hidden crops it at 100%. */
+.ac-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  box-shadow: 2px 0 0 var(--card);
+}
+
+.ac-meta {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ---------- Controls ---------- */
+
+.ct-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 24px;
+}
+
+.ct-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.ct-button {
+  padding: 6px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.ct-button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.ct-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ct-readout {
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ct-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.ct-field-label {
+  color: var(--muted);
+}
+
+.ct-select {
+  padding: 4px 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.ct-range {
+  width: 120px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.ct-value {
+  min-width: 4ch;
+  color: var(--ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ct-switch-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--border);
+  cursor: pointer;
+}
+
+.ct-switch-input::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.ct-switch-input:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.ct-switch-input:checked::after {
+  left: auto;
+  right: 2px;
+}
+
+.ct-button:focus-visible,
+.ct-select:focus-visible,
+.ct-range:focus-visible,
+.ct-switch-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
