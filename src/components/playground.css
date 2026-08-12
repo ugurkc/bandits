@@ -24,6 +24,22 @@
   font-size: 11px;
 }
 
+/* Plain-English explanation of the chart, so the axis title alone doesn't
+   have to carry the whole idea. The formal name stays a muted aside, not
+   the primary label — technical readers still get it, non-technical
+   readers aren't asked to parse it first. */
+.rc-axis-caption {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  max-width: 62ch;
+}
+
+.rc-axis-aside {
+  color: var(--muted);
+}
+
 .rc-legend {
   display: flex;
   flex-wrap: wrap;
@@ -111,6 +127,7 @@
   display: grid;
   gap: 4px;
   min-width: 160px;
+  max-width: 240px;
   padding: 8px 10px;
   background: var(--card);
   border: 1px solid var(--border-strong);
@@ -124,6 +141,16 @@
 .rc-tooltip-round {
   color: var(--muted);
   font-size: 11px;
+}
+
+.rc-tooltip-sentence {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.rc-tooltip-sentence strong {
+  font-variant-numeric: tabular-nums;
 }
 
 .rc-tooltip-row {

@@ -168,6 +168,16 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
           value: hr < s.values.length ? s.values[hr] : null,
         }))
 
+  // The single worst-off strategy at the hovered round, turned into one
+  // concrete sentence — translates an abstract point on a line into a
+  // number a non-technical reader can actually picture.
+  const worstHoverRow =
+    hoverRows?.reduce<(typeof hoverRows)[number] | null>((worst, row) => {
+      if (row.value === null) return worst
+      if (worst === null || worst.value === null || row.value > worst.value) return row
+      return worst
+    }, null) ?? null
+
   // Re-clamp the tooltip with its MEASURED width before paint: content can
   // run wider than the CSS min-width the first-paint estimate assumes, and
   // the tooltip must never overflow the wrapper. 1 viewBox unit = 1 CSS px,
@@ -298,7 +308,12 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
 
   return (
     <div className="rc-wrap">
-      <div className="rc-axis-title">cumulative expected regret (conversions lost)</div>
+      <div className="rc-axis-title">installs left on the table</div>
+      <p className="rc-axis-caption">
+        The higher a line climbs, the more installs that strategy is giving up by picking worse
+        campaigns instead of the best one.{' '}
+        <span className="rc-axis-aside">(Statisticians call this <em>regret</em>.)</span>
+      </p>
       <div className="rc-legend">
         {series.map((s) => (
           <span key={s.id} className="rc-legend-item">
@@ -314,7 +329,7 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
           preserveAspectRatio="xMidYMid meet"
           role="img"
           tabIndex={0}
-          aria-label={`Cumulative expected regret over ${horizon.toLocaleString()} rounds for ${series
+          aria-label={`Installs left on the table over ${horizon.toLocaleString()} rounds for ${series
             .map((s) => s.label)
             .join(', ')}; playhead at round ${Math.min(t, horizon).toLocaleString()}. Use arrow keys to inspect rounds.`}
           onPointerMove={trackPointer}
@@ -362,6 +377,13 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
             }}
           >
             <span className="rc-tooltip-round">Round {hr.toLocaleString()}</span>
+            {worstHoverRow && worstHoverRow.value !== null && worstHoverRow.value > 0 && (
+              <p className="rc-tooltip-sentence">
+                <strong>{worstHoverRow.label}</strong> has given up about{' '}
+                <strong>{fmtValue(worstHoverRow.value)}</strong> installs it could have earned by
+                now.
+              </p>
+            )}
             {hoverRows.map((row) => (
               <span key={row.id} className="rc-tooltip-row">
                 <span className="rc-tooltip-chip" style={{ background: row.colorVar }} aria-hidden="true" />
@@ -374,7 +396,11 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
 
         <div className="sr-only" aria-live="polite">
           {hr !== null && hoverRows !== null
-            ? `Round ${hr.toLocaleString()}: ${hoverRows
+            ? `Round ${hr.toLocaleString()}.${
+                worstHoverRow && worstHoverRow.value !== null && worstHoverRow.value > 0
+                  ? ` ${worstHoverRow.label} has given up about ${fmtValue(worstHoverRow.value)} installs it could have earned by now.`
+                  : ''
+              } ${hoverRows
                 .map((row) => `${row.label} ${row.value === null ? 'no data' : fmtValue(row.value)}`)
                 .join(', ')}`
             : ''}
