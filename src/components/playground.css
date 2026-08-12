@@ -644,29 +644,3 @@
   font-style: italic;
 }
 
-/* ---------- Quarter scoreboard ---------- */
-
-.pg-scoreboard {
-  padding: 16px 18px;
-  background: var(--card);
-  border: 1px solid var(--accent-soft, var(--border));
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.pg-scoreboard-line {
-  margin: 0;
-  font-size: 14px;
-  color: var(--muted);
-  max-width: 560px;
-}
-
-.pg-scoreboard-cta {
-  font-weight: 700;
-  white-space: nowrap;
-}
