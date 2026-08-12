@@ -12,7 +12,11 @@ export interface BanditBridgeProps {
  * installs an oracle who already knew the best campaign would have earned
  * over the same five days, minus what the reader actually got), ask the
  * question the algorithms answer, then name what they just did — the
- * k-armed bandit problem with Bernoulli rewards — before handing off.
+ * k-armed bandit problem — before handing off. Also sets up Act 2: names
+ * the simplification (one campaign at a time, no budget to split) as
+ * deliberate scaffolding, not the finished picture — strategies first, at
+ * a simple scale, then the budgeting constraint that makes it look like the
+ * reader's actual day-to-day problem.
  */
 export function BanditBridge({ totalInstalls, installsLeftOnTable, onContinue }: BanditBridgeProps) {
   return (
@@ -32,13 +36,19 @@ export function BanditBridge({ totalInstalls, installsLeftOnTable, onContinue }:
       )}
       <p className="bb-question">How do we plan the weeks ahead of us?</p>
       <p className="bb-explainer">
-        What you just did has a name: the <strong>k-armed bandit problem</strong> — k = 3 campaigns
-        here, each one an "arm" you can pull. Every pull returns a <strong>Bernoulli reward</strong>{' '}
-        — a single yes-or-no outcome, did this impression convert or not — drawn from a fixed but
-        unknown probability. Each of your five days was really hundreds of those pulls happening
-        at once. The question is how to decide which arm to pull next, given only noisy results
-        so far. Below, three different strategies answer that question — automatically, and much
-        faster than you can by hand.
+        What you just did has a name: the <strong>k-armed bandit problem</strong> — k = 3
+        campaigns here, each one an "arm" you can pull, and each of your five days was really
+        hundreds of individual bets happening at once. The question is how to decide which arm
+        to pull next, given only noisy results so far.
+      </p>
+      <p className="bb-explainer">
+        One honest caveat: picking a single campaign to run each day, with no way to split
+        spend, doesn't look much like real ad budgets — normally you'd run several campaigns
+        side by side, dividing a shared budget across them. We'll start with this simpler
+        version to build intuition for how these strategies actually think, then bring back
+        the budgeting constraint so the problem starts looking like the one you'd actually face
+        day to day. Below, three different strategies tackle the simple version first —
+        automatically, and much faster than you can by hand.
       </p>
       <button type="button" className="ct-button bb-cta" onClick={onContinue}>
         See the strategies race →
