@@ -29,10 +29,11 @@ export interface PitchPhaseProps {
 const MIN_PITCH_CHARS = 12
 
 /**
- * The playground's opening state: the reader pitches three features against
- * a scenario, and similarity to its hidden truth becomes the arms' hidden
- * conversion rates. The ~23MB semantic model prefetches under the reader's
- * typing time; the lexical fallback means nobody ever waits on it.
+ * The playground's opening state: the reader pitches three ad campaigns
+ * against a scenario, and similarity to its hidden truth becomes the
+ * campaigns' hidden install rates. The ~23MB semantic model prefetches under
+ * the reader's typing time; the lexical fallback means nobody ever waits on
+ * it.
  */
 export function PitchPhase({ scenario, seed, onScored, onNextScenario, onSkip }: PitchPhaseProps) {
   const [pitches, setPitches] = useState<string[]>(() => [...scenario.placeholders])
@@ -84,11 +85,12 @@ export function PitchPhase({ scenario, seed, onScored, onNextScenario, onSkip }:
   }
 
   return (
-    <section className="pp" aria-label="Pitch your features">
+    <section className="pp" aria-label="Pitch your ad campaigns">
       <p className="pp-intro">
-        Every feature you ship is a bet on what players actually want. Pitch three features
-        for the scenario below — a hidden truth about this playerbase decides how well each
-        one converts, and the three strategies will race to find your best bet.
+        Every ad campaign is a bet on what players actually want to hear. Pitch three campaign
+        concepts for the scenario below — a hidden truth about this playerbase decides how well
+        each one converts to installs, and you'll get to run your quarter by hand before three
+        strategies race to find your best bet automatically.
       </p>
 
       <div className="pp-scenario">
@@ -104,13 +106,13 @@ export function PitchPhase({ scenario, seed, onScored, onNextScenario, onSkip }:
       <div className="pp-boxes">
         {pitches.map((pitch, i) => (
           <label key={i} className="pp-box">
-            <span className="pp-box-label">Feature {i + 1}</span>
+            <span className="pp-box-label">Campaign {i + 1}</span>
             <textarea
               className="pp-textarea"
               value={pitch}
               rows={3}
               onChange={(e) => setPitch(i, e.target.value)}
-              aria-label={`Feature ${i + 1} pitch`}
+              aria-label={`Campaign ${i + 1} pitch`}
             />
           </label>
         ))}

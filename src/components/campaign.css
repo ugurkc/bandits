@@ -1,0 +1,313 @@
+/*
+ * Styling for the manual campaign calendar:
+ *   cc-  CampaignCalendar
+ *   bs-  BudgetSplitPanel
+ *
+ * Every color comes from the theme tokens in src/index.css (--ink, --muted,
+ * --accent, --border, --card, --paper, --campaign-a/b/c, ...), so both
+ * themes work by construction — nothing here needs a dark-mode override.
+ */
+
+/* ---------- CampaignCalendar ---------- */
+
+.cc-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.cc-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.cc-picker-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.cc-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cc-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: grab;
+  touch-action: none;
+}
+
+.cc-card:active {
+  cursor: grabbing;
+}
+
+.cc-card--selected {
+  background: var(--accent-soft);
+}
+
+.cc-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cc-card-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.cc-card-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 22ch;
+}
+
+/* Wraps instead of scrolling: 13 cells at ~64px min-width wrap to a
+   multi-row grid well before 375px, so the page never gains horizontal
+   overflow. */
+.cc-grid-wrap {
+  min-width: 0;
+}
+
+.cc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cc-cell {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  min-height: 64px;
+  padding: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+
+.cc-cell-week {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cc-cell--played {
+  box-shadow: var(--shadow-sm);
+}
+
+.cc-cell-chips {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.cc-cell-chip {
+  display: block;
+  height: 100%;
+}
+
+.cc-cell-installs {
+  color: var(--ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-cell-unit {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.cc-cell--current {
+  border-color: var(--accent);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-sm);
+  cursor: pointer;
+}
+
+.cc-cell--current[role='button']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cc-cell-current-hint {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* The budget-phase current cell hosts the BudgetSplitPanel and needs the
+   full row width rather than sharing space with a week-cell-sized column. */
+.cc-cell--budget {
+  grid-column: 1 / -1;
+  cursor: default;
+}
+
+.cc-cell-budget-slot {
+  min-width: 0;
+}
+
+.cc-cell--future {
+  color: var(--muted);
+  opacity: 0.55;
+}
+
+.cc-cell--future .cc-cell-week {
+  color: var(--muted);
+}
+
+.cc-drag-ghost {
+  position: fixed;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  transform: translate(-50%, -130%);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  pointer-events: none;
+}
+
+/* ---------- BudgetSplitPanel ---------- */
+
+.bs-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.bs-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.bs-row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 8px;
+}
+
+.bs-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.bs-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.bs-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.bs-dollar {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.bs-input {
+  width: 6ch;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.bs-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.bs-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 12.5px;
+}
+
+.bs-total {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.bs-hint {
+  color: var(--muted);
+}
+
+.bs-hint--over {
+  color: var(--campaign-a);
+}
+
+.bs-hint--ok {
+  color: var(--accent);
+}
+
+.bs-run {
+  justify-self: start;
+  padding: 8px 16px;
+  background: var(--accent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--paper);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bs-run:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.bs-run:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
