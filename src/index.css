@@ -22,6 +22,16 @@
   --series-fixed: #b45309;
   --series-egreedy: #0d9488;
   --series-thompson: #4f46e5;
+  /* The reader's own data series ("You" in the quarter comparison) — a
+     dedicated token, NOT a reuse of --accent: the accent doubles as
+     Thompson's series hue, so reusing it made the You bar color-identical
+     to Thompson. Validated against both surfaces with the dataviz
+     six-checks script on 2026-08-13, alongside the strategy colors. */
+  --you: #c026d3;
+  /* Status/error color (e.g. "over budget") — WCAG AA on both --paper and
+     --card (6.1–6.8:1), hue-distinct from the campaign palette so an error
+     never reads as pointing at a specific campaign. */
+  --danger: #b91c1c;
   /* Campaign colors — validated (dataviz six checks, light surface),
      deliberately distinct from the reserved strategy colors above. */
   --campaign-a: #be123c;
@@ -47,6 +57,12 @@
   --series-fixed: #d97706;
   --series-egreedy: #0d9488;
   --series-thompson: #7a72ef;
+  /* The reader's own series — validated against both surfaces (dataviz
+     six checks, 2026-08-13) alongside the strategy colors; see the light
+     block's note on why this is not --accent. */
+  --you: #c026d3;
+  /* Status/error color — WCAG AA vs both --paper and --card (6.1–6.8:1). */
+  --danger: #f87171;
   /* Campaign colors — validated against the dark surface, deliberately
      distinct from the reserved strategy colors above. */
   --campaign-a: #e11d48;

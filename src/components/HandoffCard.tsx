@@ -1,5 +1,6 @@
 import { STRATEGY_COLOR_VARS, STRATEGY_IDS, STRATEGY_LABELS } from '../lib/bandit/types'
 import type { StrategyId } from '../lib/bandit/types'
+import { STRATEGY_EXPLAINERS } from './strategyExplainers'
 import './campaign.css'
 
 export interface HandoffCardProps {
@@ -36,11 +37,14 @@ export function HandoffCard({ remainingWeeks, onHandOff }: HandoffCardProps) {
             key={id}
             type="button"
             className="hc-button"
-            aria-label={`Hand the remaining ${remainingWeeks} ${weeksNoun} to ${STRATEGY_LABELS[id]}`}
+            aria-label={`Hand the remaining ${remainingWeeks} ${weeksNoun} to ${STRATEGY_LABELS[id]} — ${STRATEGY_EXPLAINERS[id]}`}
             onClick={() => onHandOff(id)}
           >
-            <span className="hc-chip" style={{ background: STRATEGY_COLOR_VARS[id] }} aria-hidden="true" />
-            {STRATEGY_LABELS[id]}
+            <span className="hc-button-name">
+              <span className="hc-chip" style={{ background: STRATEGY_COLOR_VARS[id] }} aria-hidden="true" />
+              {STRATEGY_LABELS[id]}
+            </span>
+            <span className="hc-desc">{STRATEGY_EXPLAINERS[id]}</span>
           </button>
         ))}
       </div>

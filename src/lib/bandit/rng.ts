@@ -27,6 +27,12 @@ export const STREAM = {
   WEEKLY_REWARD: 7,
   /** Budgeted-strategy internal randomness (Act 2 posterior sampling). */
   BUDGET_STRATEGY: 8,
+  /**
+   * Act 1 trial-day install draw, keyed on (day, arm). Separate from
+   * WEEKLY_REWARD so trial day d and quarter week d don't replay the same
+   * luck arm-for-arm.
+   */
+  TRIAL_REWARD: 9,
 } as const
 
 /** splitmix32-style avalanche finalizer over a 32-bit word. */

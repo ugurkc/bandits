@@ -22,9 +22,11 @@ export interface ControlsProps {
   revealed: boolean
   onReveal: (v: boolean) => void
   /**
-   * When the arms' rates came from the reader's pitches, reshuffling rates
-   * or changing the arm count would silently break that mapping — both
-   * controls are hidden and a small note takes their place.
+   * When the arms' rates came from the reader's pitches, reshuffling rates,
+   * changing the arm count, or letting rates drift would silently break
+   * that mapping (the reveal would still present fixed "% match" figures as
+   * the source of rates that have wandered off) — all three controls are
+   * hidden and a small note takes their place.
    */
   pitchMode?: boolean
 }
@@ -148,15 +150,17 @@ export function Controls({
       </div>
 
       <div className="ct-group" role="group" aria-label="World">
-        <label className="ct-switch">
-          <input
-            type="checkbox"
-            className="ct-switch-input"
-            checked={driftEnabled}
-            onChange={(e) => onDrift(e.target.checked)}
-          />
-          <span>Drift</span>
-        </label>
+        {!pitchMode && (
+          <label className="ct-switch">
+            <input
+              type="checkbox"
+              className="ct-switch-input"
+              checked={driftEnabled}
+              onChange={(e) => onDrift(e.target.checked)}
+            />
+            <span>Drift</span>
+          </label>
+        )}
         <label className="ct-switch">
           <input
             type="checkbox"

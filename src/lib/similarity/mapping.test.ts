@@ -47,21 +47,62 @@ describe('similarityToRate', () => {
 })
 
 describe('similaritiesToRates', () => {
-  it('nudges exact ties apart so a best arm exists', () => {
-    const rates = similaritiesToRates([0.5, 0.5, 0.5], 42)
-    const distinct = new Set(rates.map((r) => r.toFixed(6)))
-    expect(distinct.size).toBeGreaterThan(1)
+  /** Asserts every pair of rates is at least TIE_GAP apart (within 1e-9). */
+  function expectPairwiseSeparated(rates: number[]): void {
+    for (let i = 0; i < rates.length; i++) {
+      for (let j = i + 1; j < rates.length; j++) {
+        expect(Math.abs(rates[i] - rates[j])).toBeGreaterThanOrEqual(TIE_GAP - 1e-9)
+      }
+    }
+  }
+
+  it('separates identical triples pairwise by >= TIE_GAP across 500 seeds', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      expectPairwiseSeparated(similaritiesToRates([0.5, 0.5, 0.5], seed))
+    }
+  })
+
+  it('separates all-floor pairs (both pitches miss entirely) across 500 seeds', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const rates = similaritiesToRates([0, 0], seed)
+      expectPairwiseSeparated(rates)
+      for (const r of rates) expect(r).toBeGreaterThanOrEqual(RATE_FLOOR)
+    }
+  })
+
+  it('separates all-floor triples across 500 seeds without dipping below the floor', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const rates = similaritiesToRates([0, 0, 0], seed)
+      expectPairwiseSeparated(rates)
+      for (const r of rates) expect(r).toBeGreaterThanOrEqual(RATE_FLOOR)
+    }
+  })
+
+  it('preserves order: a strictly higher similarity never maps below a lower one', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      // Deterministic pseudo-random similarity triples, including near-ties.
+      const sims = [0, 1, 2].map((i) => ((seed * 7919 + i * 104729) % 1000) / 1000)
+      const rates = similaritiesToRates(sims, seed)
+      for (let i = 0; i < sims.length; i++) {
+        for (let j = 0; j < sims.length; j++) {
+          if (sims[i] > sims[j]) expect(rates[i]).toBeGreaterThan(rates[j])
+        }
+      }
+    }
   })
 
   it('is deterministic for the same seed', () => {
     expect(similaritiesToRates([0.5, 0.5], 7)).toEqual(similaritiesToRates([0.5, 0.5], 7))
+    expect(similaritiesToRates([0.5, 0.5, 0.5], 42)).toEqual(similaritiesToRates([0.5, 0.5, 0.5], 42))
   })
 
-  it('keeps every rate inside the band (with tie headroom)', () => {
+  it('keeps every rate inside the band plus (k-1) tie gaps of headroom', () => {
     for (const sims of [[0, 0, 0], [1, 1, 1], [0.5, 0.501, 0.499]]) {
-      for (const r of similaritiesToRates(sims, 3)) {
-        expect(r).toBeGreaterThanOrEqual(RATE_FLOOR)
-        expect(r).toBeLessThanOrEqual(RATE_FLOOR + RATE_SPAN + TIE_GAP)
+      for (let seed = 0; seed < 100; seed++) {
+        for (const r of similaritiesToRates(sims, seed)) {
+          expect(r).toBeGreaterThanOrEqual(RATE_FLOOR)
+          expect(r).toBeLessThanOrEqual(RATE_FLOOR + RATE_SPAN + (sims.length - 1) * TIE_GAP)
+        }
       }
     }
   })

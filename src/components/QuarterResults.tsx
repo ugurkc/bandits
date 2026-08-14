@@ -3,6 +3,7 @@ import { CAMPAIGN_COLOR_VARS, WEEKLY_BUDGET } from '../lib/campaign/types'
 import type { CampaignId, CampaignWeekResult } from '../lib/campaign/types'
 import { STRATEGY_COLOR_VARS, STRATEGY_LABELS } from '../lib/bandit/types'
 import type { StrategyId } from '../lib/bandit/types'
+import { fmtDollars, weekAria } from './weekAria'
 import './campaign.css'
 
 export interface StrategyComparison {
@@ -19,11 +20,18 @@ export interface QuarterResultsProps {
   /** Length 3, from PitchOutcome.labels. */
   campaignLabels: string[]
   totalInstalls: number
-  /** Vs. the perfect-foresight oracle; computed by the integration layer. */
+  /**
+   * Vs. the perfect-foresight oracle's REALIZED run of the same quarter
+   * (`quarterLeftOnTable` with the seed); computed by the integration layer.
+   */
   leftOnTable: number
   /** Each strategy re-run over the full quarter; computed by the integration layer. */
   comparisons: StrategyComparison[]
-  /** The oracle's expectation: $500 all-in on the truly best arm every week. */
+  /**
+   * The oracle's REALIZED total: $500 all-in on the truly best arm every
+   * week, through the same draws the reader's weeks used
+   * (`realizedOracleQuarter`) — an in-world ceiling, not an expectation.
+   */
   oracleInstalls: number
 }
 
@@ -35,18 +43,6 @@ const CAMPAIGN_IDS: CampaignId[] = [0, 1, 2]
  * and even the max bar never pushes its number out of the row.
  */
 const VALUE_RESERVE = '5em'
-
-function fmtDollars(v: number): string {
-  return `$${v.toLocaleString()}`
-}
-
-/** "Week 5: Alpha $250, Beta $150, Gamma $100, 312 installs" */
-function weekAria(w: CampaignWeekResult, campaignLabels: string[]): string {
-  const split = CAMPAIGN_IDS.filter((id) => (w.allocation[id] ?? 0) > 0)
-    .map((id) => `${campaignLabels[id]} ${fmtDollars(w.allocation[id] ?? 0)}`)
-    .join(', ')
-  return `Week ${w.week}: ${split}, ${w.totalInstalls.toLocaleString()} installs`
-}
 
 interface BarSpec {
   key: string
@@ -73,25 +69,31 @@ export function QuarterResults({
   comparisons,
   oracleInstalls,
 }: QuarterResultsProps) {
+  // The timeline is a div[role=list] rather than an <ol> so the handoff
+  // divider can sit between rows WITHOUT being a list item: as a 14th <li>
+  // it made screen readers announce "14 items" for a 13-week quarter and
+  // shifted every post-handoff week's announced position off its week
+  // number. The divider is aria-hidden — its information (which weeks a
+  // strategy ran) lives in each auto row's aria-label instead.
   const timelineRows: ReactNode[] = []
   for (const w of weeks) {
     if (handoff !== null && w.week === handoff.fromWeek) {
       timelineRows.push(
-        <li key="handoff" className="qr-divider">
+        <div key="handoff" className="qr-divider" aria-hidden="true">
           <span
             className="qr-divider-chip"
             style={{ background: STRATEGY_COLOR_VARS[handoff.strategyId] }}
-            aria-hidden="true"
           />
           handed off to {STRATEGY_LABELS[handoff.strategyId]}
-        </li>,
+        </div>,
       )
     }
     const isAuto = handoff !== null && w.week >= handoff.fromWeek
-    const aria = weekAria(w, campaignLabels)
+    const aria = weekAria(w, campaignLabels, isAuto ? STRATEGY_LABELS[handoff.strategyId] : undefined)
     timelineRows.push(
-      <li
+      <div
         key={w.week}
+        role="listitem"
         className={`qr-row${isAuto ? ' qr-row--auto' : ''}`}
         style={isAuto ? { borderLeftColor: STRATEGY_COLOR_VARS[handoff.strategyId] } : undefined}
         aria-label={aria}
@@ -108,7 +110,7 @@ export function QuarterResults({
           ))}
         </span>
         <span className="qr-installs">{w.totalInstalls.toLocaleString()}</span>
-      </li>,
+      </div>,
     )
   }
 
@@ -116,7 +118,9 @@ export function QuarterResults({
     {
       key: 'you',
       name: 'You',
-      colorVar: 'var(--accent)',
+      // The dedicated reader-series token — NOT var(--accent), which is
+      // also Thompson's hue and made the two bars read as twins.
+      colorVar: 'var(--you)',
       value: totalInstalls,
       aria: `You: ${totalInstalls.toLocaleString()} installs`,
     },
@@ -133,12 +137,13 @@ export function QuarterResults({
       colorVar: 'var(--border-strong)',
       value: oracleInstalls,
       muted: true,
-      aria: `Perfect foresight: ${oracleInstalls.toLocaleString()} installs`,
+      aria: `Perfect foresight, all-in on the truly best campaign in the same world: ${oracleInstalls.toLocaleString()} installs`,
     },
   ]
-  // The oracle is the intended max, but it is an *expectation* — a lucky
-  // realized run can beat it, so guard the scale with the true max and no
-  // bar ever overflows its track.
+  // The realized oracle is a true in-world ceiling for all-in play, but a
+  // MIXED split can still (rarely) beat it — other arms' lucky draws that
+  // the all-in oracle never touches — so guard the scale with the true max
+  // and no bar ever overflows its track.
   const maxInstalls = Math.max(1, ...bars.map((b) => b.value))
 
   return (
@@ -147,19 +152,27 @@ export function QuarterResults({
         <h3 className="qr-headline">
           Your quarter: <strong>{totalInstalls.toLocaleString()} installs</strong>
         </h3>
-        {leftOnTable > 0 && (
+        {leftOnTable > 0 ? (
           <p className="qr-left">
             A perfect-foresight planner — {fmtDollars(WEEKLY_BUDGET)} on the truly best campaign
-            every week — would have expected about{' '}
+            every week, in this exact world — would have earned about{' '}
             <strong>{leftOnTable.toLocaleString()} more</strong>. That's what this quarter left on
-            the table.
+            the table: same weeks, same luck, different splits.
+          </p>
+        ) : (
+          <p className="qr-left">
+            A perfect-foresight planner — {fmtDollars(WEEKLY_BUDGET)} on the truly best campaign
+            every week, in this exact world — would have done no better. Nothing left on the
+            table this quarter.
           </p>
         )}
       </header>
 
       <div className="qr-section">
         <h4 className="qr-subhead">Where the money went, week by week</h4>
-        <ol className="qr-timeline">{timelineRows}</ol>
+        <div className="qr-timeline" role="list">
+          {timelineRows}
+        </div>
         <ul className="qr-legend" aria-label="Campaign colors">
           {CAMPAIGN_IDS.map((id) => (
             <li key={id} className="qr-legend-item">
@@ -177,7 +190,8 @@ export function QuarterResults({
       <div className="qr-section">
         <h4 className="qr-subhead">Full-quarter comparison</h4>
         <p className="qr-note">
-          Each strategy given all 13 weeks from scratch, in the same world you played.
+          Each strategy given all 13 weeks from scratch, in the same world you played. Perfect
+          foresight is that world's own ceiling — all-in on the truly best campaign, same draws.
         </p>
         <ul className="qr-compare">
           {bars.map((b) => (

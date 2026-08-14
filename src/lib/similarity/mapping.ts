@@ -37,21 +37,39 @@ export function similarityToRate(similarity: number): number {
 }
 
 /**
- * Map all similarities to rates, then deterministically nudge near-ties
- * apart (seeded, order-stable) so identical pitches don't produce a race
- * that can never resolve. Nudged rates stay inside the band.
+ * Map all similarities to rates, then enforce pairwise separation so
+ * identical pitches don't produce a race that can never resolve:
+ * sort-walk-enforce-gap-unsort. Rates are sorted (with original indices),
+ * walked upward enforcing >= TIE_GAP spacing, then unsorted — nudges only go
+ * UP, so no floor clamp can ever undo a separation (the old pairwise ±nudge
+ * left exact ties behind in ~25-50% of seeds; verified 2026-08-13).
+ *
+ * Guarantees, for k rates:
+ * - every pair is >= TIE_GAP apart;
+ * - a strictly higher similarity never maps below a strictly lower one;
+ * - rates stay in [RATE_FLOOR, RATE_FLOOR + RATE_SPAN + (k-1) * TIE_GAP]
+ *   (the headroom above the band is the worst case of k exact ties at the
+ *   top, spaced upward).
+ *
+ * The seed only breaks EXACT-tie ordering (which identical pitch ends up on
+ * top), via `hash01(seed, STREAM.TIE, index)` — deterministic per seed, and
+ * identical pitches don't get a winner predetermined by box order.
  */
 export function similaritiesToRates(similarities: number[], seed: number): number[] {
-  const rates = similarities.map(similarityToRate)
-  for (let i = 0; i < rates.length; i++) {
-    for (let j = i + 1; j < rates.length; j++) {
-      if (Math.abs(rates[i] - rates[j]) < TIE_GAP) {
-        const sign = hash01(seed, STREAM.TIE, i, j) < 0.5 ? -1 : 1
-        rates[j] = rates[j] + sign * TIE_GAP
-      }
-    }
+  const order = similarities
+    .map((similarity, index) => ({ rate: similarityToRate(similarity), index }))
+    .sort(
+      (a, b) =>
+        a.rate - b.rate ||
+        hash01(seed, STREAM.TIE, a.index) - hash01(seed, STREAM.TIE, b.index) ||
+        a.index - b.index,
+    )
+  const rates = new Array<number>(similarities.length).fill(0)
+  let previous = -Infinity
+  for (const { rate, index } of order) {
+    const separated = Math.max(rate, RATE_FLOOR, previous + TIE_GAP)
+    rates[index] = separated
+    previous = separated
   }
-  return rates.map((r) =>
-    Math.max(RATE_FLOOR, Math.min(RATE_FLOOR + RATE_SPAN + TIE_GAP, r)),
-  )
+  return rates
 }

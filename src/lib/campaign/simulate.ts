@@ -13,7 +13,7 @@ import { makeRng, sampleNormal, STREAM } from '../bandit/rng'
 import type { CampaignId, CampaignWeekResult, WeekAllocation } from './types'
 import { CPM, WEEKLY_BUDGET } from './types'
 
-/** Dollars -> impressions at the fixed CPM. $500 all-in -> 20,000 impressions. */
+/** Dollars -> impressions at the fixed CPM. $500 all-in -> 500 impressions. */
 export function impressionsForBudget(dollars: number): number {
   return Math.round((dollars / CPM) * 1000)
 }
@@ -22,8 +22,10 @@ export function impressionsForBudget(dollars: number): number {
  * Normal approximation to Binomial(impressions, rate): mean `impressions *
  * rate`, sd `sqrt(impressions * rate * (1 - rate))`. Rounded to an integer,
  * clamped to [0, impressions]. Pure and deterministic in
- * (impressions, rate, seed, week, arm) via the counter-based `hash01`/
- * `makeRng` streams (reuses `sampleNormal`, not a second Box-Muller).
+ * (impressions, rate, seed, week, arm, streamTag) via the counter-based
+ * `hash01`/`makeRng` streams (reuses `sampleNormal`, not a second
+ * Box-Muller). `streamTag` defaults to Act 2's weekly stream; Act 1 passes
+ * `STREAM.TRIAL_REWARD` so trial days don't replay quarter-week draws.
  */
 export function sampleInstalls(
   impressions: number,
@@ -31,6 +33,7 @@ export function sampleInstalls(
   seed: number,
   week: number,
   arm: number,
+  streamTag: number = STREAM.WEEKLY_REWARD,
 ): number {
   const mean = impressions * rate
   const variance = impressions * rate * (1 - rate)
@@ -40,7 +43,7 @@ export function sampleInstalls(
     return Math.round(Math.min(Math.max(mean, 0), impressions))
   }
   const sd = Math.sqrt(variance)
-  const rand = makeRng(seed, STREAM.WEEKLY_REWARD, week, arm)
+  const rand = makeRng(seed, streamTag, week, arm)
   const raw = mean + sd * sampleNormal(rand)
   return Math.round(Math.min(Math.max(raw, 0), impressions))
 }

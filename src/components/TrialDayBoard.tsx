@@ -70,6 +70,10 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
 
   const onCardPointerDown = (campaignId: CampaignId) => (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (complete) return
+    // Belt-and-braces: if a previous interaction set the suppress flag but
+    // its trailing click never arrived (e.g. the stream was cancelled), a
+    // fresh pointerdown starts a fresh interaction — never eat its click.
+    suppressClickRef.current = false
     e.currentTarget.setPointerCapture(e.pointerId)
     setDrag({ campaignId, x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY })
   }
@@ -83,6 +87,12 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
     if (!drag) return
     const moved = Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY)
     if (moved >= DRAG_THRESHOLD) {
+      // Because pointerdown captured the pointer, the browser retargets the
+      // interaction's trailing synthetic click to this button no matter how
+      // far the pointer moved — suppress it on BOTH drag outcomes, or a
+      // drag-drop re-selects the just-dropped card and a missed drag toggles
+      // a selection the reader never asked for.
+      suppressClickRef.current = true
       if (isOverDropZone(e.clientX, e.clientY)) {
         confirmPick(drag.campaignId)
       } else {
@@ -93,6 +103,16 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
     suppressClickRef.current = true
     setDrag(null)
     toggleSelected(drag.campaignId)
+  }
+
+  // A cancelled pointer stream (system gesture, notification, window blur)
+  // never fires pointerup: without this, the drag ghost stays painted at its
+  // last coordinates until some later interaction. lostpointercapture also
+  // fires after every normal release — clearing an already-null drag then is
+  // harmless. Neither touches suppressClickRef: a click can still trail the
+  // capture release (tap path), and pointerdown resets the flag anyway.
+  const onCardPointerCancel = () => {
+    setDrag(null)
   }
 
   const onCardClick = (campaignId: CampaignId) => {
@@ -187,6 +207,8 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
                 onPointerDown={onCardPointerDown(id)}
                 onPointerMove={onCardPointerMove}
                 onPointerUp={onCardPointerUp}
+                onPointerCancel={onCardPointerCancel}
+                onLostPointerCapture={onCardPointerCancel}
                 onClick={() => onCardClick(id)}
                 onKeyDown={onCardKeyDown(id)}
               >

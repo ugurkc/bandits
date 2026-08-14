@@ -13,7 +13,7 @@
 import { makeRng, sampleBeta, STREAM } from '../bandit/rng'
 import type { StrategyId } from '../bandit/types'
 import { STRATEGY_IDS } from '../bandit/types'
-import { impressionsForBudget, playWeek } from './simulate'
+import { impressionsForBudget, playWeek, sampleInstalls } from './simulate'
 import type { CampaignWeekResult, WeekAllocation } from './types'
 import { WEEKLY_BUDGET, WEEKS_PER_QUARTER } from './types'
 
@@ -102,6 +102,17 @@ export function allocateBudgetWeek(
 
   if (strategyId === 'epsilon-greedy') {
     if (k === 1) return exactSumAllocation([WEEKLY_BUDGET])
+    // Cold start: with 2+ untried arms there is no estimate to exploit, so
+    // the whole budget splits evenly across the untried arms (pure
+    // exploration). Dumping (1-ε) on the lowest-index untried arm would bias
+    // the from-scratch comparison by box order, for no strategic reason.
+    const untried: number[] = []
+    for (let i = 0; i < k; i++) if (tallies.impressions[i] === 0) untried.push(i)
+    if (untried.length > 1) {
+      const shares = new Array<number>(k).fill(0)
+      for (const i of untried) shares[i] = WEEKLY_BUDGET / untried.length
+      return exactSumAllocation(shares)
+    }
     const best = bestEstimateArm(tallies)
     const exploreShare = (epsilon * WEEKLY_BUDGET) / (k - 1)
     const shares = new Array<number>(k).fill(exploreShare)
@@ -171,21 +182,87 @@ export function runBudgetQuarter(
 }
 
 /**
- * Expected installs from putting the full weekly budget on the truly best
- * arm every week. Pure.
+ * EXPECTED installs from putting the full weekly budget on the truly best
+ * arm every week. Kept for UI copy that wants the expectation; the
+ * left-on-the-table math uses `realizedOracleQuarter` instead (an
+ * expectation minus a realization blames sampling noise on the reader —
+ * a perfect-play reader would see a positive "cost" ~half the time). Pure.
  */
 export function oracleQuarterInstalls(weeks: number, bestRate: number): number {
   return weeks * impressionsForBudget(WEEKLY_BUDGET) * bestRate
 }
 
+/** Argmax rate index, ties to the lowest index (matches the reveal's badge). */
+function bestArmIndex(rates: number[]): number {
+  let best = 0
+  for (let i = 1; i < rates.length; i++) if (rates[i] > rates[best]) best = i
+  return best
+}
+
+/**
+ * REALIZED installs of a perfect-foresight oracle playing the reader's own
+ * world: $500 all-in on the truly best arm, weeks 1..`weeks`, through the
+ * same `playWeek` draws the reader's weeks used. Because draws are keyed on
+ * (seed, week, arm), a reader who plays the best arm all-in every week
+ * realizes EXACTLY this total — common random numbers make the comparison
+ * noise-free by construction. Pure and deterministic.
+ */
+export function realizedOracleQuarter(
+  rates: number[],
+  seed: number,
+  weeks: number = WEEKS_PER_QUARTER,
+): number {
+  if (rates.length === 0 || weeks <= 0) return 0
+  const best = bestArmIndex(rates)
+  let total = 0
+  for (let week = 1; week <= weeks; week++) {
+    total += playWeek(week, { [best]: WEEKLY_BUDGET }, rates, seed).totalInstalls
+  }
+  return total
+}
+
+/**
+ * Act 1's realized oracle: `sampleInstalls` on the argmax arm for each day
+ * 1..`days` at `impressionsPerDay`, under the caller's stream tag (Act 1
+ * passes `STREAM.TRIAL_REWARD` so trial-day draws stay separate from Act 2's
+ * weekly draws). Same CRN guarantee as `realizedOracleQuarter`: picking the
+ * best arm every day realizes exactly this total. Pure and deterministic.
+ */
+export function realizedOracleInstalls(
+  rates: number[],
+  seed: number,
+  days: number,
+  impressionsPerDay: number,
+  streamTag: number = STREAM.WEEKLY_REWARD,
+): number {
+  if (rates.length === 0 || days <= 0) return 0
+  const best = bestArmIndex(rates)
+  let total = 0
+  for (let day = 1; day <= days; day++) {
+    total += sampleInstalls(impressionsPerDay, rates[best], seed, day, best, streamTag)
+  }
+  return total
+}
+
 /**
  * Installs given up versus a perfect-foresight oracle over the played weeks.
- * Never negative — a lucky noisy run beating the oracle's *expectation* is
- * luck, not something "left on the table". Mirrors `installsLeftOnTable` in
- * useTrialDays.ts. Pure.
+ *
+ * With a `seed`, the oracle is the REALIZED CRN run (`realizedOracleQuarter`)
+ * — perfect play yields exactly 0 and every positive gap is attributable to
+ * allocation choices, not noise. Without a seed (legacy callers), it falls
+ * back to the oracle's expectation, which over-charges unlucky readers;
+ * pass the seed. Still clamped >= 0 and 0 for empty inputs. Pure.
  */
-export function quarterLeftOnTable(actualTotal: number, playedWeeks: number, rates: number[]): number {
+export function quarterLeftOnTable(
+  actualTotal: number,
+  playedWeeks: number,
+  rates: number[],
+  seed?: number,
+): number {
   if (rates.length === 0 || playedWeeks === 0) return 0
-  const best = Math.max(...rates)
-  return Math.max(0, Math.round(oracleQuarterInstalls(playedWeeks, best) - actualTotal))
+  const oracle =
+    seed === undefined
+      ? oracleQuarterInstalls(playedWeeks, Math.max(...rates))
+      : realizedOracleQuarter(rates, seed, playedWeeks)
+  return Math.max(0, Math.round(oracle - actualTotal))
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { STREAM } from '../bandit/rng'
 import { WEEKLY_BUDGET } from './types'
 import {
   impressionsForBudget,
@@ -8,8 +9,8 @@ import {
 } from './simulate'
 
 describe('impressionsForBudget', () => {
-  it('$500 at CPM=25 is exactly 20,000 impressions', () => {
-    expect(impressionsForBudget(500)).toBe(20000)
+  it('$500 at CPM=1000 is exactly 500 impressions', () => {
+    expect(impressionsForBudget(500)).toBe(500)
   })
 
   it('$0 is 0 impressions', () => {
@@ -75,6 +76,24 @@ describe('sampleInstalls', () => {
     expect(week1).toBe(1400)
     expect(week2).toBe(1352)
     expect(week1).not.toBe(week2)
+  })
+
+  it('the default stream tag is STREAM.WEEKLY_REWARD (existing draws unchanged)', () => {
+    expect(sampleInstalls(20000, 0.07, 42, 1, 0, STREAM.WEEKLY_REWARD)).toBe(
+      sampleInstalls(20000, 0.07, 42, 1, 0),
+    )
+  })
+
+  it('different stream tags give different draws for the same (seed, week, arm)', () => {
+    let differing = 0
+    for (let seed = 0; seed < 50; seed++) {
+      const weekly = sampleInstalls(20000, 0.07, seed, 1, 0, STREAM.WEEKLY_REWARD)
+      const trial = sampleInstalls(20000, 0.07, seed, 1, 0, STREAM.TRIAL_REWARD)
+      if (weekly !== trial) differing++
+    }
+    // Independent draws can collide on a few seeds; near-total overlap would
+    // mean the tag is being ignored.
+    expect(differing).toBeGreaterThan(40)
   })
 })
 

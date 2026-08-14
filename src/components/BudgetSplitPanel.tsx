@@ -23,7 +23,11 @@ function fmt(dollars: number): string {
  * precision, not just a rough feel.
  */
 export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplitPanelProps) {
-  const [amounts, setAmounts] = useState<[number, number, number]>([0, 0, 0])
+  // Raw input strings, not numbers: a controlled number state snaps an
+  // emptied field straight back to "0", forcing select-all-replace editing.
+  // Strings let a field sit empty mid-edit; parsing happens where the
+  // numbers are consumed (total + commit), with '' counting as 0.
+  const [amounts, setAmounts] = useState<[string, string, string]>(['0', '0', '0'])
 
   // Reset the split when the integration layer moves us onto a new week
   // (this component instance may be reused rather than remounted) — same
@@ -32,22 +36,29 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
   const [trackedWeek, setTrackedWeek] = useState(week)
   if (trackedWeek !== week) {
     setTrackedWeek(week)
-    setAmounts([0, 0, 0])
+    setAmounts(['0', '0', '0'])
   }
 
-  const total = amounts[0] + amounts[1] + amounts[2]
+  // NaN-safe ('' and unparsable input count as 0), negatives clamped to 0.
+  const parseAmount = (raw: string): number => {
+    const n = Number(raw)
+    return Number.isFinite(n) ? Math.max(0, n) : 0
+  }
+
+  const parsed = [parseAmount(amounts[0]), parseAmount(amounts[1]), parseAmount(amounts[2])] as const
+  const total = parsed[0] + parsed[1] + parsed[2]
   const diff = Math.round((WEEKLY_BUDGET - total) * 100) / 100
   const canRun = diff === 0
 
-  const setAmount = (id: CampaignId, value: number) => {
-    const next: [number, number, number] = [...amounts]
-    next[id] = Number.isFinite(value) ? Math.max(0, value) : 0
+  const setAmount = (id: CampaignId, value: string) => {
+    const next: [string, string, string] = [...amounts]
+    next[id] = value
     setAmounts(next)
   }
 
   const run = () => {
     if (!canRun) return
-    onCommit({ 0: amounts[0], 1: amounts[1], 2: amounts[2] })
+    onCommit({ 0: parsed[0], 1: parsed[1], 2: parsed[2] })
   }
 
   return (
@@ -69,7 +80,7 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
                 step={5}
                 value={amounts[id]}
                 aria-label={`${campaignLabels[id]} budget, dollars`}
-                onChange={(e) => setAmount(id, e.target.valueAsNumber)}
+                onChange={(e) => setAmount(id, e.target.value)}
               />
             </span>
           </label>

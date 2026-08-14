@@ -31,7 +31,9 @@ const STOPWORDS = new Set([
  */
 export function stem(word: string): string {
   if (word.length <= 4) return word
-  for (const suffix of ['ings', 'ing', 'edly', 'ed', 'ely', 'ly', 'ies', 'es', 's', 'tion', 'tions']) {
+  // Longest-first, so e.g. 'tions'/'tion' are reachable before the bare 's'
+  // strips first — 'promotions' and 'promotion' must land on the same stem.
+  for (const suffix of ['tions', 'edly', 'ings', 'tion', 'ely', 'ies', 'ing', 'ed', 'es', 'ly', 's']) {
     if (word.endsWith(suffix) && word.length - suffix.length >= 3) {
       return word.slice(0, word.length - suffix.length)
     }

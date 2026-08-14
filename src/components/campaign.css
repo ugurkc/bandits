@@ -19,67 +19,6 @@
   min-width: 0;
 }
 
-.cc-picker {
-  display: grid;
-  gap: 8px;
-}
-
-.cc-picker-hint {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.cc-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.cc-card {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: var(--card);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  color: var(--ink);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: grab;
-  touch-action: none;
-}
-
-.cc-card:active {
-  cursor: grabbing;
-}
-
-.cc-card--selected {
-  background: var(--accent-soft);
-}
-
-.cc-card:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.cc-card-chip {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  flex: none;
-}
-
-.cc-card-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 22ch;
-}
-
 /* Wraps instead of scrolling: 13 cells at ~64px min-width wrap to a
    multi-row grid well before 375px, so the page never gains horizontal
    overflow. */
@@ -134,9 +73,15 @@
   background: var(--border);
 }
 
+/* Same stacked-segment treatment as .qr-seg below: a 2px card-colored
+   surface gap between adjacent campaign colors (the track's
+   overflow: hidden crops the first segment's shadow) and a 3px floor so a
+   tiny allocation never vanishes into a sub-pixel sliver. */
 .cc-cell-chip {
   display: block;
   height: 100%;
+  min-width: 3px;
+  box-shadow: -2px 0 0 var(--card);
 }
 
 .cc-cell-installs {
@@ -154,12 +99,6 @@
   border-color: var(--accent);
   border-width: 2px;
   box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-sm);
-  cursor: pointer;
-}
-
-.cc-cell--current[role='button']:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 
 .cc-cell-current-hint {
@@ -185,24 +124,6 @@
 
 .cc-cell--future .cc-cell-week {
   color: var(--muted);
-}
-
-.cc-drag-ghost {
-  position: fixed;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  transform: translate(-50%, -130%);
-  background: var(--card);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink);
-  pointer-events: none;
 }
 
 /* ---------- BudgetSplitPanel ---------- */
@@ -289,8 +210,11 @@
   color: var(--muted);
 }
 
+/* Error state in the dedicated status token — never a campaign identity
+   color (a rose "over budget" under campaign A's rose chip read as blaming
+   campaign A, and campaign-a failed AA contrast on the card in dark mode). */
 .bs-hint--over {
-  color: var(--campaign-a);
+  color: var(--danger);
 }
 
 .bs-hint--ok {
@@ -359,10 +283,12 @@
 }
 
 .hc-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  max-width: 30ch;
   padding: 8px 14px;
+  text-align: left;
   background: var(--card);
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
@@ -372,6 +298,20 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.hc-button-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The one-line plain-English explainer under each strategy name. */
+.hc-desc {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--muted);
 }
 
 .hc-button:hover {

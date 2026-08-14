@@ -563,6 +563,15 @@
   max-width: 680px;
 }
 
+/* Programmatic focus targets at view seams (tabIndex={-1}): they receive
+   focus so keyboard/SR users land in the new view, but they're not
+   interactive — no ring on programmatic focus. Real controls keep their
+   :focus-visible rings. */
+.pg-topline:focus,
+.pg-view-focus:focus {
+  outline: none;
+}
+
 .ct-note {
   font-size: 12.5px;
   color: var(--muted);

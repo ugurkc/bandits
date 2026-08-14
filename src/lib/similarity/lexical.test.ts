@@ -18,6 +18,18 @@ describe('stem', () => {
       expect(stem(w).length).toBeGreaterThanOrEqual(3)
     }
   })
+
+  it('stems -tion singular and plural to the same stem', () => {
+    expect(stem('promotions')).toBe(stem('promotion'))
+    expect(stem('creations')).toBe(stem('creation'))
+    expect(stem('decorations')).toBe(stem('decoration'))
+    expect(stem('celebrations')).toBe(stem('celebration'))
+  })
+
+  it('strips -tion/-tions before the bare -s can shadow them', () => {
+    expect(stem('promotion')).toBe('promo')
+    expect(stem('promotions')).toBe('promo')
+  })
 })
 
 describe('tokenize', () => {

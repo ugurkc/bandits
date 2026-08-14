@@ -6,12 +6,14 @@ import {
   HANDOFF_EPSILON,
   oracleQuarterInstalls,
   quarterLeftOnTable,
+  realizedOracleInstalls,
+  realizedOracleQuarter,
   runBudgetQuarter,
   talliesFromWeeks,
   THOMPSON_SAMPLES,
   type ArmTallies,
 } from './budgetStrategies'
-import { playWeek } from './simulate'
+import { impressionsForBudget, playWeek, sampleInstalls } from './simulate'
 import type { CampaignWeekResult, WeekAllocation } from './types'
 import { WEEKLY_BUDGET, WEEKS_PER_QUARTER } from './types'
 
@@ -100,14 +102,23 @@ describe('allocateBudgetWeek: fixed-split', () => {
 })
 
 describe('allocateBudgetWeek: epsilon-greedy', () => {
-  it('with no data, the untried lowest-index arm gets the exploit share', () => {
+  it('with no data, the budget splits evenly across all untried arms (pure exploration)', () => {
     const allocation = allocateBudgetWeek('epsilon-greedy', zeroTallies(3), 0.1, forbiddenRand)
-    expect(allocation[0]).toBe(450)
-    expect(allocation[1]).toBe(25)
-    expect(allocation[2]).toBe(25)
+    for (let arm = 0; arm < 3; arm++) {
+      expect(Math.abs(allocation[arm] - WEEKLY_BUDGET / 3)).toBeLessThanOrEqual(0.01)
+    }
+    expect(allocationCents(allocation)).toBe(WEEKLY_BUDGET * 100)
   })
 
-  it('an untried arm outranks every tried arm, even a great one', () => {
+  it('with two untried arms, they split the whole budget and the tried arm gets $0', () => {
+    const tallies: ArmTallies = { impressions: [20000, 0, 0], installs: [2400, 0, 0] }
+    const allocation = allocateBudgetWeek('epsilon-greedy', tallies, 0.1, forbiddenRand)
+    expect(allocation[0]).toBe(0)
+    expect(allocation[1]).toBe(250)
+    expect(allocation[2]).toBe(250)
+  })
+
+  it('a single untried arm outranks every tried arm, even a great one', () => {
     const tallies: ArmTallies = { impressions: [20000, 20000, 0], installs: [2400, 400, 0] }
     const allocation = allocateBudgetWeek('epsilon-greedy', tallies, 0.1, forbiddenRand)
     expect(allocation[2]).toBe(450)
@@ -136,8 +147,9 @@ describe('allocateBudgetWeek: epsilon-greedy', () => {
   })
 
   it('sums to exactly $500.00 in cents, including at awkward epsilons', () => {
+    const tried: ArmTallies = { impressions: [1000, 1000, 1000], installs: [40, 110, 60] }
     for (const epsilon of [0.1, 0.07, 1 / 3, 0.999]) {
-      const allocation = allocateBudgetWeek('epsilon-greedy', zeroTallies(3), epsilon, forbiddenRand)
+      const allocation = allocateBudgetWeek('epsilon-greedy', tried, epsilon, forbiddenRand)
       expect(allocationCents(allocation)).toBe(WEEKLY_BUDGET * 100)
     }
   })
@@ -227,9 +239,11 @@ describe('runBudgetQuarter', () => {
     const withPriors = runBudgetQuarter('epsilon-greedy', RATES, SEED, 2, priors)
     const withoutPriors = runBudgetQuarter('epsilon-greedy', RATES, SEED, 2, [])
     // With priors, the exploit share follows the evidence to arm 2; without
-    // priors, untried-first sends it to arm 0.
+    // priors, the all-untried cold start explores evenly.
     expect(withPriors[0].allocation[2]).toBe(450)
-    expect(withoutPriors[0].allocation[0]).toBe(450)
+    for (let arm = 0; arm < 3; arm++) {
+      expect(Math.abs(withoutPriors[0].allocation[arm] - WEEKLY_BUDGET / 3)).toBeLessThanOrEqual(0.01)
+    }
     expect(withPriors[0].allocation).not.toEqual(withoutPriors[0].allocation)
   })
 
@@ -259,7 +273,9 @@ describe('runBudgetQuarter', () => {
 
 describe('oracleQuarterInstalls', () => {
   it('is weeks * weekly impressions * bestRate', () => {
-    expect(oracleQuarterInstalls(13, 0.11)).toBeCloseTo(13 * 20000 * 0.11, 10)
+    // $500/week at CPM=1000 is 500 impressions.
+    expect(impressionsForBudget(WEEKLY_BUDGET)).toBe(500)
+    expect(oracleQuarterInstalls(13, 0.11)).toBeCloseTo(13 * 500 * 0.11, 10)
   })
 
   it('is linear in weeks', () => {
@@ -268,22 +284,107 @@ describe('oracleQuarterInstalls', () => {
   })
 })
 
+describe('realizedOracleQuarter', () => {
+  it('equals the sum of playWeek totals with the best arm all-in, weeks 1..13 by default', () => {
+    let expected = 0
+    for (let w = 1; w <= WEEKS_PER_QUARTER; w++) {
+      expected += playWeek(w, { 1: WEEKLY_BUDGET }, RATES, SEED).totalInstalls
+    }
+    expect(realizedOracleQuarter(RATES, SEED)).toBe(expected)
+    expect(realizedOracleQuarter(RATES, SEED, WEEKS_PER_QUARTER)).toBe(expected)
+  })
+
+  it('is deterministic', () => {
+    expect(realizedOracleQuarter(RATES, 7, 5)).toBe(realizedOracleQuarter(RATES, 7, 5))
+  })
+
+  it('is 0 for empty rates or 0 weeks', () => {
+    expect(realizedOracleQuarter([], SEED)).toBe(0)
+    expect(realizedOracleQuarter(RATES, SEED, 0)).toBe(0)
+  })
+
+  it('picks the argmax arm, ties to the lowest index', () => {
+    const tied = [0.11, 0.11, 0.04]
+    let expected = 0
+    for (let w = 1; w <= 3; w++) {
+      expected += playWeek(w, { 0: WEEKLY_BUDGET }, tied, SEED).totalInstalls
+    }
+    expect(realizedOracleQuarter(tied, SEED, 3)).toBe(expected)
+  })
+})
+
+describe('realizedOracleInstalls', () => {
+  const TRIAL_IMPRESSIONS = 300
+  const TRIAL_STREAM = STREAM.TRIAL_REWARD
+
+  it('equals the sum of best-arm sampleInstalls over the days, under the given tag', () => {
+    let expected = 0
+    for (let day = 1; day <= 5; day++) {
+      expected += sampleInstalls(TRIAL_IMPRESSIONS, RATES[1], SEED, day, 1, TRIAL_STREAM)
+    }
+    expect(realizedOracleInstalls(RATES, SEED, 5, TRIAL_IMPRESSIONS, TRIAL_STREAM)).toBe(expected)
+  })
+
+  it('is deterministic and 0 for empty rates or 0 days', () => {
+    expect(realizedOracleInstalls(RATES, 3, 5, TRIAL_IMPRESSIONS, TRIAL_STREAM)).toBe(
+      realizedOracleInstalls(RATES, 3, 5, TRIAL_IMPRESSIONS, TRIAL_STREAM),
+    )
+    expect(realizedOracleInstalls([], 3, 5, TRIAL_IMPRESSIONS, TRIAL_STREAM)).toBe(0)
+    expect(realizedOracleInstalls(RATES, 3, 0, TRIAL_IMPRESSIONS, TRIAL_STREAM)).toBe(0)
+  })
+
+  it('different stream tags give different totals for the same args', () => {
+    const totals = new Set(
+      [STREAM.WEEKLY_REWARD, STREAM.TRIAL_REWARD].map((tag) =>
+        realizedOracleInstalls(RATES, SEED, 5, TRIAL_IMPRESSIONS, tag),
+      ),
+    )
+    expect(totals.size).toBe(2)
+  })
+})
+
 describe('quarterLeftOnTable', () => {
-  it('is 0 for empty rates or 0 played weeks', () => {
+  it('is 0 for empty rates or 0 played weeks, seeded or not', () => {
     expect(quarterLeftOnTable(1000, 5, [])).toBe(0)
     expect(quarterLeftOnTable(1000, 0, RATES)).toBe(0)
+    expect(quarterLeftOnTable(1000, 5, [], SEED)).toBe(0)
+    expect(quarterLeftOnTable(1000, 0, RATES, SEED)).toBe(0)
   })
 
-  it('uses the max rate as the oracle arm', () => {
-    // Oracle over 2 weeks at 11%: 2 * 20000 * 0.11 = 4400.
-    expect(quarterLeftOnTable(4000, 2, RATES)).toBe(400)
+  it('perfect play yields exactly 0 across many seeds (realized CRN oracle)', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      let total = 0
+      for (let w = 1; w <= WEEKS_PER_QUARTER; w++) {
+        total += playWeek(w, { 1: WEEKLY_BUDGET }, RATES, seed).totalInstalls
+      }
+      expect(quarterLeftOnTable(total, WEEKS_PER_QUARTER, RATES, seed)).toBe(0)
+    }
   })
 
-  it('clamps at zero when a lucky run beats the oracle expectation', () => {
+  it('imperfect play yields the exact CRN difference to the realized oracle', () => {
+    for (const seed of [0, 1, 7, 42, 1234]) {
+      let total = 0
+      for (let w = 1; w <= WEEKS_PER_QUARTER; w++) {
+        total += playWeek(w, { 0: 166.66, 1: 166.67, 2: 166.67 }, RATES, seed).totalInstalls
+      }
+      const oracle = realizedOracleQuarter(RATES, seed, WEEKS_PER_QUARTER)
+      expect(oracle - total).toBeGreaterThan(0)
+      expect(quarterLeftOnTable(total, WEEKS_PER_QUARTER, RATES, seed)).toBe(oracle - total)
+    }
+  })
+
+  it('is deterministic in the seed', () => {
+    expect(quarterLeftOnTable(400, 13, RATES, SEED)).toBe(quarterLeftOnTable(400, 13, RATES, SEED))
+  })
+
+  it('still clamps at zero when the reader beats the realized oracle', () => {
+    expect(quarterLeftOnTable(999999, 13, RATES, SEED)).toBe(0)
+  })
+
+  it('without a seed, falls back to the oracle expectation (legacy callers)', () => {
+    // Oracle over 2 weeks at 11%: 2 * 500 * 0.11 = 110.
+    expect(quarterLeftOnTable(70, 2, RATES)).toBe(40)
+    expect(quarterLeftOnTable(70.4, 2, RATES)).toBe(40)
     expect(quarterLeftOnTable(999999, 13, RATES)).toBe(0)
-  })
-
-  it('rounds the gap to a whole install count', () => {
-    expect(quarterLeftOnTable(4000.4, 2, RATES)).toBe(400)
   })
 })

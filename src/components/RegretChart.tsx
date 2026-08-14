@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import type { StrategyId } from '../lib/bandit/types'
+import { STRATEGY_EXPLAINERS } from './strategyExplainers'
 import './playground.css'
 
 export interface RegretChartSeries {
@@ -16,6 +17,17 @@ export interface RegretChartProps {
   t: number
   horizon: number
   height?: number
+  /**
+   * Reward-noun overrides for the sandbox path, where the arms are generic
+   * offer variants and "installs" would borrow the pitch flow's metaphor.
+   * Pitch-derived runs use the defaults.
+   */
+  /** Axis title; also opens the SVG's aria-label. */
+  title?: string
+  /** First sentence of the caption (the "regret" aside is always appended). */
+  caption?: string
+  /** Reward noun used in the tooltip/live-region sentence. */
+  unit?: string
 }
 
 /** viewBox width before the first container measurement lands. */
@@ -80,7 +92,15 @@ function spreadLabels(ys: number[], min: number, max: number, gap: number): numb
  * 1 viewBox unit = 1 CSS px: text renders at its declared size at every
  * container width, and the tooltip clamps in real pixels.
  */
-export function RegretChart({ series, t, horizon, height = 260 }: RegretChartProps) {
+export function RegretChart({
+  series,
+  t,
+  horizon,
+  height = 260,
+  title = 'installs left on the table',
+  caption = 'The higher a line climbs, the more installs that strategy is giving up by picking worse campaigns instead of the best one.',
+  unit = 'installs',
+}: RegretChartProps) {
   const [hoverRound, setHoverRound] = useState<number | null>(null)
   const [measuredWidth, setMeasuredWidth] = useState(FALLBACK_WIDTH)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -308,15 +328,19 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
 
   return (
     <div className="rc-wrap">
-      <div className="rc-axis-title">installs left on the table</div>
+      <div className="rc-axis-title">{title}</div>
       <p className="rc-axis-caption">
-        The higher a line climbs, the more installs that strategy is giving up by picking worse
-        campaigns instead of the best one.{' '}
+        {caption}{' '}
         <span className="rc-axis-aside">(Statisticians call this <em>regret</em>.)</span>
       </p>
       <div className="rc-legend">
         {series.map((s) => (
-          <span key={s.id} className="rc-legend-item">
+          <span
+            key={s.id}
+            className="rc-legend-item"
+            title={STRATEGY_EXPLAINERS[s.id]}
+            aria-label={`${s.label} — ${STRATEGY_EXPLAINERS[s.id]}`}
+          >
             <span className="rc-legend-chip" style={{ background: s.colorVar }} aria-hidden="true" />
             {s.label}
           </span>
@@ -329,7 +353,7 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
           preserveAspectRatio="xMidYMid meet"
           role="img"
           tabIndex={0}
-          aria-label={`Installs left on the table over ${horizon.toLocaleString()} rounds for ${series
+          aria-label={`${title.charAt(0).toUpperCase()}${title.slice(1)} over ${horizon.toLocaleString()} rounds for ${series
             .map((s) => s.label)
             .join(', ')}; playhead at round ${Math.min(t, horizon).toLocaleString()}. Use arrow keys to inspect rounds.`}
           onPointerMove={trackPointer}
@@ -380,7 +404,7 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
             {worstHoverRow && worstHoverRow.value !== null && worstHoverRow.value > 0 && (
               <p className="rc-tooltip-sentence">
                 <strong>{worstHoverRow.label}</strong> has given up about{' '}
-                <strong>{fmtValue(worstHoverRow.value)}</strong> installs it could have earned by
+                <strong>{fmtValue(worstHoverRow.value)}</strong> {unit} it could have earned by
                 now.
               </p>
             )}
@@ -398,7 +422,7 @@ export function RegretChart({ series, t, horizon, height = 260 }: RegretChartPro
           {hr !== null && hoverRows !== null
             ? `Round ${hr.toLocaleString()}.${
                 worstHoverRow && worstHoverRow.value !== null && worstHoverRow.value > 0
-                  ? ` ${worstHoverRow.label} has given up about ${fmtValue(worstHoverRow.value)} installs it could have earned by now.`
+                  ? ` ${worstHoverRow.label} has given up about ${fmtValue(worstHoverRow.value)} ${unit} it could have earned by now.`
                   : ''
               } ${hoverRows
                 .map((row) => `${row.label} ${row.value === null ? 'no data' : fmtValue(row.value)}`)
