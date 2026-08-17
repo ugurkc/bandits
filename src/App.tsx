@@ -19,7 +19,24 @@ function App() {
         />
         <p className="essay-eyebrow">{meta.eyebrow}</p>
         <h1 className="essay-title">{meta.title}</h1>
-        <p className="essay-subtitle">{meta.subtitle}</p>
+        <p className="essay-subtitle">{meta.subtitle[0]}</p>
+        {meta.subtitle.length > 1 && (
+          <>
+            <figure className="essay-intro-figure">
+              <img
+                className="essay-intro-image"
+                src="/images/ol-reliable.png"
+                alt='SpongeBob SquarePants opens a briefcase labeled "Ol’ Reliable" to reveal a note inside reading "TRYING A F TON" — the go-to move for figuring out what actually works.'
+                loading="lazy"
+              />
+            </figure>
+            {meta.subtitle.slice(1).map((p, i) => (
+              <p className="essay-subtitle" key={i}>
+                {p}
+              </p>
+            ))}
+          </>
+        )}
       </header>
 
       <section className="playground-section" aria-label="Bandit simulator">

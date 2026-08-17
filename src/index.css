@@ -168,6 +168,25 @@ body {
   line-height: 1.6;
 }
 
+/* The intro's hero image, slotted between subtitle paragraphs — narrower
+   than the header's own 680px column so it reads as an aside, not a banner;
+   width:100% + height:auto keeps it correctly contained at any viewport
+   from 375px up, since its own max-width is already below the smallest
+   column width the page ever renders. */
+.essay-intro-figure {
+  margin: 24px auto;
+  max-width: 420px;
+}
+
+.essay-intro-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
 .playground-section {
   max-width: 1100px;
   margin: 40px auto 0;

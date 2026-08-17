@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { loadMeta, loadSections, parseFrontmatter, parseSection } from './essayContent'
+import { loadMeta, loadSections, parseFrontmatter, parseSection, splitParagraphs } from './essayContent'
 
 describe('essay content', () => {
   const sections = loadSections()
@@ -32,16 +32,18 @@ describe('essay content', () => {
     for (const s of sections) expect(s.body.trim().length, `order ${s.order}`).toBeGreaterThan(40)
   })
 
-  it('meta has eyebrow, title, and subtitle body', () => {
+  it('meta has eyebrow, title, and at least one non-empty subtitle paragraph', () => {
     const meta = loadMeta()
     expect(meta.eyebrow).toBeTruthy()
     expect(meta.title).toBeTruthy()
-    expect(meta.subtitle.trim().length).toBeGreaterThan(40)
+    expect(meta.subtitle.length).toBeGreaterThan(0)
+    expect(meta.subtitle.join(' ').trim().length).toBeGreaterThan(40)
   })
 
-  it('meta subtitle is a single paragraph', () => {
-    // a blank line (e.g. added by a CMS editor) would render multiple p.subtitle elements
-    expect(loadMeta().subtitle).not.toMatch(/\n[ \t]*\n/)
+  it('meta subtitle paragraphs are each non-empty (no stray blank-line runs)', () => {
+    // splitParagraphs already drops empties, so this mainly guards against a
+    // future change reintroducing whitespace-only "paragraphs".
+    for (const p of loadMeta().subtitle) expect(p.trim().length).toBeGreaterThan(0)
   })
 
   it('bodies contain no raw HTML tags', () => {
@@ -55,6 +57,29 @@ describe('essay content', () => {
   it('bodies contain no ATX headings', () => {
     // headings live in frontmatter only
     for (const s of sections) expect(s.body, `order ${s.order}`).not.toMatch(/^#{1,6} /m)
+  })
+})
+
+describe('splitParagraphs', () => {
+  it('keeps a single-paragraph body as one element', () => {
+    expect(splitParagraphs('One paragraph, no blank line.')).toEqual(['One paragraph, no blank line.'])
+  })
+
+  it('splits on a blank line into two paragraphs', () => {
+    expect(splitParagraphs('First.\n\nSecond.')).toEqual(['First.', 'Second.'])
+  })
+
+  it('splits on a whitespace-only blank line (CMS editors sometimes leave trailing spaces)', () => {
+    expect(splitParagraphs('First.\n  \nSecond.')).toEqual(['First.', 'Second.'])
+  })
+
+  it('trims each paragraph and drops empty ones from runs of blank lines', () => {
+    expect(splitParagraphs('  First.  \n\n\n\n  Second.  ')).toEqual(['First.', 'Second.'])
+  })
+
+  it('empty input yields no paragraphs', () => {
+    expect(splitParagraphs('')).toEqual([])
+    expect(splitParagraphs('   ')).toEqual([])
   })
 })
 

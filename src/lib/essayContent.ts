@@ -11,7 +11,22 @@ export interface EssaySection {
 export interface EssayMeta {
   eyebrow: string
   title: string
-  subtitle: string
+  /**
+   * One or more paragraphs, split on a blank line. Almost always length 1 —
+   * the header renders each as its own <p>, and App.tsx slots the intro's
+   * hero image after the first paragraph specifically, so a second
+   * paragraph is how a CMS editor (or this file, by hand) requests that
+   * break.
+   */
+  subtitle: string[]
+}
+
+/** Split on a blank line (optionally whitespace-only); trims and drops empties. */
+export function splitParagraphs(body: string): string[] {
+  return body
+    .split(/\n[ \t]*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
 }
 
 export function parseFrontmatter(raw: string): { attrs: Record<string, string>; body: string } {
@@ -57,5 +72,5 @@ export function loadSections(): EssaySection[] {
 
 export function loadMeta(): EssayMeta {
   const { attrs, body } = parseFrontmatter(metaRaw)
-  return { eyebrow: attrs.eyebrow ?? '', title: attrs.title ?? '', subtitle: body }
+  return { eyebrow: attrs.eyebrow ?? '', title: attrs.title ?? '', subtitle: splitParagraphs(body) }
 }
