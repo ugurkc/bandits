@@ -46,10 +46,6 @@ export function Act0Intro({ onBegin }: Act0IntroProps) {
                 width={612}
                 height={402}
               />
-              <figcaption className="essay-term-caption">
-                The one-armed bandit itself — a fixed set of reels spun on a lever, the same
-                shape as the fixed-payout arms this essay is about.
-              </figcaption>
             </figure>
           )}
           {i === OL_RELIABLE_AFTER_PARAGRAPH && (
