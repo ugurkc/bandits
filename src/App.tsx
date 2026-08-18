@@ -25,9 +25,11 @@ function App() {
             <figure className="essay-intro-figure">
               <img
                 className="essay-intro-image"
-                src="/images/ol-reliable.png"
+                src={`${import.meta.env.BASE_URL}images/ol-reliable.png`}
                 alt='SpongeBob SquarePants opens a briefcase labeled "Ol’ Reliable" to reveal a note inside reading "TRYING A F TON" — the go-to move for figuring out what actually works.'
                 loading="lazy"
+                width={978}
+                height={1470}
               />
             </figure>
             {meta.subtitle.slice(1).map((p, i) => (
