@@ -207,6 +207,22 @@ body {
    width:100% + height:auto keeps it correctly contained at any viewport
    from 375px up, since its own max-width is already below the smallest
    column width the page ever renders. */
+/* The slot machine photo under the etymology note — horizontal, so it
+   runs the full header column width rather than the capped 420px used
+   for the vertical meme image below. */
+.essay-term-figure {
+  margin: 20px 0 24px;
+}
+
+.essay-term-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
 .essay-intro-figure {
   margin: 24px auto;
   max-width: 420px;

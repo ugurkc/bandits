@@ -9,9 +9,11 @@ import { useTheme } from './state/useTheme'
 const meta = loadMeta()
 const sections = loadSections()
 
-// The Ol' Reliable image slots in right after the "only one weapon in our
-// war-chest worth using" paragraph (subtitle index 2, 0-based).
-const IMAGE_AFTER_PARAGRAPH = 2
+// The slot machine photo slots in right after the first intro paragraph,
+// and the Ol' Reliable meme right after the "only one weapon in our
+// war-chest worth using" paragraph (subtitle indices, 0-based).
+const SLOT_MACHINE_AFTER_PARAGRAPH = 0
+const OL_RELIABLE_AFTER_PARAGRAPH = 2
 
 function App() {
   const [theme, setTheme] = useTheme()
@@ -35,7 +37,19 @@ function App() {
             <p className="essay-subtitle">
               <InlineText text={p} />
             </p>
-            {i === IMAGE_AFTER_PARAGRAPH && (
+            {i === SLOT_MACHINE_AFTER_PARAGRAPH && (
+              <figure className="essay-term-figure">
+                <img
+                  className="essay-term-image"
+                  src={`${import.meta.env.BASE_URL}images/slot-machine.png`}
+                  alt="A row of classic slot machines with their levers and spinning reels."
+                  loading="lazy"
+                  width={612}
+                  height={402}
+                />
+              </figure>
+            )}
+            {i === OL_RELIABLE_AFTER_PARAGRAPH && (
               <figure className="essay-intro-figure">
                 <img
                   className="essay-intro-image"
