@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/bandit/',
+  base: '/bandits/',
   build: {
     // transformers.web is the semantic engine's own dynamically-imported
     // chunk (lazy, never blocks initial load) — expected to exceed the

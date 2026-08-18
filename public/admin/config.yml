@@ -1,15 +1,15 @@
 backend:
   name: github
-  repo: ugurkc/bandit
+  repo: ugurkc/bandits
   branch: main
   # Token sign-in only: the OAuth button needs a server-side gateway this
   # static site doesn't run, so it would land on a Not Found page.
   auth_methods: [token]
 
-# /bandit/ prefix: this site deploys as a GitHub project page under
-# ugurkc.github.io/bandit/, so a bare /uploads public path would 404.
+# /bandits/ prefix: this site deploys as a GitHub project page under
+# ugurkc.github.io/bandits/, so a bare /uploads public path would 404.
 media_folder: public/uploads
-public_folder: /bandit/uploads
+public_folder: /bandits/uploads
 
 # Quote all string output: an unquoted date like 2026-08-03 would be read
 # back by js-yaml (YAML 1.1 timestamp rule) as a Date object and break

@@ -1,7 +1,7 @@
-# bandit
+# bandits
 
 This is an interactive essay for [ugurkc.github.io](https://ugurkc.github.io/),
-deployed to `https://ugurkc.github.io/bandit/` on every push to `main`.
+deployed to `https://ugurkc.github.io/bandits/` on every push to `main`.
 
 ## What's here
 
@@ -41,7 +41,7 @@ with that doc.
   act components.
 - Loaded and validated by `src/lib/essayContent.ts` / `essayContent.test.ts`
   — read that test file before changing the content shape.
-- Editable in the browser at `https://ugurkc.github.io/bandit/admin/`
+- Editable in the browser at `https://ugurkc.github.io/bandits/admin/`
   (Sveltia CMS, vendored in `public/admin/`), or by hand — same file either
   way.
 
@@ -49,7 +49,7 @@ with that doc.
 
 - **No new npm dependencies.** Hand-rolled utilities only (see
   `inlineMarkdown.ts`, `similarity/lexical.ts` for the pattern).
-- Vite is configured with `base: '/bandit/'` — `public/` assets must be
+- Vite is configured with `base: '/bandits/'` — `public/` assets must be
   referenced via `${import.meta.env.BASE_URL}…`, never a leading-slash
   absolute path.
 - Accessibility bar: view seams move focus to the incoming view

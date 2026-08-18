@@ -42,7 +42,7 @@ describe('admin config', () => {
   it('targets this repo on main', () => {
     expect(config.backend).toEqual({
       name: 'github',
-      repo: 'ugurkc/bandit',
+      repo: 'ugurkc/bandits',
       branch: 'main',
       // token-only: the OAuth button needs an auth gateway we don't run
       auth_methods: ['token'],
@@ -91,9 +91,9 @@ describe('admin config', () => {
   })
 
   it('media public_folder accounts for the project-page base path', () => {
-    // This site deploys under ugurkc.github.io/bandit/, so a bare
-    // /uploads public path would 404 — media URLs must be /bandit/…
-    expect(config.public_folder?.startsWith('/bandit/')).toBe(true)
+    // This site deploys under ugurkc.github.io/bandits/, so a bare
+    // /uploads public path would 404 — media URLs must be /bandits/…
+    expect(config.public_folder?.startsWith('/bandits/')).toBe(true)
   })
 
   it('copies the CMS bundle from the pinned dependency at build time', () => {
