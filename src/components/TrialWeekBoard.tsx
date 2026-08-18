@@ -1,14 +1,14 @@
 import { useCallback, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
-import type { TrialDays } from '../state/useTrialDays'
-import { TRIAL_DAYS } from '../state/useTrialDays'
+import type { TrialWeeks } from '../state/useTrialWeeks'
+import { TRIAL_WEEKS } from '../state/useTrialWeeks'
 import { CAMPAIGN_COLOR_VARS } from '../lib/campaign/types'
 import type { CampaignId } from '../lib/campaign/types'
 import './trial.css'
 
-export interface TrialDayBoardProps {
-  trial: TrialDays
-  /** Length 3, from PitchOutcome.labels — short, used on cards and day cells. */
+export interface TrialWeekBoardProps {
+  trial: TrialWeeks
+  /** Length 3, from PitchOutcome.labels — short, used on cards and week cells. */
   campaignLabels: string[]
   /** Length 3, from PitchOutcome.pitches — the reader's full text, shown in the confirm bar. */
   campaignPitches: string[]
@@ -26,25 +26,26 @@ interface DragState {
 }
 
 /** Movement, in CSS px, below which a pointerdown/up pair counts as a tap
- * (select) rather than a drag — same threshold as Act 2's calendar. */
+ * (select) rather than a drag — same threshold as Act II's calendar. */
 const DRAG_THRESHOLD = 6
 
 /**
- * Act 1's 5-day trial board: single-campaign picks only, no budget branch.
- * Days unlock sequentially — played days lock in and show their result, the
- * current day is the only interactive one, future days stay greyed.
+ * Act I's 5-week pilot board: single-campaign picks only, no budget branch.
+ * Weeks unlock sequentially — played weeks lock in and show their result,
+ * the current week is the only interactive one, future weeks stay greyed.
  *
- * Two ways to lock in a pick: drag a card onto the current day, or select a
+ * Two ways to lock in a pick: drag a card onto the current week, or select a
  * card and use the explicit "Lock it in" button that appears next to the
- * cards. The day cell itself is never a click target — it's only a drag
+ * cards. The week cell itself is never a click target — it's only a drag
  * drop-zone and a status readout — so the confirming action always has a
  * real, labeled button, not an implicit "click the calendar" gesture.
  */
-export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }: TrialDayBoardProps) {
-  const { days, currentDay, complete } = trial
+export function TrialWeekBoard({ trial, campaignLabels, campaignPitches, onPick }: TrialWeekBoardProps) {
+  const { weeks, currentWeek, complete } = trial
   const [selected, setSelected] = useState<CampaignId | null>(null)
   const [drag, setDrag] = useState<DragState | null>(null)
   const dropRef = useRef<HTMLLIElement>(null)
+  const cardRefs = useRef<(HTMLButtonElement | null)[]>([])
   // Set true by a pointerup that already handled a tap-as-select so the
   // browser's trailing synthetic click doesn't toggle the selection twice.
   const suppressClickRef = useRef(false)
@@ -54,6 +55,11 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
       onPick(campaignId)
       setSelected(null)
       setDrag(null)
+      // Confirming unmounts the "Lock it in" bar (and the focused button
+      // with it) — park focus on the picked campaign's card so keyboard
+      // users aren't dropped back to <body>. On the final pick the whole
+      // picker unmounts too; Act1's completion effect focuses the bridge.
+      cardRefs.current[campaignId]?.focus()
     },
     [onPick],
   )
@@ -130,21 +136,21 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
     }
   }
 
-  const dayCells = []
-  for (let day = 1; day <= TRIAL_DAYS; day++) {
-    const played = days[day - 1]
-    const isCurrent = day === currentDay && !complete
+  const weekCells = []
+  for (let week = 1; week <= TRIAL_WEEKS; week++) {
+    const played = weeks[week - 1]
+    const isCurrent = week === currentWeek && !complete
     const isFuture = !played && !isCurrent
 
     if (played) {
       const armId = CAMPAIGN_IDS.find((id) => (played.allocation[id] ?? 0) > 0) ?? 0
-      dayCells.push(
+      weekCells.push(
         <li
-          key={day}
+          key={week}
           className="td-cell td-cell--played"
-          aria-label={`Day ${day}: ran ${campaignLabels[armId]}, ${played.totalInstalls.toLocaleString()} installs`}
+          aria-label={`Week ${week}: ran ${campaignLabels[armId]}, ${played.totalInstalls.toLocaleString()} installs`}
         >
-          <span className="td-cell-day">Day {day}</span>
+          <span className="td-cell-week">Week {week}</span>
           <span
             className="td-cell-chip"
             style={{ background: CAMPAIGN_COLOR_VARS[armId] }}
@@ -159,20 +165,20 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
     }
 
     if (isCurrent) {
-      dayCells.push(
+      weekCells.push(
         <li
-          key={day}
+          key={week}
           ref={dropRef}
           className="td-cell td-cell--current"
           aria-label={
             selected !== null
-              ? `Day ${day}: drop zone for ${campaignLabels[selected]}`
-              : `Day ${day}: current day, not yet decided`
+              ? `Week ${week}: drop zone for ${campaignLabels[selected]}`
+              : `Week ${week}: current week, not yet decided`
           }
         >
-          <span className="td-cell-day">Day {day}</span>
+          <span className="td-cell-week">Week {week}</span>
           <span className="td-cell-current-hint">
-            {selected !== null ? `Drop ${campaignLabels[selected]} here` : 'Current day'}
+            {selected !== null ? `Drop ${campaignLabels[selected]} here` : 'Current week'}
           </span>
         </li>,
       )
@@ -180,9 +186,9 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
     }
 
     if (isFuture) {
-      dayCells.push(
-        <li key={day} className="td-cell td-cell--future" aria-disabled="true" aria-label={`Day ${day}: locked`}>
-          <span className="td-cell-day">Day {day}</span>
+      weekCells.push(
+        <li key={week} className="td-cell td-cell--future" aria-disabled="true" aria-label={`Week ${week}: locked`}>
+          <span className="td-cell-week">Week {week}</span>
         </li>,
       )
     }
@@ -191,19 +197,22 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
   return (
     <section className="td-wrap">
       {!complete && (
-        <div className="td-picker" role="group" aria-label="Campaigns you can run today">
+        <div className="td-picker" role="group" aria-label="Campaigns you can run this week">
           <p className="td-picker-hint">
-            Drag a campaign onto day {currentDay}, or select one below and lock it in.
+            Drag a campaign onto week {currentWeek}, or select one below and lock it in.
           </p>
           <div className="td-cards">
             {CAMPAIGN_IDS.map((id) => (
               <button
                 key={id}
+                ref={(el) => {
+                  cardRefs.current[id] = el
+                }}
                 type="button"
                 className={`td-card${selected === id ? ' td-card--selected' : ''}`}
                 style={{ borderColor: selected === id ? CAMPAIGN_COLOR_VARS[id] : undefined }}
                 aria-pressed={selected === id}
-                aria-label={`${campaignLabels[id]} — select, then use the Lock it in button; or drag onto day ${currentDay}`}
+                aria-label={`${campaignLabels[id]} — select, then use the Lock it in button; or drag onto week ${currentWeek}`}
                 onPointerDown={onCardPointerDown(id)}
                 onPointerMove={onCardPointerMove}
                 onPointerUp={onCardPointerUp}
@@ -222,7 +231,7 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
             <div className="td-confirm" role="status">
               <span className="td-confirm-chip" style={{ background: CAMPAIGN_COLOR_VARS[selected] }} aria-hidden="true" />
               <span className="td-confirm-text">
-                Run on day {currentDay}: <strong>{campaignPitches[selected]}</strong>
+                Run in week {currentWeek}: <strong>{campaignPitches[selected]}</strong>
               </span>
               <button type="button" className="ct-button td-confirm-cta" onClick={() => confirmPick(selected)}>
                 Lock it in →
@@ -233,8 +242,8 @@ export function TrialDayBoard({ trial, campaignLabels, campaignPitches, onPick }
       )}
 
       <div className="td-grid-wrap">
-        <ol className="td-grid" aria-label="5-day trial board">
-          {dayCells}
+        <ol className="td-grid" aria-label="5-week pilot board">
+          {weekCells}
         </ol>
       </div>
 

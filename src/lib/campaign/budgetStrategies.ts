@@ -222,11 +222,13 @@ export function realizedOracleQuarter(
 }
 
 /**
- * Act 1's realized oracle: `sampleInstalls` on the argmax arm for each day
- * 1..`days` at `impressionsPerDay`, under the caller's stream tag (Act 1
- * passes `STREAM.TRIAL_REWARD` so trial-day draws stay separate from Act 2's
- * weekly draws). Same CRN guarantee as `realizedOracleQuarter`: picking the
- * best arm every day realizes exactly this total. Pure and deterministic.
+ * Act I's realized oracle: `sampleInstalls` on the argmax arm for each
+ * period 1..`days` at `impressionsPerDay`, under the caller's stream tag
+ * (Act I passes `STREAM.TRIAL_REWARD` so pilot-week draws stay separate
+ * from Act II's weekly draws; the `days` naming is historical — Act I's
+ * periods are pilot WEEKS since the acts restructure). Same CRN guarantee
+ * as `realizedOracleQuarter`: picking the best arm every period realizes
+ * exactly this total. Pure and deterministic.
  */
 export function realizedOracleInstalls(
   rates: number[],

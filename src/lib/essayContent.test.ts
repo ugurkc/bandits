@@ -1,37 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { loadMeta, loadSections, parseFrontmatter, parseSection, splitParagraphs } from './essayContent'
+import { loadMeta, parseFrontmatter, splitParagraphs } from './essayContent'
 
 describe('essay content', () => {
-  const sections = loadSections()
-
-  it('loads at least one section, sorted by order', () => {
-    expect(sections.length).toBeGreaterThan(0)
-    const orders = sections.map((s) => s.order)
-    expect(orders).toEqual([...orders].sort((a, b) => a - b))
-  })
-
-  it('orders are unique finite numbers', () => {
-    const orders = sections.map((s) => s.order)
-    expect(new Set(orders).size).toBe(orders.length)
-    for (const o of orders) expect(Number.isFinite(o)).toBe(true)
-  })
-
-  it('ids are unique and url-safe', () => {
-    const ids = sections.map((s) => s.id).filter(Boolean) as string[]
-    expect(new Set(ids).size).toBe(ids.length)
-    for (const id of ids) expect(id).toMatch(/^[a-z][a-z0-9-]*$/)
-  })
-
-  it('every section with a sidebar label has an anchor id', () => {
-    for (const s of sections) {
-      if (s.label) expect(s.id, `section order ${s.order} has label but no id`).toBeTruthy()
-    }
-  })
-
-  it('bodies are non-empty prose', () => {
-    for (const s of sections) expect(s.body.trim().length, `order ${s.order}`).toBeGreaterThan(40)
-  })
-
   it('meta has eyebrow, title, and at least one non-empty subtitle paragraph', () => {
     const meta = loadMeta()
     expect(meta.eyebrow).toBeTruthy()
@@ -46,17 +16,22 @@ describe('essay content', () => {
     for (const p of loadMeta().subtitle) expect(p.trim().length).toBeGreaterThan(0)
   })
 
-  it('bodies contain no raw HTML tags', () => {
-    // react-markdown escapes raw HTML — a tag in a body renders as visible
-    // literal text rather than markup. Commonmark autolinks (<https://…>,
-    // <me@example.com>) are valid markdown and stay allowed.
+  // meta.md's body is the essay's CMS-editable prose (a markdown widget in
+  // the admin), but it renders through InlineText, which supports ONLY
+  // **bold**/*italic* — headings, links, and raw HTML would ship as literal
+  // visible text on the landing act. These guards moved here from the
+  // deleted sections collection, which used to own the essay-prose role.
+  it('meta paragraphs contain no raw HTML tags', () => {
     const rawHtml = /<(?![a-z][a-z0-9+.-]*:\/\/|[^\s@<>]+@)[a-zA-Z!/][^>]*>/
-    for (const s of sections) expect(s.body, `order ${s.order}`).not.toMatch(rawHtml)
+    for (const p of loadMeta().subtitle) expect(p).not.toMatch(rawHtml)
   })
 
-  it('bodies contain no ATX headings', () => {
-    // headings live in frontmatter only
-    for (const s of sections) expect(s.body, `order ${s.order}`).not.toMatch(/^#{1,6} /m)
+  it('meta paragraphs contain no ATX headings', () => {
+    for (const p of loadMeta().subtitle) expect(p).not.toMatch(/^#{1,6} /m)
+  })
+
+  it('meta paragraphs contain no markdown links (InlineText renders them literally)', () => {
+    for (const p of loadMeta().subtitle) expect(p).not.toMatch(/\[[^\]]*\]\([^)]*\)/)
   })
 })
 
@@ -133,19 +108,4 @@ describe('parseFrontmatter (CMS-written files)', () => {
       for (const [k, v] of Object.entries(c.want)) expect(attrs[k], k).toBe(v)
     })
   }
-})
-
-describe('parseSection (CMS-written files)', () => {
-  it('quoted numeric order parses to a number', () => {
-    expect(parseSection('---\norder: "2"\n---\nbody').order).toBe(2)
-  })
-
-  it('empty order yields NaN, not 0', () => {
-    // Number('') is 0, which would silently sort an emptied order to the top
-    expect(Number.isNaN(parseSection('---\norder:\nid: x\n---\nSome body').order)).toBe(true)
-  })
-
-  it('empty id maps to undefined', () => {
-    expect(parseSection('---\norder: 1\nid: ""\n---\nbody').id).toBeUndefined()
-  })
 })

@@ -2,8 +2,9 @@
  * Minimal, dependency-free inline formatting for essay prose: **bold** and
  * *italic* spans only — no links, no nested emphasis, no block-level
  * syntax. The content pipeline otherwise renders plain text (see
- * essayContent.ts's guards against raw HTML and ATX headings), so this is
- * intentionally small rather than pulling in a markdown parser dependency.
+ * essayContent.test.ts's meta-paragraph guards against raw HTML, ATX
+ * headings and markdown links), so this is intentionally small rather than
+ * pulling in a markdown parser dependency.
  */
 
 export type InlineNode =

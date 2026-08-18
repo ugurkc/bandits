@@ -16,8 +16,8 @@ import type { CampaignWeekResult, WeekAllocation } from '../lib/campaign/types'
 import { WEEKS_PER_QUARTER } from '../lib/campaign/types'
 
 /**
- * Act 2 has no pick concept — picking single campaigns is Act 1's trial
- * board (`useTrialDays`). Every unplayed week is a budget split ('budget'),
+ * Act II has no pick concept — picking single campaigns is Act I's pilot
+ * board (`useTrialWeeks`). Every unplayed week is a budget split ('budget'),
  * 'auto' while a handoff is appending the strategy's weeks (see `handOff`),
  * and 'complete' once all `WEEKS_PER_QUARTER` weeks are played.
  */

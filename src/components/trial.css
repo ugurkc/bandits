@@ -1,6 +1,6 @@
 /*
- * Styling for Act 1's trial board:
- *   td-  TrialDayBoard
+ * Styling for Act I's pilot board:
+ *   td-  TrialWeekBoard
  *   bb-  BanditBridge
  *
  * Deliberately not shared with campaign.css's cc-/bs- classes even though
@@ -9,7 +9,7 @@
  * both themes work by construction.
  */
 
-/* ---------- TrialDayBoard ---------- */
+/* ---------- TrialWeekBoard ---------- */
 
 .td-wrap {
   display: flex;
@@ -35,9 +35,9 @@
   gap: 10px;
 }
 
-/* The explicit confirm action once a card is selected — the day cell is
+/* The explicit confirm action once a card is selected — the week cell is
    never a click target, so this button is the one obvious way to lock a
-   pick in (drag onto the day cell remains the other). Shows the reader's
+   pick in (drag onto the week cell remains the other). Shows the reader's
    full pitch text, so the text row wraps freely and the button sits on its
    own row rather than fighting for space beside a long sentence. */
 .td-confirm {
@@ -142,7 +142,7 @@
   font-size: 12px;
 }
 
-.td-cell-day {
+.td-cell-week {
   color: var(--muted);
   font-size: 11px;
   font-weight: 600;
@@ -192,7 +192,7 @@
   opacity: 0.55;
 }
 
-.td-cell--future .td-cell-day {
+.td-cell--future .td-cell-week {
   color: var(--muted);
 }
 

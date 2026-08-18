@@ -456,6 +456,45 @@
   line-height: 1.6;
 }
 
+/* The worked example above the pitch boxes: shows the shape of a good pitch
+   (from a game none of the scenarios cover, so it can't leak an answer). */
+.pp-example {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--card);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.pp-example-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pp-example-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  font-style: italic;
+  color: var(--ink);
+}
+
+.pp-example-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.pp-boxes-head {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .pp-boxes {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

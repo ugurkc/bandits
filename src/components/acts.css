@@ -1,0 +1,181 @@
+/*
+ * The acts shell: the horizontal act-navigation bar (an-) and the sliding
+ * act panel. Every color comes from the theme tokens in src/index.css.
+ */
+
+.an-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-top: 20px;
+}
+
+/* Keep the bar clear of the fixed theme toggle (top-right, 36px + 16px
+   inset) until the viewport is wide enough that they can't collide. */
+@media (max-width: 1260px) {
+  .an-bar {
+    padding-right: 56px;
+  }
+}
+
+.an-arrow {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.an-arrow:hover:not(:disabled) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-sm);
+}
+
+.an-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.an-arrow:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.an-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 2px;
+  list-style: none;
+  overflow-x: auto;
+  /* Room for the active tab's focus/active ring inside the scroll area. */
+  scrollbar-width: thin;
+}
+
+.an-tabs-item {
+  flex: none;
+}
+
+.an-tab {
+  display: grid;
+  gap: 2px;
+  padding: 8px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--muted);
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.an-tab:hover {
+  border-color: var(--accent);
+}
+
+.an-tab--active {
+  border-color: var(--accent);
+  color: var(--ink);
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-sm);
+}
+
+.an-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.an-tab-num {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.an-tab-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Narrow screens: collapse tabs to their act numbers so all four fit
+   beside the arrows. Visually-hidden (sr-only clip pattern), NOT
+   display:none — the title must stay in each tab's accessible name, or a
+   screen-reader user on a phone would hear only "Act 0…Act III" with no
+   idea what any act is about. */
+@media (max-width: 600px) {
+  .an-tab {
+    position: relative;
+    padding: 8px 10px;
+  }
+
+  .an-tab-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* --- The sliding act panel --- */
+
+.an-panel {
+  outline: none;
+}
+
+@keyframes an-slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes an-slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Direction-aware: moving right slides the incoming act in from the right,
+   moving left from the left — the panel is keyed by act index, so each
+   navigation remounts it and replays the animation. */
+.an-panel--right {
+  animation: an-slide-from-right 240ms ease;
+}
+
+.an-panel--left {
+  animation: an-slide-from-left 240ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .an-panel--right,
+  .an-panel--left {
+    animation: none;
+  }
+}

@@ -1,16 +1,18 @@
 import type { StrategyId } from '../lib/bandit/types'
 
 /**
- * One-line plain-English explainer per strategy — what handing over to it
- * actually does with the weekly budget. Shown on the HandoffCard's buttons
- * and reused as title/aria enrichment on the race chart's legend, so the
- * two surfaces tell the same story. Its own module (not HandoffCard) so
+ * One-line plain-English explainer per strategy. Shown on the HandoffCard's
+ * buttons (Act II) and reused as title/aria enrichment on the race chart's
+ * legend (Act I's race AND Act III's lab), so every surface tells one story
+ * about each strategy — which is why the wording is deliberately
+ * surface-neutral ("share"/"effort", not "budget": the race and the lab
+ * have no budget in their fiction). Its own module (not HandoffCard) so
  * component files export only components (react-refresh rule).
  */
 export const STRATEGY_EXPLAINERS: Record<StrategyId, string> = {
-  'fixed-split': 'keeps splitting the budget evenly, forever',
+  'fixed-split': 'gives every option an equal share, forever',
   'epsilon-greedy':
-    'puts most of the budget on the current leader, keeps testing the rest with the remainder',
+    'backs the current leader with most of its effort, keeps testing the rest with the remainder',
   thompson:
-    'splits in proportion to how likely each campaign is to be the true best, so it concentrates as evidence builds',
+    'spreads its effort in proportion to how likely each option is to be the true best, concentrating as evidence builds',
 }

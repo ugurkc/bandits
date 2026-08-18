@@ -24,8 +24,8 @@ export function impressionsForBudget(dollars: number): number {
  * clamped to [0, impressions]. Pure and deterministic in
  * (impressions, rate, seed, week, arm, streamTag) via the counter-based
  * `hash01`/`makeRng` streams (reuses `sampleNormal`, not a second
- * Box-Muller). `streamTag` defaults to Act 2's weekly stream; Act 1 passes
- * `STREAM.TRIAL_REWARD` so trial days don't replay quarter-week draws.
+ * Box-Muller). `streamTag` defaults to Act II's weekly stream; Act I passes
+ * `STREAM.TRIAL_REWARD` so pilot weeks don't replay quarter-week draws.
  */
 export function sampleInstalls(
   impressions: number,

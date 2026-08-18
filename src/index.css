@@ -180,15 +180,19 @@ body {
 /* Bold spans need to step up from --muted to stay legible as emphasis;
    italic stays in the paragraph's own color — a softer aside, not a
    second kind of shout. */
-.essay-subtitle strong,
-.essay-prose strong {
+.essay-subtitle strong {
   color: var(--ink);
   font-weight: 700;
 }
 
-.essay-subtitle em,
-.essay-prose em {
+.essay-subtitle em {
   font-style: italic;
+}
+
+/* Act 0's closing CTA into Act I. */
+.essay-begin {
+  margin-top: 28px;
+  font-weight: 700;
 }
 
 /* A small etymology aside on the essay's own title — smaller than the
@@ -239,27 +243,10 @@ body {
 
 .playground-section {
   max-width: 1100px;
-  margin: 40px auto 0;
+  margin: 32px auto 0;
 }
 
-.essay-prose {
-  max-width: 680px;
-  margin: 56px auto 0;
-}
-
-.essay-prose h2 {
-  margin: 40px 0 12px;
-  font-size: 22px;
-  line-height: 1.25;
-}
-
-.essay-prose p {
-  margin: 0 0 16px;
-  font-size: 16px;
-  line-height: 1.65;
-}
-
-/* --- Playground internals: controls / chart / arm-card grid stack --- */
+/* --- SimulatorPanel internals: controls / chart / arm-card grid stack --- */
 
 .pg {
   display: grid;
@@ -283,8 +270,8 @@ body {
   gap: 16px;
 }
 
-/* --- Act 2 composition (Playground-owned): the race screen's entry CTA and
-   the completed quarter's action row. The Act 2 components themselves
+/* --- Act I/II composition: the race screen's Act II entry CTA and the
+   completed quarter's action row. The Act II components themselves
    (calendar, split panel, handoff, results) carry their own styles in
    campaign.css. --- */
 
@@ -321,4 +308,25 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+/* Act II's example-campaigns banner: shown when the reader landed on the
+   quarter without scoring pitches in Act I (free act navigation), so the
+   self-seeded campaigns are never mistaken for the reader's own. */
+.pg-example-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+}
+
+.pg-example-note-copy {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
 }

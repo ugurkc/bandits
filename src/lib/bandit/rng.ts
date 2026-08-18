@@ -28,8 +28,8 @@ export const STREAM = {
   /** Budgeted-strategy internal randomness (Act 2 posterior sampling). */
   BUDGET_STRATEGY: 8,
   /**
-   * Act 1 trial-day install draw, keyed on (day, arm). Separate from
-   * WEEKLY_REWARD so trial day d and quarter week d don't replay the same
+   * Act I pilot-week install draw, keyed on (week, arm). Separate from
+   * WEEKLY_REWARD so pilot week w and quarter week w don't replay the same
    * luck arm-for-arm.
    */
   TRIAL_REWARD: 9,

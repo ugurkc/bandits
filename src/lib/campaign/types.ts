@@ -1,8 +1,8 @@
 /**
- * Shared contracts for the campaign-flavored reward engine: Act 2's
- * budgeted quarter (`useCampaignQuarter`) and Act 1's trial-day board
- * (`useTrialDays`, which reuses `CampaignWeekResult` with days in the
- * `week` slot).
+ * Shared contracts for the campaign-flavored reward engine: Act II's
+ * budgeted quarter (`useCampaignQuarter`) and Act I's pilot board
+ * (`useTrialWeeks`, which reuses `CampaignWeekResult` — pilot weeks in
+ * the `week` slot).
  *
  * See "Act 2: the budgeted quarter" in
  * docs/plans/2026-08-12-simulator-design.md — change these together with

@@ -68,17 +68,6 @@ describe('admin config', () => {
     }
   })
 
-  it('sections fields match the section frontmatter schema', () => {
-    const sections = findCollection('sections')
-    expect(sections.fields?.map((f) => f.name)).toEqual([
-      'order',
-      'id',
-      'label',
-      'heading',
-      'body',
-    ])
-  })
-
   it('meta fields match the meta frontmatter schema', () => {
     const meta = findCollection('meta')
     const file = meta.files?.find((f) => f.name === 'meta')

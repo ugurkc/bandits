@@ -420,3 +420,53 @@ encoding of where the money went.
 Essay prose (placeholder section stays), whale/delay UI toggles, the
 essay↔tool bridge (`#tool:` links), OG image, mobile-first polish beyond
 basic responsiveness.
+
+## The acts restructure (2026-08-18)
+
+The one-page essay became **four horizontally-navigable acts** — an acts
+bar with prev/next arrows and per-act tabs, hash-synced (`#act-0`…`#act-3`)
+so acts deep-link and browser back/forward walk between them
+(`src/acts.ts`, `src/components/ActsShell.tsx`). Navigation is **free**
+(no sequential unlock); every act self-seeds so no deep link ever lands
+broken. All cross-act state (pitch outcome, both simulations, the pilot,
+the quarter) lives in the shell, so moving between acts never resets
+progress; the act components are pure views and unmount freely. One
+always-mounted polite live region serves the shell and every act's
+internal seams; act changes move focus to the incoming panel.
+
+- **Act 0 — The Introduction**: the header prose (meta.md + images) and a
+  "Begin Act I" CTA, nothing else. The six essay sections that used to sit
+  below the demo are **deleted** (content files, `loadSections`, the CMS
+  `sections` collection, their tests).
+- **Act I — Trial & Error**: the pitch → manual pilot → automated race arc
+  (`Act1TrialError`). The pilot is now **five weeks**, not five days —
+  same 5-round engine, renamed throughout (`useTrialWeeks`,
+  `TRIAL_WEEKS`, `TrialWeekBoard`, scenario briefs now grant "a short
+  five-week pilot"). The pitch phase starts with **blank boxes**: a worked
+  example above them (from a co-op heist game none of the scenarios cover,
+  so it can't leak an answer), plus a "Generate example pitches" button
+  that fills the scenario's curated examples (`Scenario.examplePitches`,
+  the former `placeholders`). "Skip" now jumps to Act III's lab — the
+  race screen no longer has a sandbox branch.
+- **Act II — Rationing**: the budgeted quarter, unchanged in substance.
+  When entered without a scored pitch it **self-seeds** with the current
+  scenario's example pitches scored through the *synchronous lexical*
+  engine and the same `similaritiesToRates` mapping
+  (`src/lib/exampleCampaigns.ts`), with a banner naming them as examples
+  and linking back to Act I. A test guards that the truth-aligned example
+  wins under lexical scoring in every scenario, so the self-seeded quarter
+  never quietly teaches that a distractor converts best. Scoring real
+  pitches later swaps the rates in, which rewinds the quarter by the
+  hook's existing (rates, seed) identity contract.
+- **Act III — Learning from the Best** (`Act3Lab`): per-strategy teaching
+  cards (how it thinks / where it wins and loses / take it home, plus
+  pseudocode) next to a **free-play lab** — the old sandbox, now a
+  separate `useSimulation` instance so tuning it never disturbs Act I's
+  pitch-derived race. One-click experiment presets (crank ε, starve ε,
+  drift, k = 6) configure the lab and start playback to demonstrate each
+  card's claims.
+
+The race-view internals (controls + chart + arm cards + throttled
+`statsAt` derivation) were extracted from the old `Playground` into
+`SimulatorPanel`, shared by Act I's race and Act III's lab; `Playground`
+itself is gone.

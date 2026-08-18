@@ -1,22 +1,13 @@
 import metaRaw from '../content/meta.md?raw'
 
-export interface EssaySection {
-  order: number
-  id?: string
-  label?: string
-  heading?: string
-  body: string
-}
-
 export interface EssayMeta {
   eyebrow: string
   title: string
   /**
-   * One or more paragraphs, split on a blank line. Almost always length 1 —
-   * the header renders each as its own <p>, and App.tsx slots the intro's
-   * hero image after the first paragraph specifically, so a second
-   * paragraph is how a CMS editor (or this file, by hand) requests that
-   * break.
+   * One or more paragraphs, split on a blank line. Act 0's intro renders
+   * each as its own <p> and slots its images after specific paragraphs
+   * (see Act0Intro), so a blank line in meta.md is how a CMS editor (or
+   * this file, by hand) requests a break.
    */
   subtitle: string[]
 }
@@ -45,29 +36,6 @@ export function parseFrontmatter(raw: string): { attrs: Record<string, string>; 
     attrs[kv[1]] = v
   }
   return { attrs, body: m[2].trim() }
-}
-
-const sectionFiles = import.meta.glob('../content/sections/*.md', {
-  eager: true,
-  query: '?raw',
-  import: 'default',
-}) as Record<string, string>
-
-export function parseSection(raw: string): EssaySection {
-  const { attrs, body } = parseFrontmatter(raw)
-  return {
-    order: attrs.order?.trim() ? Number(attrs.order) : NaN,
-    id: attrs.id || undefined,
-    label: attrs.label || undefined,
-    heading: attrs.heading || undefined,
-    body,
-  }
-}
-
-export function loadSections(): EssaySection[] {
-  return Object.values(sectionFiles)
-    .map(parseSection)
-    .sort((a, b) => a.order - b.order)
 }
 
 export function loadMeta(): EssayMeta {
