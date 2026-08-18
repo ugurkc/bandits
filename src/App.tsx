@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { loadMeta, loadSections } from './lib/essayContent'
 import { InlineText } from './components/InlineText'
 import { Playground } from './components/Playground'
@@ -7,6 +8,10 @@ import { useTheme } from './state/useTheme'
 // Static per build (?raw imports): parse once at module load, not per render.
 const meta = loadMeta()
 const sections = loadSections()
+
+// The Ol' Reliable image slots in right after the "only one weapon in our
+// war-chest worth using" paragraph (subtitle index 2, 0-based).
+const IMAGE_AFTER_PARAGRAPH = 2
 
 function App() {
   const [theme, setTheme] = useTheme()
@@ -25,28 +30,25 @@ function App() {
           large mechanical levers affixed to the sides of early mechanical machines, and to the
           games' ability to empty players' pockets and wallets as thieves would.
         </p>
-        <p className="essay-subtitle">
-          <InlineText text={meta.subtitle[0]} />
-        </p>
-        {meta.subtitle.length > 1 && (
-          <>
-            <figure className="essay-intro-figure">
-              <img
-                className="essay-intro-image"
-                src={`${import.meta.env.BASE_URL}images/ol-reliable.png`}
-                alt='SpongeBob SquarePants opens a briefcase labeled "Ol’ Reliable" to reveal a note inside reading "TRYING A F TON" — the go-to move for figuring out what actually works.'
-                loading="lazy"
-                width={978}
-                height={1470}
-              />
-            </figure>
-            {meta.subtitle.slice(1).map((p, i) => (
-              <p className="essay-subtitle" key={i}>
-                <InlineText text={p} />
-              </p>
-            ))}
-          </>
-        )}
+        {meta.subtitle.map((p, i) => (
+          <Fragment key={i}>
+            <p className="essay-subtitle">
+              <InlineText text={p} />
+            </p>
+            {i === IMAGE_AFTER_PARAGRAPH && (
+              <figure className="essay-intro-figure">
+                <img
+                  className="essay-intro-image"
+                  src={`${import.meta.env.BASE_URL}images/ol-reliable.png`}
+                  alt='SpongeBob SquarePants opens a briefcase labeled "Ol’ Reliable" to reveal a note inside reading "TRYING A F TON" — the go-to move for figuring out what actually works.'
+                  loading="lazy"
+                  width={978}
+                  height={1470}
+                />
+              </figure>
+            )}
+          </Fragment>
+        ))}
       </header>
 
       <section className="playground-section" aria-label="Bandit simulator">
