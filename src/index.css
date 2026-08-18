@@ -168,6 +168,17 @@ body {
   line-height: 1.6;
 }
 
+/* A small etymology aside on the essay's own title — smaller than the
+   17px subtitle paragraphs it sits above, so it reads as a footnote-style
+   definition, not another beat of the intro. */
+.essay-term-note {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
 /* The intro's hero image, slotted between subtitle paragraphs — narrower
    than the header's own 680px column so it reads as an aside, not a banner;
    width:100% + height:auto keeps it correctly contained at any viewport

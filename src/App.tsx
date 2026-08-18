@@ -19,6 +19,11 @@ function App() {
         />
         <p className="essay-eyebrow">{meta.eyebrow}</p>
         <h1 className="essay-title">{meta.title}</h1>
+        <p className="essay-term-note">
+          Slot machines are also known pejoratively as "one-armed bandits", alluding to the
+          large mechanical levers affixed to the sides of early mechanical machines, and to the
+          games' ability to empty players' pockets and wallets as thieves would.
+        </p>
         <p className="essay-subtitle">{meta.subtitle[0]}</p>
         {meta.subtitle.length > 1 && (
           <>
