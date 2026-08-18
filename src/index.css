@@ -168,6 +168,29 @@ body {
   line-height: 1.6;
 }
 
+/* Multiple intro paragraphs now render as consecutive .essay-subtitle
+   elements (see EssayMeta.subtitle) — without this they'd sit flush
+   against each other with no visible break, defeating the point of
+   splitting them. The very first one needs no rule: it follows
+   .essay-term-note, which already carries its own bottom margin. */
+.essay-subtitle + .essay-subtitle {
+  margin-top: 16px;
+}
+
+/* Bold spans need to step up from --muted to stay legible as emphasis;
+   italic stays in the paragraph's own color — a softer aside, not a
+   second kind of shout. */
+.essay-subtitle strong,
+.essay-prose strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.essay-subtitle em,
+.essay-prose em {
+  font-style: italic;
+}
+
 /* A small etymology aside on the essay's own title — smaller than the
    17px subtitle paragraphs it sits above, so it reads as a footnote-style
    definition, not another beat of the intro. */

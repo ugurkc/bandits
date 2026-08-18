@@ -1,4 +1,5 @@
 import { loadMeta, loadSections } from './lib/essayContent'
+import { InlineText } from './components/InlineText'
 import { Playground } from './components/Playground'
 import { ThemeToggle } from './components/ThemeToggle'
 import { useTheme } from './state/useTheme'
@@ -24,7 +25,9 @@ function App() {
           large mechanical levers affixed to the sides of early mechanical machines, and to the
           games' ability to empty players' pockets and wallets as thieves would.
         </p>
-        <p className="essay-subtitle">{meta.subtitle[0]}</p>
+        <p className="essay-subtitle">
+          <InlineText text={meta.subtitle[0]} />
+        </p>
         {meta.subtitle.length > 1 && (
           <>
             <figure className="essay-intro-figure">
@@ -39,7 +42,7 @@ function App() {
             </figure>
             {meta.subtitle.slice(1).map((p, i) => (
               <p className="essay-subtitle" key={i}>
-                {p}
+                <InlineText text={p} />
               </p>
             ))}
           </>
@@ -54,7 +57,9 @@ function App() {
         {sections.map((s) => (
           <section key={s.order} id={s.id}>
             {s.heading && <h2>{s.heading}</h2>}
-            <p>{s.body}</p>
+            <p>
+              <InlineText text={s.body} />
+            </p>
           </section>
         ))}
       </div>
