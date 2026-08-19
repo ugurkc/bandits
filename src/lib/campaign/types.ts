@@ -73,8 +73,3 @@ export interface CampaignWeekResult {
   installs: Record<number, number>
   totalInstalls: number
 }
-
-/** Append-only as weeks are played. */
-export interface QuarterPlan {
-  weeks: CampaignWeekResult[]
-}

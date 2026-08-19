@@ -4,6 +4,7 @@
   "ignorePatterns": ["public/admin/sveltia-cms.js"],
   "rules": {
     "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
   }
 }

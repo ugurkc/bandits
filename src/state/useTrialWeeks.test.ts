@@ -38,13 +38,26 @@ describe('oracleInstalls (expectation)', () => {
 })
 
 describe('the pilot budget explains the pilot volume', () => {
-  it('TRIAL_WEEK_IMPRESSIONS is exactly what PILOT_WEEKLY_BUDGET buys at the shared CPM', () => {
-    // The whole timeline fiction rests on this: a pilot week buys less
-    // inventory than a quarter week because it spends less money, at ONE CPM
-    // — not because "week" quietly means two different things. If someone
-    // retunes the pilot volume without moving the budget, the briefs and the
-    // Act I topline start lying about dollars.
-    expect(TRIAL_WEEK_IMPRESSIONS).toBe(impressionsForBudget(PILOT_WEEKLY_BUDGET))
+  it('pins the exact figures the scenario briefs and Act I topline quote', () => {
+    // These literals are NOT redundant with the derivation below. Act I's
+    // topline and all three briefs hard-code "$300 a week", "$500 a week" and
+    // "five weeks"; nothing else in the suite would notice if a constant
+    // moved, and the copy would quietly start lying about dollars.
+    expect(PILOT_WEEKLY_BUDGET).toBe(300)
+    expect(WEEKLY_BUDGET).toBe(500)
+    expect(TRIAL_WEEKS).toBe(5)
+    expect(TRIAL_WEEK_IMPRESSIONS).toBe(300)
+  })
+
+  it('derives the pilot volume from the pilot budget at the shared CPM', () => {
+    // Asserting TRIAL_WEEK_IMPRESSIONS against impressionsForBudget(
+    // PILOT_WEEKLY_BUDGET) alone would be a tautology — that IS its
+    // definition. What matters is the relationship: one CPM, and a pilot week
+    // that buys strictly less inventory than a quarter week, so "week" never
+    // quietly means two different things.
+    expect(impressionsForBudget(PILOT_WEEKLY_BUDGET)).toBeLessThan(
+      impressionsForBudget(WEEKLY_BUDGET),
+    )
     expect(PILOT_WEEKLY_BUDGET).toBeLessThan(WEEKLY_BUDGET)
   })
 

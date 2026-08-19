@@ -19,6 +19,33 @@ describe('stem', () => {
     }
   })
 
+  it('folds a plural onto its own singular across the shipped vocabulary', () => {
+    // Regression guard. The old single-pass stripper returned words of four
+    // characters or fewer untouched, then stripped their plurals anyway — so
+    // "mode" and "modes" landed on different stems, as did queue/queues,
+    // bonus/bonuses, story/stories and run/runs. The lexical engine scores on
+    // token overlap, so grammatical number alone moved a pitch's hidden
+    // install rate: a pitch saying "queues" could not match a truth saying
+    // "queue".
+    const pairs: [string, string][] = [
+      ['mode', 'modes'],
+      ['queue', 'queues'],
+      ['run', 'runs'],
+      ['bonus', 'bonuses'],
+      ['story', 'stories'],
+      ['lobby', 'lobbies'],
+      ['loadout', 'loadouts'],
+      ['player', 'players'],
+      ['streak', 'streaks'],
+      ['class', 'classes'],
+      ['box', 'boxes'],
+      ['skill', 'skills'],
+    ]
+    for (const [singular, plural] of pairs) {
+      expect(stem(plural), `${plural} should stem like ${singular}`).toBe(stem(singular))
+    }
+  })
+
   it('stems -tion singular and plural to the same stem', () => {
     expect(stem('promotions')).toBe(stem('promotion'))
     expect(stem('creations')).toBe(stem('creation'))

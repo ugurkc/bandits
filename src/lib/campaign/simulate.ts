@@ -61,7 +61,11 @@ export function playWeek(
   seed: number,
 ): CampaignWeekResult {
   const sum = Object.values(allocation).reduce((s, v) => s + v, 0)
-  if (Math.abs(sum - WEEKLY_BUDGET) > 0.01) {
+  // `Number.isFinite` first: every comparison against NaN is false, so a NaN
+  // anywhere in the allocation slipped straight through the tolerance check
+  // below and produced a silent zero-install week instead of throwing —
+  // exactly the contract violation this gate exists to catch.
+  if (!Number.isFinite(sum) || Math.abs(sum - WEEKLY_BUDGET) > 0.01) {
     throw new Error(
       `Week ${week} allocation must sum to ${WEEKLY_BUDGET}, got ${sum}`,
     )

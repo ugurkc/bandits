@@ -131,6 +131,15 @@ export function computeRates(config: SimulationConfig): number[][] {
   const { seed, k, horizon, baseRates, drift } = config
   const rates: number[][] = new Array(horizon)
   const base = baseRates.slice(0, k)
+  // Every caller derives baseRates and k together, so a short array is a
+  // programming error rather than a reader-reachable state — but it used to
+  // fail in two different unhelpful ways: silently emitting rows narrower
+  // than k without drift (NaN regret downstream), and a bare "Cannot read
+  // properties of undefined" from the rank lookup with it. Name the invariant
+  // instead.
+  if (base.length !== k) {
+    throw new Error(`computeRates needs ${k} base rates, got ${base.length}`)
+  }
   if (!drift.enabled) {
     for (let t = 0; t < horizon; t++) rates[t] = base.slice()
     return rates

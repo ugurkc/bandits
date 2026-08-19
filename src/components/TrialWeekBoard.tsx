@@ -151,6 +151,10 @@ export function TrialWeekBoard({ trial, campaignLabels, campaignPitches, onPick 
           aria-label={`Week ${week}: ran ${campaignLabels[armId]}, ${played.totalInstalls.toLocaleString()} installs`}
         >
           <span className="td-cell-week">Week {week}</span>
+          {/* The chip is colour-alone, and browse mode reads a
+              non-interactive listitem's contents rather than its aria-label,
+              so which campaign ran needs a text carrier of its own. */}
+          <span className="sr-only">{campaignLabels[armId]}</span>
           <span
             className="td-cell-chip"
             style={{ background: CAMPAIGN_COLOR_VARS[armId] }}
@@ -239,6 +243,26 @@ export function TrialWeekBoard({ trial, campaignLabels, campaignPitches, onPick 
             </div>
           )}
         </div>
+      )}
+
+      {/* Once the pilot is complete the picker above unmounts — and it was
+          the only key mapping a colour to a campaign. Without this the
+          finished board is five cells encoded by colour alone, which is the
+          state the reader spends the longest looking at. Same chips and the
+          same labels, minus the interactivity. */}
+      {complete && (
+        <ul className="td-legend" aria-label="Campaign colours">
+          {CAMPAIGN_IDS.map((id) => (
+            <li key={id} className="td-legend-item">
+              <span
+                className="td-card-chip"
+                style={{ background: CAMPAIGN_COLOR_VARS[id] }}
+                aria-hidden="true"
+              />
+              <span className="td-card-label">{campaignLabels[id]}</span>
+            </li>
+          ))}
+        </ul>
       )}
 
       <div className="td-grid-wrap">

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { CampaignQuarter } from '../state/useCampaignQuarter'
 import { CAMPAIGN_COLOR_VARS, WEEKS_PER_QUARTER } from '../lib/campaign/types'
 import type { CampaignId } from '../lib/campaign/types'
-import { weekAria } from './weekAria'
+import { weekAria, weekSplit } from './weekAria'
 import './campaign.css'
 
 export interface CampaignCalendarProps {
@@ -58,6 +58,12 @@ export function CampaignCalendar({ quarter, campaignLabels, children, handoff }:
           aria-label={weekAria(played, campaignLabels, isAuto ? handoff.label : undefined)}
         >
           <span className="cc-cell-week">Week {week}</span>
+          {/* The chips encode the split by width and colour alone, and the
+              row's aria-label is skipped by browse mode on a non-interactive
+              listitem — so the dollars need a real text carrier too. */}
+          <span className="sr-only">
+            {weekSplit(played, campaignLabels, isAuto ? handoff.label : undefined)}
+          </span>
           <span className="cc-cell-chips" aria-hidden="true">
             {armIds.map((id) => (
               <span

@@ -28,17 +28,38 @@ const STOPWORDS = new Set([
  * Light suffix stripper — deliberately not a full Porter stemmer. Maps
  * common inflections onto a shared stem ("rewards"/"rewarding" → "reward")
  * while leaving short words alone so "less" never becomes "le".
+ *
+ * Plurals are folded to their singular FIRST, before the short-word guard
+ * and the other suffixes. Doing it in the old single pass meant a plural and
+ * its own singular could land on different stems — the guard skipped
+ * "mode" (4 chars) while "modes" was stripped to "mod", and a blind 'es'
+ * strip turned "queues" into "queu" beside an untouched "queue". Since the
+ * lexical engine scores on token overlap, that made grammatical number alone
+ * move a pitch's hidden install rate: a pitch saying "queues" simply failed
+ * to match a truth saying "queue".
  */
 export function stem(word: string): string {
-  if (word.length <= 4) return word
-  // Longest-first, so e.g. 'tions'/'tion' are reachable before the bare 's'
-  // strips first — 'promotions' and 'promotion' must land on the same stem.
-  for (const suffix of ['tions', 'edly', 'ings', 'tion', 'ely', 'ies', 'ing', 'ed', 'es', 'ly', 's']) {
-    if (word.endsWith(suffix) && word.length - suffix.length >= 3) {
-      return word.slice(0, word.length - suffix.length)
+  let w = word
+  // Only from 4 characters up: stripping the 's' off 3-letter words does
+  // more harm than good ("gas" → "ga").
+  if (w.length > 3) {
+    if (w.endsWith('ies') && w.length > 4) {
+      w = `${w.slice(0, -3)}y` // stories → story
+    } else if (/(?:ss|ch|sh|x|z|s)es$/.test(w)) {
+      w = w.slice(0, -2) // bonuses → bonus, matches → match
+    } else if (w.endsWith('s') && !w.endsWith('ss') && !w.endsWith('us')) {
+      w = w.slice(0, -1) // modes → mode, runs → run
     }
   }
-  return word
+  if (w.length <= 4) return w
+  // Longest-first, so e.g. 'tions'/'tion' are reachable before the shorter
+  // suffixes — 'promotions' and 'promotion' must land on the same stem.
+  for (const suffix of ['tions', 'edly', 'ings', 'tion', 'ely', 'ing', 'ed', 'ly']) {
+    if (w.endsWith(suffix) && w.length - suffix.length >= 3) {
+      return w.slice(0, w.length - suffix.length)
+    }
+  }
+  return w
 }
 
 /** Lowercase, strip punctuation, drop stopwords, stem. */

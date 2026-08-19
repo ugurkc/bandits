@@ -117,6 +117,25 @@
   max-width: 22ch;
 }
 
+/* The colour key that survives completion, once the picker has unmounted. */
+.td-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.td-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
 .td-grid-wrap {
   min-width: 0;
 }
@@ -170,16 +189,15 @@
   font-weight: 500;
 }
 
+/* No `cursor: pointer` and no focus style: the component deliberately never
+   makes this cell a click target or focusable — it is a drop zone and a
+   status readout, and confirming always goes through the labelled "Lock it
+   in" button (see TrialWeekBoard's doc comment). A pointer cursor promised a
+   click that does nothing, and the :focus-visible rule could never match. */
 .td-cell--current {
   border-color: var(--accent);
   border-width: 2px;
   box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-sm);
-  cursor: pointer;
-}
-
-.td-cell--current:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 
 .td-cell-current-hint {

@@ -108,9 +108,35 @@ describe('similaritiesToRates', () => {
   })
 
   it('leaves clearly-separated rates untouched', () => {
+    // Precision 6, not the default 2: the default tolerance is 0.005, which
+    // is WIDER than the TIE_GAP (0.003) this test exists to prove was NOT
+    // applied — a spurious nudge would have slipped through unnoticed.
     const rates = similaritiesToRates([0.9, 0.5, 0.1], 11)
-    expect(rates[0]).toBeCloseTo(similarityToRate(0.9))
-    expect(rates[1]).toBeCloseTo(similarityToRate(0.5))
-    expect(rates[2]).toBeCloseTo(similarityToRate(0.1))
+    expect(rates[0]).toBeCloseTo(similarityToRate(0.9), 6)
+    expect(rates[1]).toBeCloseTo(similarityToRate(0.5), 6)
+    expect(rates[2]).toBeCloseTo(similarityToRate(0.1), 6)
+  })
+
+  it('breaks an exact tie by seed, not by box order', () => {
+    // The documented reason this mapping takes a seed at all: identical
+    // pitches must not have their winner decided by which box they were
+    // typed into. Nothing asserted it.
+    const winners = new Set<number>()
+    for (let seed = 0; seed < 200; seed++) {
+      const rates = similaritiesToRates([0.5, 0.5, 0.5], seed)
+      let best = 0
+      for (let i = 1; i < rates.length; i++) if (rates[i] > rates[best]) best = i
+      winners.add(best)
+    }
+    // Box order alone would crown the same index every time.
+    expect(winners.size).toBeGreaterThan(1)
+  })
+
+  it('is deterministic: the same tie and seed always crown the same arm', () => {
+    for (const seed of [0, 7, 42, 1234]) {
+      expect(similaritiesToRates([0.5, 0.5, 0.5], seed)).toEqual(
+        similaritiesToRates([0.5, 0.5, 0.5], seed),
+      )
+    }
   })
 })

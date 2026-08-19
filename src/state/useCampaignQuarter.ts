@@ -88,7 +88,16 @@ export interface CampaignQuarter {
  * rewinds on config-relevant changes, since a half-played quarter of a world
  * that no longer exists would be misleading.
  */
-export function useCampaignQuarter(rates: number[], seed: number): CampaignQuarter {
+export function useCampaignQuarter(
+  rates: number[],
+  seed: number,
+  /**
+   * False while Act II is off screen: holds the handoff reveal rather than
+   * letting it finish where nobody can see it. Defaults true so the hook
+   * stays usable (and testable) without a visibility source.
+   */
+  active = true,
+): CampaignQuarter {
   const [weeks, setWeeks] = useState<CampaignWeekResult[]>([])
   const [handoff, setHandoff] = useState<
     { strategyId: StrategyId; fromWeek: number; epsilon: number } | null
@@ -122,14 +131,20 @@ export function useCampaignQuarter(rates: number[], seed: number): CampaignQuart
   // re-arms each time `pending` shrinks — and the cleanup cancels it, so
   // reset() and the (rates, seed) rewind stop the animation simply by
   // clearing `pending`.
+  //
+  // `active` holds the queue while Act II is off screen. This hook lives in
+  // the always-mounted shell, so without it a reader who navigates away
+  // mid-handoff comes back to a quarter that finished without them — and the
+  // whole point of pacing the reveal is that they WATCH the strategy
+  // concentrate week by week. The queue survives, so returning resumes.
   useEffect(() => {
-    if (pending.length === 0) return
+    if (!active || pending.length === 0) return
     const id = setTimeout(() => {
       setWeeks((prev) => [...prev, pending[0]])
       setPending((prev) => prev.slice(1))
     }, HANDOFF_WEEK_MS)
     return () => clearTimeout(id)
-  }, [pending])
+  }, [pending, active])
 
   const play = useCallback(
     (allocation: WeekAllocation) => {

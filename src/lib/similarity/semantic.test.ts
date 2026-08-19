@@ -117,4 +117,21 @@ describe('scoreWithBestEngine', () => {
     const result = await scoreWithBestEngine(['any pitch text here'], 'any truth', 1000)
     expect(result.engine).toBe('lexical')
   })
+
+  it('clears the timeout when the semantic path rejects, leaving no timer armed', async () => {
+    // Regression guard: clearTimeout used to sit on the line AFTER the await,
+    // so a rejection (CDN blocked, 404 — typically within milliseconds)
+    // jumped straight to catch and left the full 4s timer armed. Nothing
+    // user-visible broke, which is precisely why it needed a test.
+    const { scoreWithBestEngine } = await loadModule()
+    pipelineMock.mockRejectedValue(new Error('cdn blocked'))
+    vi.useFakeTimers()
+    try {
+      const result = await scoreWithBestEngine(['any pitch text here'], 'any truth', 4000)
+      expect(result.engine).toBe('lexical')
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

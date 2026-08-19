@@ -138,12 +138,19 @@ export function ActsShell() {
   const usingExample = pitchOutcome === null
   const campaignRates = pitchOutcome?.rates ?? example.rates
   const campaignLabels = pitchOutcome?.labels ?? example.labels
-  const quarter = useCampaignQuarter(campaignRates, sim.config.seed)
+  const quarter = useCampaignQuarter(campaignRates, sim.config.seed, act === 2)
 
   const quarterUntouched = quarter.weeks.length === 0
   useEffect(() => {
+    // Never re-pin while the reader is looking at Act II. "Restart the
+    // quarter" empties `weeks`, which makes `quarterUntouched` true again —
+    // so if they had cycled the brief in Act I at any point, a restart would
+    // silently deal them three different campaigns at different hidden rates
+    // while the announcement only said "back to week 1". A restart has to be
+    // a rematch of the same game.
+    if (act === 2) return
     if (quarterUntouched && exampleIndex !== scenarioIndex) setExampleIndex(scenarioIndex)
-  }, [quarterUntouched, exampleIndex, scenarioIndex])
+  }, [act, quarterUntouched, exampleIndex, scenarioIndex])
 
   // A simulation playing in a hidden act would keep its rAF loop re-rendering
   // the whole shell every frame and silently finish its race offscreen —
@@ -229,6 +236,14 @@ export function ActsShell() {
           tabIndex={-1}
           className={`an-panel${nav.dir ? ` an-panel--${nav.dir}` : ''}`}
         >
+          {/* Acts I–III had no h1 and no h2 — their headings started at h3, so
+              a screen-reader user navigating by heading landed in an act with
+              no top-level heading to orient from. Act 0 ships its own visible
+              h1 (the essay title), so this only covers the rest. The text is
+              the act metadata already shown in the nav, not new copy. */}
+          {act !== 0 && (
+            <h1 className="sr-only">{`${ACTS[act].num} — ${ACTS[act].title}`}</h1>
+          )}
           {act === 0 && <Act0Intro onBegin={() => goToAct(1)} />}
           {act === 1 && (
             <section className="playground-section" aria-label="Act I — Trial and Error">

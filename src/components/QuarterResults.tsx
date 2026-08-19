@@ -3,7 +3,7 @@ import { CAMPAIGN_COLOR_VARS, WEEKLY_BUDGET } from '../lib/campaign/types'
 import type { CampaignId, CampaignWeekResult } from '../lib/campaign/types'
 import { STRATEGY_COLOR_VARS, STRATEGY_LABELS } from '../lib/bandit/types'
 import type { StrategyId } from '../lib/bandit/types'
-import { fmtDollars, weekAria } from './weekAria'
+import { fmtDollars, weekAria, weekSplit } from './weekAria'
 import './campaign.css'
 
 export interface StrategyComparison {
@@ -100,6 +100,14 @@ export function QuarterResults({
         title={aria}
       >
         <span className="qr-week">W{w.week}</span>
+        {/* Same reason as `.qr-bar-value` below: the segments are width and
+            colour only, and browse mode reads a non-interactive listitem's
+            contents rather than its aria-label. Without this the timeline
+            reads as 13 rows of "W1 312" with no allocation at all — which is
+            the one thing this section exists to show. */}
+        <span className="sr-only">
+          {weekSplit(w, campaignLabels, isAuto ? STRATEGY_LABELS[handoff.strategyId] : undefined)}
+        </span>
         <span className="qr-alloc" aria-hidden="true">
           {CAMPAIGN_IDS.filter((id) => (w.allocation[id] ?? 0) > 0).map((id) => (
             <span

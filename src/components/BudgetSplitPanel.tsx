@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { CAMPAIGN_COLOR_VARS, WEEKLY_BUDGET } from '../lib/campaign/types'
 import type { CampaignId, WeekAllocation } from '../lib/campaign/types'
 import './campaign.css'
@@ -67,6 +67,33 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
     setAmounts(next)
   }
 
+  // The status text changes on EVERY keystroke, so it cannot itself be the
+  // live region — a reader typing "250" would hear three separate totals.
+  // The visible copy updates immediately; a debounced mirror does the
+  // announcing, the same pattern the regret chart uses for its crosshair.
+  const statusId = useId()
+  const statusText =
+    invalidIds.length > 0
+      ? `${invalidIds.map((id) => campaignLabels[id]).join(' and ')} need a dollar amount of $0 or more.`
+      : diff > 0
+        ? `Total ${fmt(total)} of ${fmt(WEEKLY_BUDGET)}, ${fmt(diff)} left to allocate`
+        : diff < 0
+          ? `Total ${fmt(total)} of ${fmt(WEEKLY_BUDGET)}, ${fmt(Math.abs(diff))} over budget`
+          : `Total ${fmt(total)} of ${fmt(WEEKLY_BUDGET)}, budget fully allocated`
+
+  const [liveStatus, setLiveStatus] = useState('')
+  const firstStatusRef = useRef(true)
+  useEffect(() => {
+    // Skip the announcement for the panel's initial $0/$0/$0 state: it is not
+    // a response to anything the reader did.
+    if (firstStatusRef.current) {
+      firstStatusRef.current = false
+      return
+    }
+    const id = setTimeout(() => setLiveStatus(statusText), 600)
+    return () => clearTimeout(id)
+  }, [statusText])
+
   const run = () => {
     if (!canRun) return
     onCommit({ 0: parsed[0], 1: parsed[1], 2: parsed[2] })
@@ -92,6 +119,7 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
                 value={amounts[id]}
                 aria-label={`${campaignLabels[id]} budget, dollars`}
                 aria-invalid={fields[id] === null || undefined}
+                aria-describedby={fields[id] === null ? statusId : undefined}
                 onChange={(e) => setAmount(id, e.target.value)}
                 // A focused number input swallows wheel events and silently
                 // re-allocates the week when the reader scrolls the page —
@@ -103,7 +131,7 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
         ))}
       </div>
 
-      <div className="bs-status" aria-live="polite">
+      <div className="bs-status" id={statusId}>
         {invalidIds.length > 0 ? (
           // Never show a total while a field is unusable: the total would be
           // computed from values the reader can still see on screen but that
@@ -122,6 +150,10 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
             {diff === 0 && <span className="bs-hint bs-hint--ok">budget fully allocated</span>}
           </>
         )}
+      </div>
+
+      <div className="sr-only" role="status" aria-live="polite">
+        {liveStatus}
       </div>
 
       <button type="button" className="bs-run" onClick={run} disabled={!canRun}>
