@@ -105,15 +105,18 @@ export async function scoreWithBestEngine(
   timeoutMs: number = SCORE_TIMEOUT_MS,
 ): Promise<ScoreResult> {
   const fallback = () => lexicalEngine.score(pitches, truth)
+  let timer: ReturnType<typeof setTimeout> | undefined
   try {
-    let timer: ReturnType<typeof setTimeout> | undefined
     const timeout = new Promise<never>((_, reject) => {
       timer = setTimeout(() => reject(new Error('semantic-timeout')), timeoutMs)
     })
-    const result = await Promise.race([semanticEngine.score(pitches, truth), timeout])
-    clearTimeout(timer)
-    return result
+    return await Promise.race([semanticEngine.score(pitches, truth), timeout])
   } catch {
     return fallback()
+  } finally {
+    // `finally`, not a line after the await: when the semantic path REJECTS
+    // (CDN blocked, 404 — typically within ~50ms) control jumped straight to
+    // `catch` and the timer stayed armed for the full timeout.
+    clearTimeout(timer)
   }
 }

@@ -115,9 +115,9 @@ export function Act1TrialError({
       <div className="pg">
         <div className="pg-topline" ref={toplineRef} tabIndex={-1}>
           <span className="pg-context">
-            Your pilot: five weeks before the 13-week quarter starts, to find which campaign
-            works. Each week, pick the one campaign to run — try it, see what happens, switch if
-            it’s not working.
+            Your pilot: five weeks at $300 a week — a test run on a fraction of the quarter’s
+            $500-a-week budget — to find which campaign works. Each week, pick the one campaign
+            to run — try it, see what happens, switch if it’s not working.
           </span>
           <button type="button" className="pp-skip" onClick={onBackToPitches}>
             ← Pitch campaigns instead
@@ -149,10 +149,11 @@ export function Act1TrialError({
       <div className="pg">
         <div className="pg-topline" ref={toplineRef} tabIndex={-1}>
           <span className="pg-context">
-            Your three campaigns are the arms — {STRATEGY_LABELS['fixed-split']}, ε-greedy and
-            Thompson are spending a long campaign on the{' '}
-            {pitchOutcome.scenario.title.toLowerCase()} playerbase: thousands of tiny yes-or-no
-            decisions, compressed and sped up. Reveal true rates to see the hidden truth.
+            No calendar time passes here — this is a replay, not the next chapter. Your three
+            campaigns are the arms, and {STRATEGY_LABELS['fixed-split']}, ε-greedy and Thompson
+            are re-running the same three against the{' '}
+            {pitchOutcome.scenario.title.toLowerCase()} playerbase, decision by decision at the
+            level of a single impression, sped up. Reveal true rates to see the hidden truth.
           </span>
           <button type="button" className="pp-skip" onClick={onBackToPitches}>
             ← Pitch campaigns instead
@@ -169,9 +170,10 @@ export function Act1TrialError({
         <section className="pg-act2-cta" aria-label="Act II — Rationing">
           <h3 className="pg-act2-title">Act II — now add the budget</h3>
           <p className="pg-act2-copy">
-            The pilot and the race were the warm-up — the 13-week quarter starts now. In real
-            life you never run one campaign at a time: every week you split a shared budget
-            across all three. Same campaigns, same hidden truth.
+            Back to the calendar, still parked at the end of your pilot: the 13-week quarter
+            starts now, at $500 a week instead of the pilot’s $300. In real life you never run
+            one campaign at a time: every week you split a shared budget across all three. Same
+            campaigns, same hidden truth.
           </p>
           <button type="button" className="ct-button pg-act2-button" onClick={onGoToAct2}>
             Start the budgeted quarter →

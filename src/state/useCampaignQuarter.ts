@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { StrategyId } from '../lib/bandit/types'
-import { runBudgetQuarter } from '../lib/campaign/budgetStrategies'
+import { HANDOFF_EPSILON, runBudgetQuarter } from '../lib/campaign/budgetStrategies'
 import { playWeek } from '../lib/campaign/simulate'
 import type { CampaignWeekResult, WeekAllocation } from '../lib/campaign/types'
 import { WEEKS_PER_QUARTER } from '../lib/campaign/types'
@@ -53,8 +53,15 @@ export interface CampaignQuarter {
   currentWeek: number
   phase: CampaignPhase
   totalInstalls: number
-  /** Set once the remaining weeks were handed to a budgeted strategy. */
-  handoff: { strategyId: StrategyId; fromWeek: number } | null
+  /**
+   * Set once the remaining weeks were handed to a budgeted strategy.
+   * `epsilon` is the value the handoff ACTUALLY ran at, recorded here so the
+   * debrief's comparison can't drift from the reader's own run when the
+   * race-screen slider moves afterwards. It lives in the hook (not in the
+   * Act II component) because that component unmounts on every act
+   * navigation — which is precisely when the slider becomes reachable.
+   */
+  handoff: { strategyId: StrategyId; fromWeek: number; epsilon: number } | null
   /**
    * Plays `currentWeek`, appends the result, advances. No-op once complete
    * or while a handoff is animating.
@@ -83,7 +90,9 @@ export interface CampaignQuarter {
  */
 export function useCampaignQuarter(rates: number[], seed: number): CampaignQuarter {
   const [weeks, setWeeks] = useState<CampaignWeekResult[]>([])
-  const [handoff, setHandoff] = useState<{ strategyId: StrategyId; fromWeek: number } | null>(null)
+  const [handoff, setHandoff] = useState<
+    { strategyId: StrategyId; fromWeek: number; epsilon: number } | null
+  >(null)
   // Handoff weeks already computed but not yet shown on the calendar;
   // drained one entry per HANDOFF_WEEK_MS by the pacing effect below.
   const [pending, setPending] = useState<CampaignWeekResult[]>([])
@@ -140,8 +149,12 @@ export function useCampaignQuarter(rates: number[], seed: number): CampaignQuart
       if (pending.length > 0) return
       const fromWeek = weeks.length + 1
       if (derivePhase(fromWeek) === 'complete') return
-      setPending(runBudgetQuarter(strategyId, rates, seed, fromWeek, weeks, epsilon))
-      setHandoff({ strategyId, fromWeek })
+      // Resolve the default HERE so the recorded value is the one
+      // runBudgetQuarter actually used — recording `epsilon` raw would store
+      // `undefined` on the default path and leave the debrief guessing.
+      const ranAt = epsilon ?? HANDOFF_EPSILON
+      setPending(runBudgetQuarter(strategyId, rates, seed, fromWeek, weeks, ranAt))
+      setHandoff({ strategyId, fromWeek, epsilon: ranAt })
     },
     [weeks, rates, seed, pending],
   )

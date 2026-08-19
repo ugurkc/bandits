@@ -5,10 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Least privilege per job: only `deploy` needs to write Pages and mint the
+# OIDC token. `build` just needs the checkout.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -24,17 +24,25 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run lint
       - run: npm run test
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
   deploy:
-    # Repo starts private (unlaunched): tests still gate every push, but
-    # there is no Pages site to deploy to until the repo goes public.
-    if: ${{ !github.event.repository.private }}
+    # NO `if:` guard here. There used to be one gating on the repo being
+    # public, left from when this repo was unlaunched — a skipped job does
+    # not fail its run, so three pushes showed a green check while never
+    # reaching production. The repo is public and Pages is enabled; if
+    # deployment should ever stop, remove the trigger rather than adding a
+    # condition that fails silently.
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

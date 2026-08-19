@@ -69,10 +69,21 @@ export function ActsShell() {
   }, [act])
 
   // Warm the ~23MB semantic scoring model from the moment the site loads —
-  // the whole time a reader spends in Act 0's prose is download headroom
-  // the pitch phase used to get for free when it mounted at page load.
+  // the whole time a reader spends in Act 0's prose is download headroom the
+  // pitch phase used to get for free when it mounted at page load.
   // Idempotent; the lexical fallback still covers a cold cache.
+  //
+  // Skipped on metered or slow connections: this is a SPECULATIVE fetch for a
+  // feature the reader may never reach (Act I's own "skip to the lab" button
+  // exists precisely to bypass it), and 23MB of speculation on a phone plan
+  // is not a trade worth making silently. PitchPhase asks again, unguarded,
+  // once the reader actually arrives where the model is needed.
   useEffect(() => {
+    const conn = (
+      navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }
+    ).connection
+    if (conn?.saveData) return
+    if (conn?.effectiveType && /2g$/.test(conn.effectiveType)) return
     prefetchSemantic()
   }, [])
 

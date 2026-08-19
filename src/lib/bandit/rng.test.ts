@@ -143,4 +143,52 @@ describe('sampleBeta', () => {
       expect(v).toBeLessThan(0.95)
     }
   })
+
+  // Everything above asserts only on MEANS and on each draw sitting inside a
+  // range — all of which `() => a / (a + b)` satisfies. That constant would
+  // reduce Thompson sampling to plain greedy and delete the exploration this
+  // whole essay is about, with the suite still green. These pin the spread.
+  const sampleVariance = (a: number, b: number, n: number) => {
+    const rand = makeRng(7, 99, a, b)
+    const vs: number[] = []
+    for (let i = 0; i < n; i++) vs.push(sampleBeta(a, b, rand))
+    const mean = vs.reduce((s, v) => s + v, 0) / n
+    return vs.reduce((s, v) => s + (v - mean) ** 2, 0) / n
+  }
+
+  it('has the variance a Beta actually has, not just the mean', () => {
+    // Var = ab / ((a+b)^2 (a+b+1)).
+    for (const [a, b] of [
+      [2, 5],
+      [30, 70],
+      [1, 1],
+      [1, 20],
+    ]) {
+      const expected = (a * b) / ((a + b) ** 2 * (a + b + 1))
+      expect(sampleVariance(a, b, 20000)).toBeCloseTo(expected, 3)
+    }
+  })
+
+  it('consecutive draws differ — a fixed posterior mean would not', () => {
+    const rand = makeRng(11, 12)
+    const seen = new Set<number>()
+    for (let i = 0; i < 200; i++) seen.add(sampleBeta(6, 45, rand))
+    expect(seen.size).toBeGreaterThan(190)
+  })
+
+  it('uncertainty alone decides between two arms with the SAME posterior mean', () => {
+    // Beta(2,10) and Beta(20,100) share a mean of exactly 1/6; only their
+    // spread differs. This is the mechanism Thompson runs on — it is why a
+    // barely-tried arm still gets pulled against an equally-rated but
+    // well-measured one. A posterior-mean sampler returns the identical
+    // value for both, so `>` is never true and the rate collapses to 0.
+    const rand = makeRng(13, 14)
+    let wins = 0
+    const n = 8000
+    for (let i = 0; i < n; i++) {
+      if (sampleBeta(2, 10, rand) > sampleBeta(20, 100, rand)) wins++
+    }
+    expect(wins / n).toBeGreaterThan(0.35)
+    expect(wins / n).toBeLessThan(0.65)
+  })
 })

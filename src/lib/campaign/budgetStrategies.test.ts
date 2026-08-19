@@ -121,20 +121,20 @@ describe('allocateBudgetWeek: epsilon-greedy', () => {
   it('a single untried arm outranks every tried arm, even a great one', () => {
     const tallies: ArmTallies = { impressions: [20000, 20000, 0], installs: [2400, 400, 0] }
     const allocation = allocateBudgetWeek('epsilon-greedy', tallies, 0.1, forbiddenRand)
-    expect(allocation[2]).toBe(450)
-    expect(allocation[0]).toBe(25)
-    expect(allocation[1]).toBe(25)
+    expect(allocation[2]).toBe(466.66)
+    expect(allocation[0]).toBe(16.67)
+    expect(allocation[1]).toBe(16.67)
   })
 
-  it('with clear tallies, (1-epsilon) of the budget lands on the argmax estimate', () => {
+  it('with clear tallies, (1-epsilon+epsilon/k) of the budget lands on the argmax estimate', () => {
     const tallies: ArmTallies = {
       impressions: [10000, 10000, 10000],
       installs: [200, 1200, 700],
     }
     const allocation = allocateBudgetWeek('epsilon-greedy', tallies, 0.1, forbiddenRand)
-    expect(allocation[1]).toBe(450)
-    expect(allocation[0]).toBe(25)
-    expect(allocation[2]).toBe(25)
+    expect(allocation[1]).toBe(466.66)
+    expect(allocation[0]).toBe(16.67)
+    expect(allocation[2]).toBe(16.67)
   })
 
   it('estimate ties break to the lowest index', () => {
@@ -143,7 +143,7 @@ describe('allocateBudgetWeek: epsilon-greedy', () => {
       installs: [700, 700, 200],
     }
     const allocation = allocateBudgetWeek('epsilon-greedy', tallies, 0.1, forbiddenRand)
-    expect(allocation[0]).toBe(450)
+    expect(allocation[0]).toBe(466.66)
   })
 
   it('sums to exactly $500.00 in cents, including at awkward epsilons', () => {
@@ -151,6 +151,30 @@ describe('allocateBudgetWeek: epsilon-greedy', () => {
     for (const epsilon of [0.1, 0.07, 1 / 3, 0.999]) {
       const allocation = allocateBudgetWeek('epsilon-greedy', tried, epsilon, forbiddenRand)
       expect(allocationCents(allocation)).toBe(WEEKLY_BUDGET * 100)
+    }
+  })
+
+  it('spends the same ε convention as the per-round strategy: leader gets 1-ε+ε/k', () => {
+    // The budgeted and per-round ε-greedy used to be two different policies
+    // sharing one name: the budget version gave the leader exactly (1-ε) and
+    // split ε across the OTHER k-1 arms, while bandit/strategies.ts explores
+    // uniformly over all k. The reader's race-screen ε is threaded straight
+    // into the handoff, so "ε-greedy" has to mean one thing in both places.
+    for (const k of [3, 4]) {
+      const impressions = new Array<number>(k).fill(10000)
+      const installs = new Array<number>(k).fill(200)
+      installs[1] = 1200
+      for (const epsilon of [0.02, 0.1, 0.2, 0.4]) {
+        const a = allocateBudgetWeek(
+          'epsilon-greedy',
+          { impressions, installs },
+          epsilon,
+          forbiddenRand,
+        )
+        expect(a[1] / WEEKLY_BUDGET).toBeCloseTo(1 - epsilon + epsilon / k, 3)
+        expect(a[0] / WEEKLY_BUDGET).toBeCloseTo(epsilon / k, 3)
+        expect(allocationCents(a)).toBe(WEEKLY_BUDGET * 100)
+      }
     }
   })
 })
@@ -240,7 +264,7 @@ describe('runBudgetQuarter', () => {
     const withoutPriors = runBudgetQuarter('epsilon-greedy', RATES, SEED, 2, [])
     // With priors, the exploit share follows the evidence to arm 2; without
     // priors, the all-untried cold start explores evenly.
-    expect(withPriors[0].allocation[2]).toBe(450)
+    expect(withPriors[0].allocation[2]).toBe(466.66)
     for (let arm = 0; arm < 3; arm++) {
       expect(Math.abs(withoutPriors[0].allocation[arm] - WEEKLY_BUDGET / 3)).toBeLessThanOrEqual(0.01)
     }

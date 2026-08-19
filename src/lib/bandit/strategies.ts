@@ -45,6 +45,13 @@ export const fixedSplit: StrategyImpl = {
 /**
  * ε-greedy: one forced pull per arm first, then explore uniformly with
  * probability ε, else exploit the best empirical conversion rate.
+ *
+ * The explore draw is uniform over ALL k arms — the current leader included —
+ * which is Sutton & Barto's convention, so the leader's steady-state share is
+ * (1−ε)+ε/k rather than (1−ε). This is the definition for the whole essay:
+ * `campaign/budgetStrategies.ts` allocates weekly dollars to exactly these
+ * probabilities so Act II's handoff is the same strategy the reader tuned on
+ * the race screen, not a second policy wearing the same name.
  */
 export const epsilonGreedy: StrategyImpl = {
   id: 'epsilon-greedy',

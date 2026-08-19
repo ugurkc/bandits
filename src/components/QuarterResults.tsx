@@ -197,9 +197,16 @@ export function QuarterResults({
           {bars.map((b) => (
             <li key={b.key} className="qr-bar-row" aria-label={b.aria} title={b.aria}>
               <span className={`qr-bar-name${b.muted ? ' qr-bar-name--muted' : ''}`}>{b.name}</span>
-              <span className="qr-bar-area" aria-hidden="true">
+              {/* aria-hidden covers the BAR only, never the number. Hiding
+                  the whole area left the row's aria-label as the sole carrier
+                  of every figure, and screen readers in browse mode read a
+                  non-interactive list item's contents rather than its label —
+                  so Act II's payoff screen announced four strategy names and
+                  not one install count. */}
+              <span className="qr-bar-area">
                 <span
                   className="qr-bar-fill"
+                  aria-hidden="true"
                   style={{
                     width:
                       b.value > 0

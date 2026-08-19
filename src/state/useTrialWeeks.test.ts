@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { STREAM } from '../lib/bandit/rng'
 import { realizedOracleInstalls } from '../lib/campaign/budgetStrategies'
-import { sampleInstalls } from '../lib/campaign/simulate'
+import { impressionsForBudget, sampleInstalls } from '../lib/campaign/simulate'
+import { PILOT_WEEKLY_BUDGET, WEEKLY_BUDGET } from '../lib/campaign/types'
 import {
   installsLeftOnTable,
   isTrialComplete,
@@ -33,6 +34,26 @@ describe('oracleInstalls (expectation)', () => {
     expect(oracleInstalls(0, 0.1)).toBe(0)
     expect(oracleInstalls(1, 0.1)).toBeCloseTo(TRIAL_WEEK_IMPRESSIONS * 0.1)
     expect(oracleInstalls(5, 0.1)).toBeCloseTo(5 * TRIAL_WEEK_IMPRESSIONS * 0.1)
+  })
+})
+
+describe('the pilot budget explains the pilot volume', () => {
+  it('TRIAL_WEEK_IMPRESSIONS is exactly what PILOT_WEEKLY_BUDGET buys at the shared CPM', () => {
+    // The whole timeline fiction rests on this: a pilot week buys less
+    // inventory than a quarter week because it spends less money, at ONE CPM
+    // — not because "week" quietly means two different things. If someone
+    // retunes the pilot volume without moving the budget, the briefs and the
+    // Act I topline start lying about dollars.
+    expect(TRIAL_WEEK_IMPRESSIONS).toBe(impressionsForBudget(PILOT_WEEKLY_BUDGET))
+    expect(PILOT_WEEKLY_BUDGET).toBeLessThan(WEEKLY_BUDGET)
+  })
+
+  it('records the pilot budget on the played week, not the quarter budget', () => {
+    // The week's own record used to be stamped $500 by oneHotAllocation while
+    // sampling only 300 impressions — invisible only because weekAria renders
+    // allocation dollars in Act II alone.
+    const result = playTrialWeek(1, 1, [0.02, 0.07, 0.12], 42)
+    expect(result.allocation).toEqual({ 1: PILOT_WEEKLY_BUDGET })
   })
 })
 

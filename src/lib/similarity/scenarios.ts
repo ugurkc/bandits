@@ -44,10 +44,10 @@ export const SCENARIOS: Scenario[] = [
     brief:
       'You run install-marketing for a hardcore extraction shooter. Retention is ' +
       'slipping and reviews turned sour this season, but the complaints are vague — ' +
-      '"the game just feels bad now". You have a quarter (13 weeks) to find which ad ' +
-      'campaign actually gets people installing — and before the quarter starts, you ' +
-      'get a short five-week pilot to test-fire your ideas. You can run three campaign ' +
-      'concepts. What do you pitch?',
+      '"the game just feels bad now". You have a quarter (13 weeks at $500 a week) to ' +
+      'find which ad campaign actually gets people installing — and before it starts, ' +
+      'five pilot weeks on a trimmed $300 a week to test-fire your ideas. You can run ' +
+      'three campaign concepts. What do you pitch?',
     truth:
       'Solo players respond to the promise of a fair fight: a dedicated solo queue, ' +
       'matchmaking that weighs team size, an even fight where individual skill decides ' +
@@ -67,10 +67,10 @@ export const SCENARIOS: Scenario[] = [
     brief:
       'You run install-marketing for a cozy farming sim. Daily active users look ' +
       'healthy, but session length is falling and the subreddit tone shifted from ' +
-      'screenshots to sighs. You have a quarter (13 weeks) to find which ad campaign ' +
-      'actually gets people installing — and before the quarter starts, you get a ' +
-      'short, gentle five-week pilot to try things out. You can run three campaign ' +
-      'concepts. What do you pitch?',
+      'screenshots to sighs. You have a quarter (13 weeks at $500 a week) to find ' +
+      'which ad campaign actually gets people installing — and before it starts, ' +
+      'five gentle pilot weeks on a trimmed $300 a week to try things out. You can ' +
+      'run three campaign concepts. What do you pitch?',
     truth:
       'Players respond to calm: messaging that promises an unhurried hobby they can ' +
       'pick up and set aside freely, sessions that end when the player decides, and ' +
@@ -91,9 +91,10 @@ export const SCENARIOS: Scenario[] = [
     brief:
       'You run install-marketing for a competitive 5v5 brawler. Veterans are loyal, ' +
       'but new players evaporate within a week and "uninstalled" posts keep trending. ' +
-      'You have a quarter (13 weeks) to find which ad campaign actually gets people ' +
-      'installing — and before the quarter kicks off, you get a short five-week pilot ' +
-      'to scout what works. You can run three campaign concepts. What do you pitch?',
+      'You have a quarter (13 weeks at $500 a week) to find which ad campaign actually ' +
+      'gets people installing — and before it kicks off, five pilot weeks on a trimmed ' +
+      '$300 a week to scout what works. You can run three campaign concepts. What do ' +
+      'you pitch?',
     truth:
       'New players respond to a warm welcome: messaging that promises guidance from ' +
       'day one — practice modes full of bots, a coach or mentor in their corner, ' +

@@ -104,8 +104,9 @@ export function allocateBudgetWeek(
     if (k === 1) return exactSumAllocation([WEEKLY_BUDGET])
     // Cold start: with 2+ untried arms there is no estimate to exploit, so
     // the whole budget splits evenly across the untried arms (pure
-    // exploration). Dumping (1-ε) on the lowest-index untried arm would bias
-    // the from-scratch comparison by box order, for no strategic reason.
+    // exploration). Dumping the exploit share on the lowest-index untried arm
+    // would bias the from-scratch comparison by box order, for no strategic
+    // reason.
     const untried: number[] = []
     for (let i = 0; i < k; i++) if (tallies.impressions[i] === 0) untried.push(i)
     if (untried.length > 1) {
@@ -114,9 +115,17 @@ export function allocateBudgetWeek(
       return exactSumAllocation(shares)
     }
     const best = bestEstimateArm(tallies)
-    const exploreShare = (epsilon * WEEKLY_BUDGET) / (k - 1)
+    // Same ε convention as the per-round ε-greedy in bandit/strategies.ts:
+    // with probability ε play a UNIFORMLY random arm — the leader included —
+    // so the leader's share is (1-ε) + ε/k, not (1-ε). These dollar shares
+    // ARE that policy's pull probabilities, which is what lets "ε-greedy"
+    // name one strategy across the race, the quarter and the lab. The
+    // earlier ε/(k-1) split was a second, non-standard policy wearing the
+    // same name, and the reader's race-screen ε was threaded straight into
+    // it.
+    const exploreShare = (epsilon * WEEKLY_BUDGET) / k
     const shares = new Array<number>(k).fill(exploreShare)
-    shares[best] = (1 - epsilon) * WEEKLY_BUDGET
+    shares[best] = (1 - epsilon) * WEEKLY_BUDGET + exploreShare
     return exactSumAllocation(shares)
   }
 

@@ -12,8 +12,20 @@
 /** One 13-week grid used throughout: weeks unlock sequentially. */
 export const WEEKS_PER_QUARTER = 13
 
-/** Every week spends exactly this many dollars, split across campaigns. */
+/** Every quarter week spends exactly this many dollars, split across campaigns. */
 export const WEEKLY_BUDGET = 500
+
+/**
+ * Act I's pilot week spends this much — deliberately below `WEEKLY_BUDGET`,
+ * because the pilot is a small test run granted *before* the real quarter
+ * budget starts. At the shared `CPM` this buys exactly 300 impressions, which
+ * is Act I's calibrated noise level (see `TRIAL_WEEK_IMPRESSIONS`): the
+ * smaller budget is what EXPLAINS the smaller volume, instead of two
+ * different "weeks" silently buying different inventory. It also makes the
+ * pilot's share of the quarter agree in both currencies — $1,500/$6,500 and
+ * 1,500/6,500 impressions are both 23%.
+ */
+export const PILOT_WEEKLY_BUDGET = 300
 
 /**
  * Dollars per 1000 impressions. $500/week buys 500 impressions.

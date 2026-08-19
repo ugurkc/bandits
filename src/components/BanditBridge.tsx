@@ -47,9 +47,10 @@ export function BanditBridge({ totalInstalls, installsLeftOnTable, onContinue }:
         side by side, dividing a shared budget across them. We'll start with this simpler
         version to build intuition for how these strategies actually think, then bring back
         the budgeting constraint so the problem starts looking like the one you'd actually face
-        day to day. Next, three different strategies play the simple version — thousands of
-        tiny yes-or-no decisions, compressed: hit the button and watch how each one would spend
-        a long campaign, sped up.
+        day to day. Next, three different strategies replay those same three campaigns — but
+        where you were locked in for a whole week at a time, they re-decide at every single
+        impression, which is part of why they do better: hit the button and watch thousands of
+        those tiny yes-or-no decisions, sped up.
       </p>
       <button type="button" className="ct-button bb-cta" onClick={onContinue}>
         See the strategies race →

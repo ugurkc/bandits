@@ -12,25 +12,30 @@
 import { useCallback, useState } from 'react'
 import { STREAM } from '../lib/bandit/rng'
 import { realizedOracleInstalls } from '../lib/campaign/budgetStrategies'
-import { oneHotAllocation, sampleInstalls } from '../lib/campaign/simulate'
+import { impressionsForBudget, sampleInstalls } from '../lib/campaign/simulate'
 import type { CampaignId, CampaignWeekResult } from '../lib/campaign/types'
+import { PILOT_WEEKLY_BUDGET } from '../lib/campaign/types'
 import { sumInstalls } from './useCampaignQuarter'
 
 export const TRIAL_WEEKS = 5
 
 /**
- * Impressions sampled per pilot week. At 300 impressions the standard error
- * of a single week's rate read is ~0.8–1.9pp across the 2–12% rate band
- * (sqrt(p(1-p)/300): 0.81pp at p = 0.02 up to 1.88pp at p = 0.12), which
- * sits close to the ~2pp gap between two merely-different campaigns — so
- * telling them apart from a handful of noisy weeks is genuinely hard, while
- * a clearly-better campaign is still usually (not certainly) findable by
- * week 5. That gap between "findable" and "certain" is the whole point of
- * Act I. (Act II's weekly volume got the same calibration treatment via its
- * CPM: $500/week at the $1000 CPM buys 500 impressions — noisy on purpose
- * too, just with a budget attached.)
+ * Impressions a pilot week buys: `PILOT_WEEKLY_BUDGET` ($300) at the shared
+ * `CPM` ($1000), against the quarter's $500 -> 500. DERIVED, not restated, so
+ * the arithmetic proves itself: the pilot is a smaller-budget test run, so it
+ * buys less inventory and reads noisier — one fiction, one CPM, no second
+ * kind of "week".
+ *
+ * At 300 impressions the standard error of a single week's rate read runs
+ * from 0.81pp at p = 0.02 to 1.92pp at p = 0.126 (measured against the real
+ * `sampleInstalls`, 40k draws per point — matches sqrt(p(1-p)/300) to within
+ * 0.01pp), close to the ~2pp gap between two merely-different campaigns. A
+ * greedy reader — one week per campaign, then always the best so far — ends
+ * on the truly best campaign in 0.69 / 0.85 / 0.94 of seeds at a 1 / 2 / 3pp
+ * gap (20,004 seeds each). That gap between "findable" and "certain" is the
+ * whole point of Act I.
  */
-export const TRIAL_WEEK_IMPRESSIONS = 300
+export const TRIAL_WEEK_IMPRESSIONS = impressionsForBudget(PILOT_WEEKLY_BUDGET)
 
 /** True once every pilot week has been played. Pure, so trivially testable. */
 export function isTrialComplete(currentWeek: number): boolean {
@@ -75,11 +80,15 @@ export function installsLeftOnTable(
 /**
  * Plays one pilot week: the full TRIAL_WEEK_IMPRESSIONS on the picked
  * campaign, zero on the others. Reuses `sampleInstalls` directly rather than
- * Act II's `playWeek` (which is gated on summing to the $500 weekly budget) —
- * the pilot's volume is calibrated for noise, not a literal ad spend, so it
- * doesn't go through the $/CPM translation at all. Draws live in Act I's
- * own `STREAM.TRIAL_REWARD` stream, so pilot week w never replays quarter
- * week w's luck arm-for-arm. Exported for tests (pure).
+ * Act II's `playWeek` (which is gated on summing to the $500 QUARTER budget)
+ * — the pilot runs the same $/CPM translation at its own smaller
+ * `PILOT_WEEKLY_BUDGET`, so it buys 300 impressions instead of 500. The
+ * recorded allocation is that $300, not the quarter's $500: the week's own
+ * data record used to claim $500 while sampling 300 impressions, which was
+ * invisible only because `weekAria` (the sole surface rendering allocation
+ * dollars) is Act II-only. Draws live in Act I's own `STREAM.TRIAL_REWARD`
+ * stream, so pilot week w never replays quarter week w's luck arm-for-arm.
+ * Exported for tests (pure).
  */
 export function playTrialWeek(week: number, campaignId: CampaignId, rates: number[], seed: number): CampaignWeekResult {
   const impressions: Record<number, number> = {}
@@ -92,7 +101,7 @@ export function playTrialWeek(week: number, campaignId: CampaignId, rates: numbe
   }
   return {
     week,
-    allocation: oneHotAllocation(campaignId),
+    allocation: { [campaignId]: PILOT_WEEKLY_BUDGET },
     impressions,
     installs,
     totalInstalls: installs[campaignId] ?? 0,

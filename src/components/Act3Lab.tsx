@@ -206,8 +206,8 @@ export function Act3Lab({ sim }: Act3LabProps) {
       <SimulatorPanel
         sim={sim}
         pitchMode={false}
-        chartTitle="conversions left on the table"
-        chartCaption="The higher a line climbs, the more conversions that strategy is giving up by picking worse offers instead of the best one."
+        chartTitle="expected conversions given up"
+        chartCaption="The higher a line climbs, the more conversions that strategy is giving up, on average, by picking worse offers instead of the best one."
         chartUnit="conversions"
       />
     </div>

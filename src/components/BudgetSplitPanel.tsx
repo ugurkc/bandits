@@ -39,16 +39,27 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
     setAmounts(['0', '0', '0'])
   }
 
-  // NaN-safe ('' and unparsable input count as 0), negatives clamped to 0.
-  const parseAmount = (raw: string): number => {
-    const n = Number(raw)
-    return Number.isFinite(n) ? Math.max(0, n) : 0
+  // An empty field means 0 (fields sit empty mid-edit by design). Anything
+  // else that isn't a usable dollar amount — negative, Infinity, unparsable —
+  // returns null so the UI can SAY it's invalid. It used to clamp silently to
+  // 0 while the input still displayed the bad value, so "-100 / 500 / 0" read
+  // as a $500 total: three fields visibly summing to $400 under a banner
+  // saying "budget fully allocated", committing a week with nothing on
+  // campaign A.
+  const parseAmount = (raw: string): number | null => {
+    const trimmed = raw.trim()
+    if (trimmed === '') return 0
+    const n = Number(trimmed)
+    if (!Number.isFinite(n) || n < 0) return null
+    return n
   }
 
-  const parsed = [parseAmount(amounts[0]), parseAmount(amounts[1]), parseAmount(amounts[2])] as const
+  const fields = [parseAmount(amounts[0]), parseAmount(amounts[1]), parseAmount(amounts[2])] as const
+  const invalidIds = CAMPAIGN_IDS.filter((id) => fields[id] === null)
+  const parsed = [fields[0] ?? 0, fields[1] ?? 0, fields[2] ?? 0] as const
   const total = parsed[0] + parsed[1] + parsed[2]
   const diff = Math.round((WEEKLY_BUDGET - total) * 100) / 100
-  const canRun = diff === 0
+  const canRun = invalidIds.length === 0 && diff === 0
 
   const setAmount = (id: CampaignId, value: string) => {
     const next: [string, string, string] = [...amounts]
@@ -80,7 +91,12 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
                 step={5}
                 value={amounts[id]}
                 aria-label={`${campaignLabels[id]} budget, dollars`}
+                aria-invalid={fields[id] === null || undefined}
                 onChange={(e) => setAmount(id, e.target.value)}
+                // A focused number input swallows wheel events and silently
+                // re-allocates the week when the reader scrolls the page —
+                // and this panel lives inside a scrollable calendar cell.
+                onWheel={(e) => e.currentTarget.blur()}
               />
             </span>
           </label>
@@ -88,12 +104,24 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
       </div>
 
       <div className="bs-status" aria-live="polite">
-        <span className="bs-total">
-          Total: {fmt(total)} / {fmt(WEEKLY_BUDGET)}
-        </span>
-        {diff > 0 && <span className="bs-hint">you have {fmt(diff)} left to allocate</span>}
-        {diff < 0 && <span className="bs-hint bs-hint--over">{fmt(Math.abs(diff))} over budget</span>}
-        {diff === 0 && <span className="bs-hint bs-hint--ok">budget fully allocated</span>}
+        {invalidIds.length > 0 ? (
+          // Never show a total while a field is unusable: the total would be
+          // computed from values the reader can still see on screen but that
+          // are not what would be spent.
+          <span className="bs-hint bs-hint--over">
+            {invalidIds.map((id) => campaignLabels[id]).join(' and ')} need a dollar amount of $0
+            or more.
+          </span>
+        ) : (
+          <>
+            <span className="bs-total">
+              Total: {fmt(total)} / {fmt(WEEKLY_BUDGET)}
+            </span>
+            {diff > 0 && <span className="bs-hint">you have {fmt(diff)} left to allocate</span>}
+            {diff < 0 && <span className="bs-hint bs-hint--over">{fmt(Math.abs(diff))} over budget</span>}
+            {diff === 0 && <span className="bs-hint bs-hint--ok">budget fully allocated</span>}
+          </>
+        )}
       </div>
 
       <button type="button" className="bs-run" onClick={run} disabled={!canRun}>

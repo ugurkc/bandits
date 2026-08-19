@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import type { StrategyId } from '../lib/bandit/types'
 import { STRATEGY_EXPLAINERS } from './strategyExplainers'
@@ -44,6 +44,8 @@ const LABEL_GAP = 13
 const LABEL_FLIP_ZONE = 118
 /** Half the tooltip's CSS min-width (160px) — the first-paint clamp margin. */
 const TOOLTIP_HALF_WIDTH = 80
+/** Quiet time after the last pointer sample before the crosshair announces. */
+const POINTER_ANNOUNCE_MS = 400
 
 /** Largest 1/2/2.5/5 × 10^n step that keeps the grid at three-to-five lines. */
 function gridStep(max: number): number {
@@ -97,11 +99,20 @@ export function RegretChart({
   t,
   horizon,
   height = 260,
-  title = 'installs left on the table',
-  caption = 'The higher a line climbs, the more installs that strategy is giving up by picking worse campaigns instead of the best one.',
+  // "EXPECTED ... given up", not "left on the table": Acts I and II use that
+  // second phrase for a realized head-to-head against the oracle's own draws
+  // — a whole number of installs that is exactly 0 under perfect play. This
+  // chart plots cumulative expected regret, an average over counterfactual
+  // draws, which is why it can read 21.53. One phrase for two different
+  // quantities is the kind of thing a careful reader catches and distrusts.
+  title = 'expected installs given up',
+  caption = 'The higher a line climbs, the more installs that strategy is giving up, on average, by picking worse campaigns instead of the best one.',
   unit = 'installs',
 }: RegretChartProps) {
   const [hoverRound, setHoverRound] = useState<number | null>(null)
+  // Ties the SVG to its own sr-only standings text; unique per instance
+  // because Act I's race and Act III's lab can both be mounted.
+  const summaryId = useId()
   const [measuredWidth, setMeasuredWidth] = useState(FALLBACK_WIDTH)
   const wrapRef = useRef<HTMLDivElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -198,6 +209,40 @@ export function RegretChart({
       return worst
     }, null) ?? null
 
+  // --- Live-region pacing -------------------------------------------------
+  // One sweep of the mouse across the chart changes `hr` on essentially every
+  // pointer event; announcing each one buries a screen reader in hundreds of
+  // polite messages (a real setup for low-vision users running a magnifier
+  // alongside a mouse). Keyboard stepping is one deliberate action per press,
+  // so it announces at once; pointer movement waits for the pointer to settle.
+  const hoverSentence =
+    hr !== null && hoverRows !== null
+      ? `Round ${hr.toLocaleString()}.${
+          worstHoverRow && worstHoverRow.value !== null && worstHoverRow.value > 0
+            ? ` ${worstHoverRow.label} has given up about ${fmtValue(worstHoverRow.value)} ${unit} it could have earned by now.`
+            : ''
+        } ${hoverRows
+          .map((row) => `${row.label} ${row.value === null ? 'no data' : fmtValue(row.value)}`)
+          .join(', ')}`
+      : ''
+
+  const [liveText, setLiveText] = useState('')
+  const announceDelayRef = useRef(0)
+  useEffect(() => {
+    if (hoverSentence === '') {
+      setLiveText('')
+      return
+    }
+    if (announceDelayRef.current === 0) {
+      setLiveText(hoverSentence)
+      return
+    }
+    // Each new sample cancels the previous pending announcement, so only the
+    // position the pointer actually rests at is ever spoken.
+    const id = setTimeout(() => setLiveText(hoverSentence), announceDelayRef.current)
+    return () => clearTimeout(id)
+  }, [hoverSentence])
+
   // Re-clamp the tooltip with its MEASURED width before paint: content can
   // run wider than the CSS min-width the first-paint estimate assumes, and
   // the tooltip must never overflow the wrapper. 1 viewBox unit = 1 CSS px,
@@ -219,6 +264,7 @@ export function RegretChart({
     // The SVG scales to its container, so map client px back through the viewBox.
     const vbX = ((e.clientX - rect.left) / rect.width) * width
     const round = Math.round(((vbX - PAD_LEFT) / innerW) * safeHorizon)
+    announceDelayRef.current = POINTER_ANNOUNCE_MS
     setHoverRound(Math.max(0, Math.min(maxRound, round)))
   }
 
@@ -231,6 +277,8 @@ export function RegretChart({
     }
     if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || maxRound < 0) return
     e.preventDefault()
+    // One keypress is one deliberate request — speak it straight away.
+    announceDelayRef.current = 0
     const dir = e.key === 'ArrowLeft' ? -1 : 1
     const stepBy = e.shiftKey ? Math.max(1, Math.round(safeHorizon / 100)) : 1
     setHoverRound((prev) => {
@@ -353,12 +401,22 @@ export function RegretChart({
           preserveAspectRatio="xMidYMid meet"
           role="img"
           tabIndex={0}
+          // The playhead round is deliberately NOT in the name: it advances up
+          // to 60x/sec during playback, and a focused element whose accessible
+          // name keeps changing is re-announced every time. The live standings
+          // live in the (non-live) description below instead, so they are
+          // available on demand without narrating themselves.
           aria-label={`${title.charAt(0).toUpperCase()}${title.slice(1)} over ${horizon.toLocaleString()} rounds for ${series
             .map((s) => s.label)
-            .join(', ')}; playhead at round ${Math.min(t, horizon).toLocaleString()}. Use arrow keys to inspect rounds.`}
+            .join(', ')}. Use arrow keys to inspect individual rounds.`}
+          aria-describedby={summaryId}
           onPointerMove={trackPointer}
           onPointerDown={trackPointer}
           onPointerLeave={() => setHoverRound(null)}
+          onPointerCancel={() => setHoverRound(null)}
+          // Tabbing away with a crosshair up used to strand the tooltip, the
+          // crosshair and the last announcement on screen indefinitely.
+          onBlur={() => setHoverRound(null)}
           onKeyDown={onKeyDown}
         >
           {chartBody}
@@ -419,15 +477,21 @@ export function RegretChart({
         )}
 
         <div className="sr-only" aria-live="polite">
-          {hr !== null && hoverRows !== null
-            ? `Round ${hr.toLocaleString()}.${
-                worstHoverRow && worstHoverRow.value !== null && worstHoverRow.value > 0
-                  ? ` ${worstHoverRow.label} has given up about ${fmtValue(worstHoverRow.value)} ${unit} it could have earned by now.`
-                  : ''
-              } ${hoverRows
-                .map((row) => `${row.label} ${row.value === null ? 'no data' : fmtValue(row.value)}`)
-                .join(', ')}`
-            : ''}
+          {liveText}
+        </div>
+
+        {/* Not a live region: the standings change every frame during
+            playback, so announcing them would be unusable. As a description
+            they are there whenever a screen-reader user asks for them — which
+            is the only way this chart's actual data was ever reachable
+            without a mouse. */}
+        <div id={summaryId} className="sr-only">
+          {`At round ${Math.min(t, horizon).toLocaleString()} of ${horizon.toLocaleString()}: ${series
+            .map(
+              (s) =>
+                `${s.label}, ${maxRound < 0 ? 'no data yet' : `${fmtValue(s.values[maxRound] ?? 0)} ${unit} given up`}`,
+            )
+            .join('. ')}.`}
         </div>
       </div>
     </div>

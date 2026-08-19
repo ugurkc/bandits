@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { STRATEGY_COLOR_VARS, STRATEGY_IDS, STRATEGY_LABELS } from '../lib/bandit/types'
 import {
   quarterLeftOnTable,
@@ -61,15 +61,12 @@ export function Act2Rationing({
   const toplineRef = useRef<HTMLDivElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
-  // The ε the reader's handoff was actually played at. Recorded at handoff
-  // time so the results comparison can't silently desync from their own run
-  // when the race-screen slider moves afterwards; cleared when the quarter's
-  // rewind clears the handoff.
-  const [handoffEpsilon, setHandoffEpsilon] = useState<number | null>(null)
-  useEffect(() => {
-    if (quarter.handoff === null && handoffEpsilon !== null) setHandoffEpsilon(null)
-  }, [quarter.handoff, handoffEpsilon])
-  const comparisonEpsilon = handoffEpsilon ?? epsilon
+  // Once a handoff exists, the comparison must use the ε that handoff ACTUALLY
+  // ran at — which lives in the quarter itself, not here. An earlier version
+  // kept it in this component's own state, which was dead on arrival: this
+  // component unmounts on every act navigation, and navigating to Act I is the
+  // only way to reach the ε slider in the first place.
+  const comparisonEpsilon = quarter.handoff?.epsilon ?? epsilon
 
   // Quarter completion — fires whether the animated handoff drained the last
   // week or the reader played week 13 by hand. When a handoff drained the
@@ -158,7 +155,6 @@ export function Act2Rationing({
             // The reader's race-screen ε rides along, so the budgeted
             // ε-greedy is the strategy they tuned, not a silent 0.1.
             quarter.handOff(id, epsilon)
-            setHandoffEpsilon(epsilon)
             announce(`Handed off to ${STRATEGY_LABELS[id]} — playing the remaining weeks.`)
             // The activation unmounts this card (phase leaves 'budget') —
             // park focus on the topline while the animation drains rather

@@ -69,6 +69,63 @@ describe('sampleInstalls', () => {
     expect(Math.abs(mean - expectedMean) / expectedMean).toBeLessThan(0.05)
   })
 
+  // The 20,000-impression cases above are a fossil of the launch-era $25 CPM.
+  // At the shipped CPM of $1000, a $500 quarter week buys 500 impressions, a
+  // three-way split buys ~167, and a $300 pilot week buys 300 — so every
+  // assertion above validates the Normal approximation only where it is
+  // essentially exact, and never where the app actually runs it. These pin
+  // the real operating range, where n*p falls to ~3 and the approximation is
+  // at its weakest.
+  describe('at the volumes the app can actually produce', () => {
+    const REAL_VOLUMES = [500, 300, 167, 100, 50]
+
+    it('stays within [0, impressions] across the real rate band', () => {
+      for (const impressions of REAL_VOLUMES) {
+        for (const rate of [0.02, 0.05, 0.07, 0.1, 0.126]) {
+          for (let seed = 0; seed < 60; seed++) {
+            const installs = sampleInstalls(impressions, rate, seed, 1, 0)
+            expect(Number.isInteger(installs)).toBe(true)
+            expect(installs).toBeGreaterThanOrEqual(0)
+            expect(installs).toBeLessThanOrEqual(impressions)
+          }
+        }
+      }
+    })
+
+    it('mean tracks impressions * rate within the sampling error of the run', () => {
+      // Tolerance derived from the actual standard error rather than a round
+      // number: at n=4000 draws the SE of the mean is sqrt(p(1-p)/n) *
+      // impressions, and 4 SE is a ~1-in-16000 false-failure rate. The old
+      // 5%-at-n=500 bound was ~30 SE — wide enough to pass almost any
+      // regression.
+      const draws = 4000
+      for (const impressions of REAL_VOLUMES) {
+        for (const rate of [0.02, 0.07, 0.126]) {
+          let sum = 0
+          for (let seed = 0; seed < draws; seed++) {
+            sum += sampleInstalls(impressions, rate, seed, 1, 0)
+          }
+          const mean = sum / draws
+          const expected = impressions * rate
+          const se = Math.sqrt((rate * (1 - rate)) / draws) * impressions
+          // The clamp at 0 truncates the left tail, which biases the mean UP
+          // at small n*p; allow for that explicitly rather than pretending
+          // it isn't there.
+          expect(mean).toBeGreaterThan(expected - 4 * se)
+          expect(mean).toBeLessThan(expected + 4 * se + 0.15 * Math.max(0, 1 - expected / 10))
+        }
+      }
+    })
+
+    it('actually varies at pilot volume — not a constant dressed up as a draw', () => {
+      // A sampler that returned round(impressions * rate) would satisfy every
+      // mean-based assertion in this file.
+      const seen = new Set<number>()
+      for (let seed = 0; seed < 200; seed++) seen.add(sampleInstalls(300, 0.07, seed, 1, 0))
+      expect(seen.size).toBeGreaterThan(8)
+    })
+  })
+
   it('a chosen pair of adjacent weeks yields different draws (verified by running)', () => {
     // impressions=20000, rate=0.07, seed=42, arm=0: week 1 -> 1400, week 2 -> 1352.
     const week1 = sampleInstalls(20000, 0.07, 42, 1, 0)
