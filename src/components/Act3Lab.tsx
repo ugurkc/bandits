@@ -45,7 +45,8 @@ const STRATEGY_CARDS: StrategyCard[] = [
     winsAndLoses:
       'It wins on simplicity — ten lines of code on top of counters you already log, and with ' +
       'a sane ε it finds the best arm fast and mostly sticks to it. At short horizons a ' +
-      'well-guessed ε can even beat Thompson; the tax only catches up over longer runs. It ' +
+      'well-guessed ε can even beat Thompson — drop the horizon to 1,000 rounds and watch it ' +
+      'happen; the tax only catches up over longer runs. It ' +
       'loses at the edges: it explores at the same fixed rate forever (a permanent tax, even ' +
       'long after the answer is obvious), it wastes explores on arms it already knows are bad, ' +
       'and ε itself is a guess you have to get right.',
@@ -117,20 +118,60 @@ const EXPERIMENTS: Experiment[] = [
   },
   {
     id: 'drift',
-    label: 'Let the world drift',
+    label: 'Turn the menu over',
     blurb:
-      'Rates wander mid-run — and none of these three ever forgets old data. The fixed split pays most; even the winners are coasting on stale beliefs.',
+      'Three times mid-run, the offer nobody was buying becomes the top seller. None of these three ever forgets, so all three keep betting on a world that moved on — give Thompson a 1,000-round memory instead and 40% of its regret disappears.',
     apply: (sim) => sim.setDrift(true),
   },
   {
     id: 'crowded',
     label: 'Crowd the menu',
     blurb:
-      'k = 6 arms — every arm must be tried before anyone can commit, and ε-greedy\'s random explores now spread six ways. Watch the early rounds get pricier.',
+      'k = 6 arms — every wrong one you are still sampling costs you, and ε-greedy\'s random explores now spread six ways instead of three. Watch the early rounds get pricier.',
     apply: (sim) => {
       sim.setDrift(false)
       sim.setK(6)
     },
+  },
+]
+
+/**
+ * The honest closing beat. An earlier draft of this essay carried a "what
+ * this leaves out" section and the acts restructure deleted it, which left
+ * every simplification reading as something the author hadn't thought of
+ * rather than something they chose. Each entry names the real term, so a
+ * reader who wants the next thing to learn has the search query.
+ */
+const LIMITS: { term: string; body: string }[] = [
+  {
+    term: 'Forgetting (non-stationarity)',
+    body:
+      'The "Turn the menu over" button shows the problem and none of these three solve it — they weight a result from round 1 exactly like a result from round 4,999. The fixes are a sliding window, exponential discounting, or change-point detection. Discounted Thompson sampling is the usual first reach, and in this lab a 1,000-round memory is worth about 40% of Thompson\'s regret.',
+  },
+  {
+    term: 'Inference vs. optimization',
+    body:
+      'Adaptive allocation biases the naive per-arm average: arms get sampled more precisely when they look good, so the numbers a bandit leaves behind are not a clean effect estimate. When you need a defensible measurement — pricing, a regulatory claim, anything you will re-litigate in six months — run the fixed split on purpose. That is the real reason the boring baseline still exists, and it is the most common senior-level objection to bandits.',
+  },
+  {
+    term: 'Peeking and statistical power',
+    body:
+      'This whole page is continuous monitoring of a running experiment, which is exactly what invalidates a fixed-horizon significance test. If you are going to watch, use methods built for watching — always-valid inference, sequential tests, or simply committing to the allocation rule instead of to a p-value.',
+  },
+  {
+    term: 'Context (who, not just what)',
+    body:
+      'Every arm here has one true rate shared by everybody. In reality the best creative differs by country, platform, and acquisition source. The moment you let the choice depend on features of the person you are serving, you have a contextual bandit — a genuinely harder problem, and the one most production systems actually run.',
+  },
+  {
+    term: 'How good is "near-optimal"?',
+    body:
+      'There is real theory under the hand-waving: the best achievable regret grows like log(T) for a fixed problem, and a constant ε can never reach it — its tax is linear forever, which is why ε-greedy\'s line here stays straight while Thompson\'s bends. A decaying ε fixes that. UCB gets there by a different route, adding a confidence bonus instead of sampling.',
+  },
+  {
+    term: 'The parts we skipped entirely',
+    body:
+      'Delayed rewards (an install today, a purchase in three weeks), interference between campaigns competing in one auction, creative fatigue, minimum-spend commitments, and the fact that three campaigns is a stylised number. A bandit only ever optimizes among the options you gave it.',
   },
 ]
 
@@ -210,6 +251,28 @@ export function Act3Lab({ sim }: Act3LabProps) {
         chartCaption="The higher a line climbs, the more conversions that strategy is giving up, on average, by picking worse offers instead of the best one."
         chartUnit="conversions"
       />
+
+      <section className="a3-limits" aria-label="What this leaves out">
+        <h3 className="a3-limits-title">What this leaves out</h3>
+        <p className="a3-limits-lede">
+          Everything above is the easy version of the problem: three fixed options, one metric,
+          an audience that behaves the same for everyone. Here is what the simulator quietly
+          assumes away — and what each of those assumptions is actually called.
+        </p>
+        <dl className="a3-limits-list">
+          {LIMITS.map((limit) => (
+            <div key={limit.term} className="a3-limit">
+              <dt className="a3-limit-term">{limit.term}</dt>
+              <dd className="a3-limit-body">{limit.body}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="a3-limits-close">
+          The one worth carrying furthest: a bandit does not decide whether your metric is the
+          right metric. Point it at the wrong one and it will find, quickly and efficiently, the
+          most effective way to make that mistake.
+        </p>
+      </section>
     </div>
   )
 }

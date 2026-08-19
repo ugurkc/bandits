@@ -33,7 +33,11 @@ export const STRATEGY_COLOR_VARS: Record<StrategyId, string> = {
 
 export interface DriftConfig {
   enabled: boolean
-  /** Per-round std-dev of the reflected random walk applied to each arm's rate. */
+  /**
+   * Standing amplitude (stationary std-dev) of each arm's wobble around its
+   * current level — not a per-round step. See `computeRates`: drift rotates
+   * which arm holds which base rate rather than letting rates wander freely.
+   */
   volatility: number
 }
 

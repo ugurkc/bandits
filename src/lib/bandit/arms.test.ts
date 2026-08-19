@@ -45,12 +45,15 @@ describe('defaultBaseRates', () => {
     }
   })
 
-  it.each(ks)('k=%i: best-vs-second gap lands in [0.005, 0.03]', (k) => {
+  it.each(ks)('k=%i: best-vs-second gap lands in [0.05, 0.065]', (k) => {
+    // Widened 2026-08-18. At the old sub-2pp gap the lab's own 5000-round
+    // default was too short for Thompson's advantage to appear, so Act III's
+    // central card was false on screen at every selectable horizon.
     for (const seed of seeds) {
       const sorted = [...defaultBaseRates(k, seed)].sort((a, b) => b - a)
       const gap = sorted[0] - sorted[1]
-      expect(gap).toBeGreaterThanOrEqual(0.005)
-      expect(gap).toBeLessThanOrEqual(0.03)
+      expect(gap).toBeGreaterThanOrEqual(0.05)
+      expect(gap).toBeLessThanOrEqual(0.065)
     }
   })
 
@@ -92,25 +95,43 @@ describe('computeRates', () => {
     expect(moved).toBe(true)
   })
 
-  it('drift stays clamped to [0.005, 0.6] even at high volatility', () => {
-    const c = config({
-      horizon: 2000,
-      drift: { enabled: true, volatility: 0.15 },
-    })
-    const rates = computeRates(c)
-    let hitLow = false
-    let hitHigh = false
-    for (const row of rates) {
+  it('drift keeps every rate inside the live-ops band, even at high volatility', () => {
+    // The old reflected random walk was unbounded within [0.005, 0.6] and
+    // routinely left the 2-12% band the whole simulator is calibrated to
+    // (38% of rates, max 40%) while FANNING THE ARMS APART — making the
+    // drifting world easier to solve, the opposite of the lesson. Rank
+    // rotation only ever reassigns which arm holds which base rate.
+    const c = config({ horizon: 2000, drift: { enabled: true, volatility: 0.15 } })
+    for (const row of computeRates(c)) {
       for (const r of row) {
         expect(r).toBeGreaterThanOrEqual(RATE_MIN)
         expect(r).toBeLessThanOrEqual(RATE_MAX)
-        if (r < RATE_MIN + 0.05) hitLow = true
-        if (r > RATE_MAX - 0.05) hitHigh = true
+        expect(r).toBeGreaterThanOrEqual(0.02 - 1e-9)
+        expect(r).toBeLessThanOrEqual(0.12 + 1e-9)
       }
     }
-    // With sigma 0.15 over 2000 rounds the walk must have visited both walls.
-    expect(hitLow).toBe(true)
-    expect(hitHigh).toBe(true)
+  })
+
+  it('drift actually changes which arm is best, several times per run', () => {
+    // This is the property the whole "none of these ever forgets" lesson
+    // rests on: if the leader never changes, stale beliefs cost nothing.
+    const c = config({ k: 3, horizon: 5000, drift: { enabled: true, volatility: 0.002 } })
+    const rates = computeRates(c)
+    const argmax = (row: number[]) => row.reduce((b, v, i) => (v > row[b] ? i : b), 0)
+    let changes = 0
+    let prev = argmax(rates[0])
+    let run = 0
+    for (let t = 1; t < rates.length; t++) {
+      const b = argmax(rates[t])
+      if (b === prev) run++
+      else {
+        // Only count settled changes, not flicker during a crossfade.
+        if (run >= 100) changes++
+        prev = b
+        run = 1
+      }
+    }
+    expect(changes).toBeGreaterThanOrEqual(2)
   })
 
   it('drift noise is per-(t, arm): arms walk independently', () => {
