@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { STRATEGY_COLOR_VARS, STRATEGY_IDS, STRATEGY_LABELS } from '../lib/bandit/types'
+import { STRATEGY_COLOR_VARS, STRATEGY_IDS, strategyLabel } from '../lib/bandit/types'
 import {
   quarterLeftOnTable,
   realizedOracleQuarter,
@@ -82,7 +82,7 @@ export function Act3Rationing({
       const total = quarter.totalInstalls.toLocaleString()
       announce(
         quarter.handoff
-          ? `${STRATEGY_LABELS[quarter.handoff.strategyId]} played the remaining weeks — quarter complete, ${total} installs.`
+          ? `${strategyLabel(quarter.handoff.strategyId, quarter.handoff.epsilon)} played the remaining weeks — quarter complete, ${total} installs.`
           : `Quarter complete — ${total} installs.`,
       )
       resultsRef.current?.focus()
@@ -98,7 +98,7 @@ export function Act3Rationing({
     () =>
       STRATEGY_IDS.map((id) => ({
         id,
-        label: STRATEGY_LABELS[id],
+        label: strategyLabel(id, comparisonEpsilon),
         colorVar: STRATEGY_COLOR_VARS[id],
         totalInstalls: sumInstalls(runBudgetQuarter(id, campaignRates, seed, 1, [], comparisonEpsilon)),
       })),
@@ -109,7 +109,7 @@ export function Act3Rationing({
     ? {
         fromWeek: quarter.handoff.fromWeek,
         colorVar: STRATEGY_COLOR_VARS[quarter.handoff.strategyId],
-        label: STRATEGY_LABELS[quarter.handoff.strategyId],
+        label: strategyLabel(quarter.handoff.strategyId, quarter.handoff.epsilon),
       }
     : null
 
@@ -151,11 +151,12 @@ export function Act3Rationing({
       {quarter.weeks.length >= HANDOFF_MIN_WEEKS && quarter.phase === 'budget' && (
         <HandoffCard
           remainingWeeks={WEEKS_PER_QUARTER - quarter.weeks.length}
+          epsilon={epsilon}
           onHandOff={(id) => {
             // The reader's race-screen ε rides along, so the budgeted
             // ε-greedy is the strategy they tuned, not a silent 0.1.
             quarter.handOff(id, epsilon)
-            announce(`Handed off to ${STRATEGY_LABELS[id]} — playing the remaining weeks.`)
+            announce(`Handed off to ${strategyLabel(id, epsilon)} — playing the remaining weeks.`)
             // The activation unmounts this card (phase leaves 'budget') —
             // park focus on the topline while the animation drains rather
             // than letting it fall to <body>.

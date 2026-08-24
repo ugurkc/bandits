@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { STRATEGY_COLOR_VARS, STRATEGY_LABELS, STRATEGY_SHORT_LABELS } from '../lib/bandit/types'
+import { STRATEGY_COLOR_VARS, STRATEGY_SHORT_LABELS, strategyLabel } from '../lib/bandit/types'
 import { statsAt } from '../lib/bandit/simulate'
 import type { Simulation } from '../state/useSimulation'
 import { estimateOf, shareOf } from '../state/useSimulation'
@@ -67,11 +67,11 @@ export function SimulatorPanel({
     () =>
       result.strategies.map((run) => ({
         id: run.id,
-        label: STRATEGY_LABELS[run.id],
+        label: strategyLabel(run.id, config.epsilon),
         colorVar: STRATEGY_COLOR_VARS[run.id],
         values: run.regret,
       })),
-    [result],
+    [result, config.epsilon],
   )
 
   // statsAt is O(t) per strategy, too heavy for every frame at 3000

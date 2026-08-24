@@ -11,10 +11,24 @@ export type StrategyId = 'fixed-split' | 'epsilon-greedy' | 'thompson'
 /** Fixed order everywhere: legend, colors, result arrays. Never re-sort. */
 export const STRATEGY_IDS = ['fixed-split', 'epsilon-greedy', 'thompson'] as const
 
-export const STRATEGY_LABELS: Record<StrategyId, string> = {
-  'fixed-split': 'Fixed A/B split',
-  'epsilon-greedy': 'ε-greedy',
-  thompson: 'Thompson sampling',
+/**
+ * Plain-language display name per strategy, in place of jargon a first-time
+ * reader has no reason to know ("Fixed A/B split", "ε-greedy", "Thompson
+ * sampling") — a chart of three unlabeled strategy names was the whole
+ * complaint that led here. ε-greedy's name embeds the ACTUAL epsilon in
+ * play (the race's slider, or the ε a handoff locked in), so "explore 10%
+ * of the time" always matches the number the reader tuned, never a
+ * hardcoded guess that drifts from the control.
+ */
+export function strategyLabel(id: StrategyId, epsilon: number): string {
+  switch (id) {
+    case 'fixed-split':
+      return 'Keep exploring'
+    case 'epsilon-greedy':
+      return `Explore ${Math.round(epsilon * 100)}% of the time`
+    case 'thompson':
+      return 'Learn the odds of each machine from data you generate'
+  }
 }
 
 /** Compact labels for tight rows (arm cards), where the chip carries identity. */

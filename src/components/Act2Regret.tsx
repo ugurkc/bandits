@@ -1,4 +1,3 @@
-import { STRATEGY_LABELS } from '../lib/bandit/types'
 import type { Simulation } from '../state/useSimulation'
 import type { PitchOutcome } from './PitchPhase'
 import { SimulatorPanel } from './SimulatorPanel'
@@ -48,10 +47,10 @@ export function Act2Regret({ sim, pitchOutcome, onBackToPitches, onGoToRationing
       <div className="pg-topline">
         <span className="pg-context">
           No calendar time passes here — this is a replay, not the next chapter. Your three
-          campaigns are the arms, and {STRATEGY_LABELS['fixed-split']}, ε-greedy and Thompson
-          are re-running the same three against the{' '}
-          {pitchOutcome.scenario.title.toLowerCase()} playerbase, decision by decision at the
-          level of a single impression, sped up. Reveal true rates to see the hidden truth.
+          campaigns are the arms, and the chart below races three ways of choosing between
+          them against the {pitchOutcome.scenario.title.toLowerCase()} playerbase — decision by
+          decision at the level of a single impression, sped up. Reveal true rates to see the
+          hidden truth.
         </span>
         <button type="button" className="pp-skip" onClick={onBackToPitches}>
           ← Pitch campaigns instead
@@ -72,6 +71,12 @@ export function Act2Regret({ sim, pitchOutcome, onBackToPitches, onGoToRationing
           adds zero. That makes the shape of each line below the whole story. A line still
           climbing is a strategy still paying to learn. A line gone flat has found the winner
           and is riding it. Bending flat as early as possible is the entire game.
+        </p>
+        <p>
+          Watch what happens to the line that just <strong>keeps exploring</strong> — splitting
+          its attention evenly forever, the way "try a little of everything" behaves if nobody
+          ever calls it and commits. The other two lines show what changes once a strategy
+          starts favoring what the evidence already tells it.
         </p>
         <p>
           One footnote before you hit play: this chart plots <em>expected</em> regret — the

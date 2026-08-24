@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { CAMPAIGN_COLOR_VARS, WEEKLY_BUDGET } from '../lib/campaign/types'
 import type { CampaignId, CampaignWeekResult } from '../lib/campaign/types'
-import { STRATEGY_COLOR_VARS, STRATEGY_LABELS } from '../lib/bandit/types'
+import { STRATEGY_COLOR_VARS, strategyLabel } from '../lib/bandit/types'
 import type { StrategyId } from '../lib/bandit/types'
 import { fmtDollars, weekAria, weekSplit } from './weekAria'
 import './campaign.css'
@@ -16,7 +16,7 @@ export interface StrategyComparison {
 export interface QuarterResultsProps {
   /** All 13 weeks, played (by hand, by handoff, or both). */
   weeks: CampaignWeekResult[]
-  handoff: { strategyId: StrategyId; fromWeek: number } | null
+  handoff: { strategyId: StrategyId; fromWeek: number; epsilon: number } | null
   /** Length 3, from PitchOutcome.labels. */
   campaignLabels: string[]
   totalInstalls: number
@@ -84,12 +84,16 @@ export function QuarterResults({
             className="qr-divider-chip"
             style={{ background: STRATEGY_COLOR_VARS[handoff.strategyId] }}
           />
-          handed off to {STRATEGY_LABELS[handoff.strategyId]}
+          handed off to {strategyLabel(handoff.strategyId, handoff.epsilon)}
         </div>,
       )
     }
     const isAuto = handoff !== null && w.week >= handoff.fromWeek
-    const aria = weekAria(w, campaignLabels, isAuto ? STRATEGY_LABELS[handoff.strategyId] : undefined)
+    const aria = weekAria(
+      w,
+      campaignLabels,
+      isAuto ? strategyLabel(handoff.strategyId, handoff.epsilon) : undefined,
+    )
     timelineRows.push(
       <div
         key={w.week}
@@ -106,7 +110,11 @@ export function QuarterResults({
             reads as 13 rows of "W1 312" with no allocation at all — which is
             the one thing this section exists to show. */}
         <span className="sr-only">
-          {weekSplit(w, campaignLabels, isAuto ? STRATEGY_LABELS[handoff.strategyId] : undefined)}
+          {weekSplit(
+            w,
+            campaignLabels,
+            isAuto ? strategyLabel(handoff.strategyId, handoff.epsilon) : undefined,
+          )}
         </span>
         <span className="qr-alloc" aria-hidden="true">
           {CAMPAIGN_IDS.filter((id) => (w.allocation[id] ?? 0) > 0).map((id) => (
