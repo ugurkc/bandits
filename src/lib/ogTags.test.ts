@@ -51,10 +51,19 @@ function imageSize(buf: Buffer): { width: number; height: number; format: 'png' 
  * against the deployed page), so validating the source validates what ships.
  */
 describe('link-preview embed (index.html meta tags)', () => {
-  it('og:title and twitter:title match the page title', () => {
+  it('og:title carries the pitch; twitter:title matches it; the tab title stays short', () => {
+    // Deliberate divergence: the browser tab shows the terse <title>, but
+    // LinkedIn feed cards display ONLY title + domain (og:description is
+    // ignored there), so og:title is the one line of text the share gets.
     expect(htmlRaw).toMatch(/<title>Bandits<\/title>/)
-    expect(metaContent(htmlRaw, 'property', 'og:title')).toBe('Bandits')
-    expect(metaContent(htmlRaw, 'name', 'twitter:title')).toBe('Bandits')
+    const og = metaContent(htmlRaw, 'property', 'og:title')
+    expect(og, 'og:title missing').toBeTruthy()
+    expect(og).toMatch(/^Bandits/)
+    // Longer than the bare site name (it must say something), shorter than
+    // where LinkedIn truncates titles in the feed (~100 chars).
+    expect(og!.length).toBeGreaterThan('Bandits'.length)
+    expect(og!.length).toBeLessThan(100)
+    expect(metaContent(htmlRaw, 'name', 'twitter:title')).toBe(og)
   })
 
   it('og:image is an absolute URL for a file that actually exists in public/', () => {

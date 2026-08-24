@@ -15,30 +15,42 @@
     <!-- Link-preview embed (LinkedIn, Slack, Facebook, etc. read these, not
          a page-visible caption): image + title + summary for the shared
          URL. og:image must be an absolute URL — relative paths are not
-         resolved by link crawlers. -->
+         resolved by link crawlers. Two LinkedIn-specific choices: the image
+         is a purpose-built 1200x630 card (>=1200px wide is what promotes
+         the share from a left-hand thumbnail to the full-width hero
+         layout), and og:title carries the pitch, because LinkedIn shows
+         title + domain only and IGNORES og:description in feed cards.
+         The card's HTML source lives in docs/og-card-source.html; re-render
+         with headless Chrome at --window-size=1200,630 after edits. -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://ugurkc.github.io/bandits/" />
     <meta property="og:site_name" content="Bandits" />
-    <meta property="og:title" content="Bandits" />
+    <meta
+      property="og:title"
+      content="Bandits: an interactive essay on ad budgets, luck, and minimizing regret"
+    />
     <meta
       property="og:description"
-      content="An interactive essay on decisions under uncertainty: pitch ad campaigns, run a noisy trial by hand, then watch three multi-armed bandit strategies find the winner for you."
+      content="Pitch ad campaigns, gamble a quarter's budget by hand, then watch five bandit strategies race to find the winner for you. Runs entirely in your browser."
     />
-    <meta property="og:image" content="https://ugurkc.github.io/bandits/images/slot-machine.png" />
-    <meta property="og:image:width" content="612" />
-    <meta property="og:image:height" content="402" />
+    <meta property="og:image" content="https://ugurkc.github.io/bandits/images/og-card.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="A row of classic slot machines with their levers and spinning reels."
+      content="Bandits: an interactive essay on decisions under uncertainty. A regret chart with five strategy lines, two climbing steeply and three bending flat."
     />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Bandits" />
+    <meta
+      name="twitter:title"
+      content="Bandits: an interactive essay on ad budgets, luck, and minimizing regret"
+    />
     <meta
       name="twitter:description"
-      content="An interactive essay on decisions under uncertainty: pitch ad campaigns, run a noisy trial by hand, then watch three multi-armed bandit strategies find the winner for you."
+      content="Pitch ad campaigns, gamble a quarter's budget by hand, then watch five bandit strategies race to find the winner for you. Runs entirely in your browser."
     />
-    <meta name="twitter:image" content="https://ugurkc.github.io/bandits/images/slot-machine.png" />
+    <meta name="twitter:image" content="https://ugurkc.github.io/bandits/images/og-card.png" />
     <script>
       (function () {
         var stored = null;
