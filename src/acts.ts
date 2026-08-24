@@ -1,5 +1,5 @@
 /**
- * The essay's five acts, navigable left/right from the acts bar. Order is
+ * The essay's six acts, navigable left/right from the acts bar. Order is
  * the narrative order; free navigation is allowed and every act self-seeds
  * (Act III falls back to example campaigns when the reader hasn't pitched —
  * see `buildExampleCampaigns` — and Act II gates instead: a race framed as
@@ -9,7 +9,7 @@
 export interface ActDef {
   /** URL hash fragment (without '#') — the act deep-link. */
   hash: string
-  /** "Act 0" … "Act IV". */
+  /** "Act 0" … "Act V". */
   num: string
   title: string
 }
@@ -20,6 +20,7 @@ export const ACTS: ActDef[] = [
   { hash: 'act-2', num: 'Act II', title: 'Regret' },
   { hash: 'act-3', num: 'Act III', title: 'Rationing' },
   { hash: 'act-4', num: 'Act IV', title: 'Learning from the Best' },
+  { hash: 'act-5', num: 'Act V', title: 'The Conclusion' },
 ]
 
 /** Index for a location.hash value ('#act-2' → 2); 0 for anything else. */

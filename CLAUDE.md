@@ -5,11 +5,13 @@ deployed to `https://ugurkc.github.io/bandits/` on every push to `main`.
 
 ## What's here
 
-The essay is built: a k-armed bandit simulator wrapped in **five
-horizontally-navigable acts** (acts bar + `#act-0`…`#act-4` hash routing,
+The essay is built: a k-armed bandit simulator wrapped in **six
+horizontally-navigable acts** (acts bar + `#act-0`…`#act-5` hash routing,
 free navigation; every act self-seeds except Act II, which gates instead —
 see below). `src/components/ActsShell.tsx` owns the act index and ALL
-cross-act state; the act components are pure views.
+cross-act state; the act components are pure views. Five strategies race
+everywhere a chart appears: fixed split, ε-greedy, Thompson, UCB (UCB1-Tuned), and
+uniform random (`STRATEGY_IDS` — append-only, stream indices depend on it).
 
 - **Act 0 — The Introduction** (`Act0Intro`): the header prose from
   `src/content/meta.md`, images, and a "Begin Act I" CTA. No simulator.
@@ -27,6 +29,9 @@ cross-act state; the act components are pure views.
   (`src/lib/exampleCampaigns.ts`) when the reader hasn't pitched.
 - **Act IV — Learning from the Best** (`Act4Lab`): per-strategy teaching
   cards plus a free-play lab on its own independent `useSimulation`.
+- **Act V — The Conclusion** (`Act5Conclusion`): prose only, the bookend to
+  Act 0 — what the playground simplified, and how contextual bandits carry
+  the same regret-minimizing idea into real, moving, per-context worlds.
 
 `docs/plans/2026-08-12-simulator-design.md` is the living design doc — the
 engine's calibration rationale, CRN scheme, palette validation, and the

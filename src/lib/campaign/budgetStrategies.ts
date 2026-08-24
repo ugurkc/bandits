@@ -1,5 +1,5 @@
 /**
- * Act III's budgeted strategy variants: the three race strategies, re-expressed
+ * Act III's budgeted strategy variants: the race strategies, re-expressed
  * as weekly dollar allocators. Each week a strategy looks at the cumulative
  * per-arm impression/install tallies and splits `WEEKLY_BUDGET` across all
  * k arms — same strategy identities (ids, labels, colors) as the automated
@@ -84,9 +84,9 @@ function bestEstimateArm(tallies: ArmTallies): number {
 
 /**
  * One week's dollar allocation for a budgeted strategy, from the cumulative
- * tallies. `rand` is the strategy's own sequential stream (only Thompson
- * consumes it). Every branch returns an exact-sum allocation (see
- * `exactSumAllocation`).
+ * tallies. `rand` is the strategy's own sequential stream (only Thompson and
+ * the random strategy consume it). Every branch returns an exact-sum
+ * allocation (see `exactSumAllocation`).
  */
 export function allocateBudgetWeek(
   strategyId: StrategyId,
@@ -98,6 +98,50 @@ export function allocateBudgetWeek(
 
   if (strategyId === 'fixed-split') {
     return exactSumAllocation(new Array<number>(k).fill(WEEKLY_BUDGET / k))
+  }
+
+  if (strategyId === 'random') {
+    // The per-impression policy is "any arm, equal odds"; at weekly dollar
+    // granularity that expresses as the whole budget on one uniformly random
+    // arm each week. Probability-matched shares (1/k each) would duplicate
+    // the fixed split and hide what randomness actually costs.
+    const shares = new Array<number>(k).fill(0)
+    shares[Math.floor(rand() * k)] = WEEKLY_BUDGET
+    return exactSumAllocation(shares)
+  }
+
+  if (strategyId === 'ucb') {
+    // UCB is deterministic all-in: the whole budget on the arm with the best
+    // optimistic index — the same UCB1-Tuned index as the per-round strategy
+    // in bandit/strategies.ts (mean plus a variance-scaled confidence bonus,
+    // N = total impressions standing in for t), so "UCB" names one policy
+    // across the race, the quarter and the lab. Cold start mirrors
+    // ε-greedy's documented convention: with 2+ untried arms the budget
+    // splits evenly across them rather than dumping on the lowest index by
+    // box order.
+    const untried: number[] = []
+    for (let i = 0; i < k; i++) if (tallies.impressions[i] === 0) untried.push(i)
+    if (untried.length > 1) {
+      const shares = new Array<number>(k).fill(0)
+      for (const i of untried) shares[i] = WEEKLY_BUDGET / untried.length
+      return exactSumAllocation(shares)
+    }
+    const total = tallies.impressions.reduce((sum, n) => sum + n, 0)
+    const logN = Math.log(Math.max(total, 2))
+    const index = (i: number): number => {
+      const n = tallies.impressions[i]
+      if (n === 0) return Infinity
+      const mean = tallies.installs[i] / n
+      const variance = mean * (1 - mean) + Math.sqrt((2 * logN) / n)
+      return mean + Math.sqrt((logN / n) * Math.min(0.25, variance))
+    }
+    let best = 0
+    for (let i = 1; i < k; i++) {
+      if (index(i) > index(best)) best = i
+    }
+    const shares = new Array<number>(k).fill(0)
+    shares[best] = WEEKLY_BUDGET
+    return exactSumAllocation(shares)
   }
 
   if (strategyId === 'epsilon-greedy') {

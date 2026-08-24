@@ -117,10 +117,11 @@
   font-weight: 600;
 }
 
-/* Narrow screens: collapse tabs to their act numbers so all five fit
-   beside the arrows (.an-tabs' overflow-x scroll is the backstop). Visually-hidden (sr-only clip pattern), NOT
+/* Narrow screens: collapse tabs to their act numbers so the row stays
+   compact beside the arrows (.an-tabs' overflow-x scroll is the backstop
+   for the narrowest phones). Visually-hidden (sr-only clip pattern), NOT
    display:none — the title must stay in each tab's accessible name, or a
-   screen-reader user on a phone would hear only "Act 0…Act IV" with no
+   screen-reader user on a phone would hear only "Act 0…Act V" with no
    idea what any act is about. */
 @media (max-width: 600px) {
   .an-tab {

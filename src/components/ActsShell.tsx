@@ -12,6 +12,7 @@ import type { Act1Mode } from './Act1TrialError'
 import { Act2Regret } from './Act2Regret'
 import { Act3Rationing } from './Act3Rationing'
 import { Act4Lab } from './Act4Lab'
+import { Act5Conclusion } from './Act5Conclusion'
 import type { PitchOutcome } from './PitchPhase'
 import { ThemeToggle } from './ThemeToggle'
 import './acts.css'
@@ -105,6 +106,13 @@ export function ActsShell() {
     // panel is taller than the viewport and already partially visible).
     window.scrollTo({ top: 0 })
     panelRef.current?.focus({ preventScroll: true })
+    // The tab strip scrolls horizontally on narrow screens (six tabs), and
+    // a CTA-driven navigation can land on an act whose tab sits outside the
+    // strip's viewport — the bar then shows the wrong acts as "current-ish".
+    // 'nearest' keeps this a no-op when the tab is already visible.
+    document
+      .querySelector('.an-tab--active')
+      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     announce(`${ACTS[act].num}: ${ACTS[act].title}`)
   }, [act, announce])
 
@@ -238,11 +246,12 @@ export function ActsShell() {
           tabIndex={-1}
           className={`an-panel${nav.dir ? ` an-panel--${nav.dir}` : ''}`}
         >
-          {/* Acts I–IV had no h1 and no h2 — their headings started at h3, so
-              a screen-reader user navigating by heading landed in an act with
-              no top-level heading to orient from. Act 0 ships its own visible
-              h1 (the essay title), so this only covers the rest. The text is
-              the act metadata already shown in the nav, not new copy. */}
+          {/* Acts I–IV had no h1 and no h2 — their headings start at h3 (Act
+              V's own heading is an h2) — so a screen-reader user navigating
+              by heading landed in an act with no top-level heading to orient
+              from. Act 0 ships its own visible h1 (the essay title), so this
+              covers every other act. The text is the act metadata already
+              shown in the nav, not new copy. */}
           {act !== 0 && (
             <h1 className="sr-only">{`${ACTS[act].num}: ${ACTS[act].title}`}</h1>
           )}
@@ -303,7 +312,12 @@ export function ActsShell() {
           )}
           {act === 4 && (
             <section className="playground-section" aria-label="Act IV: Learning from the Best">
-              <Act4Lab sim={labSim} />
+              <Act4Lab sim={labSim} onGoToConclusion={() => goToAct(5)} />
+            </section>
+          )}
+          {act === 5 && (
+            <section className="playground-section" aria-label="Act V: The Conclusion">
+              <Act5Conclusion />
             </section>
           )}
         </div>

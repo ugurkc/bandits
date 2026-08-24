@@ -7,6 +7,9 @@ import './playground.css'
 export interface RegretChartSeries {
   id: StrategyId
   label: string
+  /** Compact name for the direct end labels on narrow charts, where five
+   *  full-sentence labels overrun the plot (the legend keeps the full name). */
+  shortLabel: string
   colorVar: string
   values: number[]
 }
@@ -44,6 +47,8 @@ const LABEL_GAP = 13
 const LABEL_FLIP_ZONE = 118
 /** Half the tooltip's CSS min-width (160px) — the first-paint clamp margin. */
 const TOOLTIP_HALF_WIDTH = 80
+/** Below this chart width the end labels switch to the compact names. */
+const SHORT_END_LABEL_WIDTH = 640
 /** Quiet time after the last pointer sample before the crosshair announces. */
 const POINTER_ANNOUNCE_MS = 400
 
@@ -63,7 +68,7 @@ function fmtValue(v: number): string {
 }
 
 /**
- * Nudge overlapping end-label y-positions apart (all three lines start at the
+ * Nudge overlapping end-label y-positions apart (every line starts at the
  * same origin) without detaching them far from their lines.
  */
 function spreadLabels(ys: number[], min: number, max: number, gap: number): number[] {
@@ -161,8 +166,11 @@ export function RegretChart({
   // the playhead or geometry moves — never on hover.
   const { paths, ends, labelYs } = useMemo(() => {
     const built = series.map((s) => {
+      // Direct end labels compact on narrow charts; the legend and tooltip
+      // keep the full names.
+      const endLabel = width < SHORT_END_LABEL_WIDTH ? s.shortLabel : s.label
       const count = Math.max(0, Math.min(t + 1, s.values.length))
-      if (count === 0) return { id: s.id, label: s.label, colorVar: s.colorVar, d: '', endX: 0, endY: 0, has: false }
+      if (count === 0) return { id: s.id, label: endLabel, colorVar: s.colorVar, d: '', endX: 0, endY: 0, has: false }
       const stride = Math.max(1, Math.floor(count / innerW))
       let d = ''
       for (let r = 0; r < count; r += stride) {
@@ -170,7 +178,7 @@ export function RegretChart({
       }
       const last = count - 1
       if (last % stride !== 0) d += `L${x(last).toFixed(1)} ${y(s.values[last]).toFixed(1)}`
-      return { id: s.id, label: s.label, colorVar: s.colorVar, d, endX: x(last), endY: y(s.values[last]), has: true }
+      return { id: s.id, label: endLabel, colorVar: s.colorVar, d, endX: x(last), endY: y(s.values[last]), has: true }
     })
     const withEnds = built.filter((p) => p.has)
     return {
@@ -183,7 +191,7 @@ export function RegretChart({
         LABEL_GAP,
       ),
     }
-  }, [series, t, innerW, innerH, x, y])
+  }, [series, t, width, innerW, innerH, x, y])
 
   // Clamped where it's read, not where it was set: a reset rewinds t and a
   // stale hover would otherwise point past the new playhead.

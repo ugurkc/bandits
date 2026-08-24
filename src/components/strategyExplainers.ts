@@ -15,4 +15,6 @@ export const STRATEGY_EXPLAINERS: Record<StrategyId, string> = {
     'backs the current leader with most of its effort, keeps testing the rest with the remainder',
   thompson:
     'draws a random guess from what it knows about each option so far, then bets on whichever guess wins: a coin flip early on, a near-certainty once the evidence is in',
+  ucb: 'backs whichever option has the highest ceiling: its average so far plus a benefit of the doubt that shrinks as the option gets tried',
+  random: 'ignores all evidence and picks blindly, the floor every real strategy has to beat',
 }

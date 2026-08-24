@@ -68,6 +68,7 @@ export function SimulatorPanel({
       result.strategies.map((run) => ({
         id: run.id,
         label: strategyLabel(run.id, config.epsilon),
+        shortLabel: STRATEGY_SHORT_LABELS[run.id],
         colorVar: STRATEGY_COLOR_VARS[run.id],
         values: run.regret,
       })),

@@ -1,6 +1,6 @@
 /**
- * The three allocation strategies, behind one interface so the simulator
- * can race them over identical worlds.
+ * The allocation strategies, behind one interface so the simulator can race
+ * them over identical worlds.
  */
 
 import type { StrategyId } from './types'
@@ -77,6 +77,49 @@ export const thompson: StrategyImpl = {
   },
 }
 
+/**
+ * UCB1-Tuned (Auer, Cesa-Bianchi & Fischer 2002, §4): one forced pull per
+ * arm first, then play the arm with the highest optimistic index — the
+ * empirical mean plus a confidence bonus scaled by the arm's observed
+ * variance, sqrt((ln t / n) · min(1/4, V)) with V = p̂(1−p̂) + sqrt(2 ln t / n).
+ *
+ * The Tuned variant, not plain UCB1, is a MEASURED choice: at this essay's
+ * install-rate-scale rewards (roughly 2–16%) plain UCB1's sqrt(2 ln t / n)
+ * bonus dwarfs the arm gaps at every horizon the UI offers, leaving its
+ * regret line barely below the fixed split's (avg final regret 116 vs 231
+ * at H=5000 over 8 seeds) — which would put the lab's "bending line"
+ * teaching on screen as false. Tuned's variance scaling fixes exactly this
+ * low-variance case (42 at H=5000, 58 vs ε-greedy's 119 at H=20000).
+ *
+ * Fully deterministic: never consumes `rand` (ties break to the lowest
+ * index via argmax), so its run is a pure function of the shared
+ * conversion draws.
+ */
+export const ucb: StrategyImpl = {
+  id: 'ucb',
+  select(pulls, successes, t) {
+    if (t < pulls.length) return t
+    const logT = Math.log(t)
+    return argmax(
+      pulls.map((p, i) => {
+        const mean = successes[i] / p
+        const variance = mean * (1 - mean) + Math.sqrt((2 * logT) / p)
+        return mean + Math.sqrt((logT / p) * Math.min(0.25, variance))
+      }),
+    )
+  },
+}
+
+/**
+ * Uniform random: pick any arm with equal probability, every round, forever.
+ * No learning at all — the floor every real strategy has to beat, and (in
+ * expectation) the same allocation as the fixed split, realized noisily.
+ */
+export const uniformRandom: StrategyImpl = {
+  id: 'random',
+  select: (pulls, _successes, _t, rand) => Math.floor(rand() * pulls.length),
+}
+
 /** All strategies, in STRATEGY_IDS order — the order of the result arrays. */
 export const STRATEGIES: readonly StrategyImpl[] = STRATEGY_IDS.map((id) => {
   switch (id) {
@@ -86,5 +129,9 @@ export const STRATEGIES: readonly StrategyImpl[] = STRATEGY_IDS.map((id) => {
       return epsilonGreedy
     case 'thompson':
       return thompson
+    case 'ucb':
+      return ucb
+    case 'random':
+      return uniformRandom
   }
 })

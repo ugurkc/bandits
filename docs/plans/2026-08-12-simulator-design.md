@@ -13,6 +13,10 @@ conversion rates:
 - **ε-greedy** — explore with probability ε, else exploit the best estimate.
 - **Thompson sampling** — sample each arm's Beta posterior, pick the max.
 
+(Since 2026-08-24 two more race alongside them — **UCB1-Tuned** and
+**uniform random** — see the dated entry at the end of this doc. Older
+sections below describe the original three-strategy spec.)
+
 The money chart is **cumulative expected regret** (conversions lost vs. an
 oracle always playing the best arm): three lines racing upward, fixed-split
 linear, bandits bending flat. Arm cards show per-strategy allocation shares
@@ -39,7 +43,7 @@ src/lib/bandit/types.ts       — shared contracts (this is the API; agents buil
 src/lib/bandit/rng.ts         — hash01 counter RNG, makeRng streams, sampleBeta
                                 (Marsaglia–Tsang gamma + Box–Muller, all from rand())
 src/lib/bandit/arms.ts        — defaultBaseRates, computeRates (drift random walk)
-src/lib/bandit/strategies.ts  — the three StrategyImpls
+src/lib/bandit/strategies.ts  — the StrategyImpls (five since 2026-08-24)
 src/lib/bandit/simulate.ts    — simulate(config): SimulationResult, statsAt helper
 src/state/useSimulation.ts    — config state + result memo + playhead + rAF loop
 src/components/Playground.tsx — composition
@@ -81,7 +85,7 @@ Rules the components must follow: colors are fixed per strategy and never
 reassigned; 2px line weight; one y-axis (regret); recessive grid in
 `--border`; legend always present AND direct labels at line ends; text always
 in ink/muted tokens, never series colors; crosshair + tooltip on hover
-(values for all three series at the hovered round); share bars get 2px
+(values for every series at the hovered round); share bars get 2px
 surface gaps and 4px rounded data-ends; no per-point value labels. The chart
 measures its container (ResizeObserver) and derives the viewBox width from it
 so 1 viewBox unit = 1 CSS px — text keeps its declared size at any width and
@@ -508,3 +512,38 @@ now Act IV (`Act4Lab`, renamed from `Act3Lab`; `act3.css` → `lab.css`,
   moved to the left, the engine-status line and "Score my pitches" grouped
   on the right (`.pp-actions-go`) — advancement now lives on the
   right-hand side everywhere in the essay, escape hatches on the left.
+
+## Five strategies, a conclusion act, and coarser budget steps (2026-08-24, later)
+
+Three changes in one pass:
+
+- **UCB1 and uniform random joined the strategy roster** (`STRATEGY_IDS`
+  is now five entries; it is APPEND-ONLY, because each strategy's private
+  RNG stream is keyed by its index in that list, in both `simulate` and
+  `runBudgetQuarter`). UCB is **UCB1-Tuned** (Auer et al. §4: the confidence
+  bonus scales with observed variance), a measured choice, not a default:
+  plain UCB1's sqrt(2 ln t / n) bonus dwarfs the arm gaps at
+  install-rate-scale rewards, leaving avg final regret 116 vs the fixed
+  split's 231 at H=5000 (8 seeds), which would put the lab's "bending line"
+  teaching on screen as false; Tuned lands at 42 (H=5000) and 58 vs
+  ε-greedy's 119 at H=20000. Deterministic, consumes no randomness. Uniform
+  random is the floor every learner has to beat. Budgeted variants for
+  Act III: UCB goes all-in on its optimistic pick (even split across
+  untried arms on cold start, mirroring ε-greedy's documented convention);
+  random goes all-in on a uniformly random arm each week, because
+  probability-matched 1/k shares would duplicate the fixed split and hide
+  what randomness costs. Series colors: gold (`--series-ucb`) and pink
+  (`--series-random`), validated with the dataviz six-checks script against
+  both surfaces on 2026-08-24, including the six-slot QuarterResults bar
+  order with `--you`.
+- **Act V — The Conclusion** (`Act5Conclusion`, `#act-5`): a prose-only
+  bookend to Act 0. The playground's simplifications named as choices, then
+  the real-world version of the problem: contextual bandits, fed observable
+  state, closing the log-decide-observe loop, delayed rewards, permanent
+  exploration, iterating as dynamics shift. Act IV gained a `pg-next-cta`
+  into it.
+- **Act III's budget inputs step by $50** (was $5; `BUDGET_STEP` in
+  `BudgetSplitPanel`), and a "Randomize split" button fills a uniformly
+  random $50-granular split (Math.random on purpose: reader-hand
+  convenience, not simulation state — the committed allocation flows
+  through the same deterministic `playWeek` either way).

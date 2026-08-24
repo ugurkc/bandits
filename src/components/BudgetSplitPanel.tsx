@@ -12,8 +12,31 @@ export interface BudgetSplitPanelProps {
 
 const CAMPAIGN_IDS: CampaignId[] = [0, 1, 2]
 
+/**
+ * Spinner step for the dollar inputs. Coarse on purpose: at $5 a step,
+ * moving $200 between campaigns took 40 clicks per field; at $50 the whole
+ * budget is 10 steps end to end. Typed amounts are still free-form (the
+ * step only drives the arrows), and the exact-sum gate is unchanged.
+ */
+const BUDGET_STEP = 50
+
 function fmt(dollars: number): string {
   return `$${dollars.toLocaleString()}`
+}
+
+/**
+ * A uniformly random split of the budget in `BUDGET_STEP` chunks: each $50
+ * chunk lands on any campaign with equal odds. Math.random is fine here:
+ * this is a UI convenience for the reader's own hand, not part of the
+ * deterministic simulation (the committed allocation is what matters, and
+ * it goes through the same playWeek draws whatever produced it).
+ */
+function randomSplit(): [number, number, number] {
+  const counts: [number, number, number] = [0, 0, 0]
+  for (let chunk = 0; chunk < WEEKLY_BUDGET / BUDGET_STEP; chunk++) {
+    counts[Math.floor(Math.random() * 3) as CampaignId] += 1
+  }
+  return [counts[0] * BUDGET_STEP, counts[1] * BUDGET_STEP, counts[2] * BUDGET_STEP]
 }
 
 /**
@@ -65,6 +88,9 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
     const next: [string, string, string] = [...amounts]
     next[id] = value
     setAmounts(next)
+    // Typed edits always announce through the debounced mirror, even right
+    // after a randomize armed the skip below.
+    skipMirrorRef.current = false
   }
 
   // The status text changes on EVERY keystroke, so it cannot itself be the
@@ -83,11 +109,20 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
 
   const [liveStatus, setLiveStatus] = useState('')
   const firstStatusRef = useRef(true)
+  // Armed by the Randomize button, which announces its own dealt split
+  // immediately: without this, the first randomize's statusText change would
+  // schedule the generic "budget fully allocated" mirror 600ms later, which
+  // re-announces over (and adds nothing to) the split announcement.
+  const skipMirrorRef = useRef(false)
   useEffect(() => {
     // Skip the announcement for the panel's initial $0/$0/$0 state: it is not
     // a response to anything the reader did.
     if (firstStatusRef.current) {
       firstStatusRef.current = false
+      return
+    }
+    if (skipMirrorRef.current) {
+      skipMirrorRef.current = false
       return
     }
     const id = setTimeout(() => setLiveStatus(statusText), 600)
@@ -115,7 +150,7 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
                 className="bs-input"
                 min={0}
                 max={WEEKLY_BUDGET}
-                step={5}
+                step={BUDGET_STEP}
                 value={amounts[id]}
                 aria-label={`${campaignLabels[id]} budget, dollars`}
                 aria-invalid={fields[id] === null || undefined}
@@ -156,9 +191,35 @@ export function BudgetSplitPanel({ week, campaignLabels, onCommit }: BudgetSplit
         {liveStatus}
       </div>
 
-      <button type="button" className="bs-run" onClick={run} disabled={!canRun}>
-        Run week {week}
-      </button>
+      {/* Escape hatch on the left, commit on the right: the same
+          advancement-flows-right convention as the pitch phase's action row. */}
+      <div className="bs-actions">
+        <button
+          type="button"
+          className="bs-random"
+          onClick={() => {
+            const [a, b, c] = randomSplit()
+            setAmounts([String(a), String(b), String(c)])
+            // Announce the dealt split directly: every random split totals
+            // exactly $500, so the debounced statusText mirror would land on
+            // the identical "budget fully allocated" string every time and
+            // the [statusText] effect never refires. A click is one
+            // deliberate action, so this speaks immediately, like the
+            // chart's keyboard crosshair; skipMirrorRef keeps the first
+            // click's statusText change from re-announcing over it.
+            skipMirrorRef.current = true
+            setLiveStatus(
+              `Random split: ${campaignLabels[0]} ${fmt(a)}, ${campaignLabels[1]} ${fmt(b)}, ` +
+                `${campaignLabels[2]} ${fmt(c)}. Budget fully allocated.`,
+            )
+          }}
+        >
+          Randomize split
+        </button>
+        <button type="button" className="bs-run" onClick={run} disabled={!canRun}>
+          Run week {week}
+        </button>
+      </div>
     </div>
   )
 }

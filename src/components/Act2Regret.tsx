@@ -15,7 +15,7 @@ export interface Act2RegretProps {
 }
 
 /**
- * Act II — Regret: the automated race. Three strategies replay the reader's
+ * Act II — Regret: the automated race. Five strategies replay the reader's
  * pitched campaigns impression by impression while the chart totals what
  * each one gave up against the hidden best arm — the essay's one formal
  * concept, taught right where it's plotted. Reached from Act I's bridge.
@@ -47,7 +47,7 @@ export function Act2Regret({ sim, pitchOutcome, onBackToPitches, onGoToRationing
       <div className="pg-topline">
         <span className="pg-context">
           No calendar time passes here. This is a replay, not the next chapter. Your three
-          campaigns are the arms, and the chart below races three ways of choosing between
+          campaigns are the arms, and the chart below races five ways of choosing between
           them against the {pitchOutcome.scenario.title.toLowerCase()} playerbase, decision by
           decision at the level of a single impression, sped up. Reveal true rates to see the
           hidden truth.
@@ -73,10 +73,11 @@ export function Act2Regret({ sim, pitchOutcome, onBackToPitches, onGoToRationing
           and is riding it. Bending flat as early as possible is the entire game.
         </p>
         <p>
-          Watch what happens to the line that just <strong>keeps exploring</strong>, splitting
-          its attention evenly forever, the way "try a little of everything" behaves if nobody
-          ever calls it and commits. The other two lines show what changes once a strategy
-          starts favoring what the evidence already tells it.
+          Watch what happens to the lines that never commit: <strong>keep exploring</strong>{' '}
+          splits its attention evenly forever, and <strong>pick completely at random</strong>{' '}
+          is exploration with the learning switched off entirely. Both keep paying, round
+          after round. The other lines show what changes once a strategy starts favoring what
+          the evidence already tells it.
         </p>
         <p>
           One footnote before you hit play: this chart plots <em>expected</em> regret (the

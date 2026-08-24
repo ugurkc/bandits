@@ -221,8 +221,39 @@
   color: var(--accent);
 }
 
+/* Randomize (left) + run (right) on one row; the run button keeps its
+   commit weight, the randomizer reads as the lighter secondary action. */
+.bs-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bs-random {
+  padding: 8px 14px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bs-random:hover {
+  border-color: var(--accent);
+}
+
+.bs-random:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .bs-run {
-  justify-self: start;
   padding: 8px 16px;
   background: var(--accent);
   border: 0;

@@ -17,11 +17,15 @@
   --border-strong: #d3d7de;
   --paper: #f7f8fa;
   --card: #ffffff;
-  /* Strategy series colors — validated (dataviz six checks, light surface).
-     Fixed per strategy; never reassigned or cycled. */
+  /* Strategy series colors — validated (dataviz six checks, light surface;
+     UCB + random added and the full set re-validated, including the
+     six-slot bars order with --you, on 2026-08-24). Fixed per strategy;
+     never reassigned or cycled. */
   --series-fixed: #b45309;
   --series-egreedy: #0d9488;
   --series-thompson: #4f46e5;
+  --series-ucb: #c08404;
+  --series-random: #be185d;
   /* The reader's own data series ("You" in the quarter comparison) — a
      dedicated token, NOT a reuse of --accent: the accent doubles as
      Thompson's series hue, so reusing it made the You bar color-identical
@@ -53,10 +57,13 @@
   --border-strong: #3a3e4c;
   --paper: #101116;
   --card: #181a21;
-  /* Validated against the dark surface — a selected dark palette, not a flip. */
+  /* Validated against the dark surface — a selected dark palette, not a flip
+     (UCB + random added and the full set re-validated 2026-08-24). */
   --series-fixed: #d97706;
   --series-egreedy: #0d9488;
   --series-thompson: #7a72ef;
+  --series-ucb: #ba8b12;
+  --series-random: #e05a9d;
   /* The reader's own series — validated against both surfaces (dataviz
      six checks, 2026-08-13) alongside the strategy colors; see the light
      block's note on why this is not --accent. */

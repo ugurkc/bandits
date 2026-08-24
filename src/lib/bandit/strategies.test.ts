@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { STRATEGY_IDS } from './types'
 import { hash01, makeRng, STREAM } from './rng'
-import { epsilonGreedy, fixedSplit, STRATEGIES, thompson } from './strategies'
+import { epsilonGreedy, fixedSplit, STRATEGIES, thompson, ucb, uniformRandom } from './strategies'
 import type { StrategyImpl } from './strategies'
 
 const zeros = (k: number) => new Array<number>(k).fill(0)
@@ -113,6 +113,65 @@ describe('thompson', () => {
   })
 })
 
+describe('ucb', () => {
+  const forbiddenRand = () => {
+    throw new Error('UCB must never consume randomness')
+  }
+
+  it('plays each arm once during the first k rounds', () => {
+    const k = 5
+    for (let t = 0; t < k; t++) {
+      expect(ucb.select(zeros(k), zeros(k), t, forbiddenRand, 0)).toBe(t)
+    }
+  })
+
+  it('is deterministic and never consumes rand', () => {
+    const pulls = [20, 20, 20]
+    const successes = [5, 10, 2]
+    expect(ucb.select(pulls, successes, 60, forbiddenRand, 0.5)).toBe(1)
+  })
+
+  it('prefers the higher mean at equal pulls, and the barely-tried arm over a marginal leader', () => {
+    // Equal pulls: the bonus terms cancel, mean decides.
+    expect(ucb.select([50, 50], [10, 25], 100, forbiddenRand, 0)).toBe(1)
+    // Arm 1 leads on mean (0.30 vs 0.25) but arm 0's 4-pull bonus
+    // (variance term capped at 1/4: sqrt(ln 104 / 4 * 0.25) ≈ 0.54)
+    // dwarfs arm 1's ≈ 0.11 bonus plus the 0.05 mean gap.
+    expect(ucb.select([4, 100], [1, 30], 104, forbiddenRand, 0)).toBe(0)
+  })
+
+  it('breaks ties to the lowest index', () => {
+    expect(ucb.select([10, 10, 10], [3, 3, 3], 30, forbiddenRand, 0)).toBe(0)
+  })
+
+  it('is the Tuned index, not plain UCB1: the variance cap curbs a small-sample bonus', () => {
+    // pulls [25, 2500], means 0.12 vs 0.50 at t=5000. Plain UCB1's
+    // sqrt(2 ln t / n) bonus (0.83 vs 0.08) would flip the pick to the
+    // barely-tried arm 0 (index 0.95 vs 0.58); the Tuned cap shrinks arm 0's
+    // bonus to ~0.29, so the well-measured arm 1 wins (0.41 vs 0.53). This
+    // pins the calibrated variant: reverting to plain UCB1 breaks it.
+    expect(ucb.select([25, 2500], [3, 1250], 5000, forbiddenRand, 0)).toBe(1)
+  })
+})
+
+describe('uniform random', () => {
+  it('explores approximately uniformly regardless of evidence', () => {
+    const rand = makeRng(11, STREAM.STRATEGY, 4)
+    const k = 4
+    const pulls = [1000, 1, 1, 1]
+    const successes = [1000, 0, 0, 0] // any learner would lock onto arm 0
+    const counts = zeros(k)
+    const n = 20000
+    for (let i = 0; i < n; i++) {
+      counts[uniformRandom.select(pulls, successes, 100, rand, 0)]++
+    }
+    for (const c of counts) {
+      expect(c / n).toBeGreaterThan(0.22)
+      expect(c / n).toBeLessThan(0.28)
+    }
+  })
+})
+
 /**
  * Play a strategy against a fixed stationary world using the same shared
  * outcome draws the simulator uses, and return the picks.
@@ -140,5 +199,15 @@ describe('thompson end-to-end concentration', () => {
     const late = chosen.slice(-1000)
     const bestShare = late.filter((a) => a === 1).length / late.length
     expect(bestShare).toBeGreaterThan(0.8)
+  })
+})
+
+describe('ucb end-to-end concentration', () => {
+  it('concentrates on the true best arm late in a long stationary run', () => {
+    const rates = [0.05, 0.11, 0.08, 0.03] // arm 1 is best
+    const chosen = playout(ucb, rates, 8000, 42)
+    const late = chosen.slice(-1000)
+    const bestShare = late.filter((a) => a === 1).length / late.length
+    expect(bestShare).toBeGreaterThan(0.6)
   })
 })

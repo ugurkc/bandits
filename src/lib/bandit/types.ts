@@ -6,10 +6,16 @@
  * types; change them only together with docs/plans/2026-08-12-simulator-design.md.
  */
 
-export type StrategyId = 'fixed-split' | 'epsilon-greedy' | 'thompson'
+export type StrategyId = 'fixed-split' | 'epsilon-greedy' | 'thompson' | 'ucb' | 'random'
 
-/** Fixed order everywhere: legend, colors, result arrays. Never re-sort. */
-export const STRATEGY_IDS = ['fixed-split', 'epsilon-greedy', 'thompson'] as const
+/**
+ * Fixed order everywhere: legend, colors, result arrays. Never re-sort.
+ * New strategies are APPENDED, never inserted: each strategy's private RNG
+ * stream is keyed by its index here (see `simulate` and `runBudgetQuarter`),
+ * so inserting mid-list would silently reshuffle every later strategy's
+ * randomness and change existing runs.
+ */
+export const STRATEGY_IDS = ['fixed-split', 'epsilon-greedy', 'thompson', 'ucb', 'random'] as const
 
 /**
  * Plain-language display name per strategy, in place of jargon a first-time
@@ -28,6 +34,10 @@ export function strategyLabel(id: StrategyId, epsilon: number): string {
       return `Explore ${Math.round(epsilon * 100)}% of the time`
     case 'thompson':
       return 'Learn the odds of each machine from data you generate'
+    case 'ucb':
+      return "Bet on each option's best case (UCB)"
+    case 'random':
+      return 'Pick completely at random'
   }
 }
 
@@ -36,6 +46,8 @@ export const STRATEGY_SHORT_LABELS: Record<StrategyId, string> = {
   'fixed-split': 'Fixed',
   'epsilon-greedy': 'ε-greedy',
   thompson: 'Thompson',
+  ucb: 'UCB',
+  random: 'Random',
 }
 
 /** CSS custom property carrying each strategy's validated series color. */
@@ -43,6 +55,8 @@ export const STRATEGY_COLOR_VARS: Record<StrategyId, string> = {
   'fixed-split': 'var(--series-fixed)',
   'epsilon-greedy': 'var(--series-egreedy)',
   thompson: 'var(--series-thompson)',
+  ucb: 'var(--series-ucb)',
+  random: 'var(--series-random)',
 }
 
 export interface DriftConfig {

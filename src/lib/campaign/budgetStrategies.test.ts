@@ -230,6 +230,90 @@ describe('allocateBudgetWeek: thompson', () => {
   })
 })
 
+describe('allocateBudgetWeek: ucb', () => {
+  it('with no data, the budget splits evenly across all untried arms', () => {
+    const allocation = allocateBudgetWeek('ucb', zeroTallies(3), HANDOFF_EPSILON, forbiddenRand)
+    for (let arm = 0; arm < 3; arm++) {
+      expect(Math.abs(allocation[arm] - WEEKLY_BUDGET / 3)).toBeLessThanOrEqual(0.01)
+    }
+    expect(allocationCents(allocation)).toBe(WEEKLY_BUDGET * 100)
+  })
+
+  it('a single untried arm gets the whole budget (infinite optimism)', () => {
+    const tallies: ArmTallies = { impressions: [20000, 20000, 0], installs: [2400, 400, 0] }
+    const allocation = allocateBudgetWeek('ucb', tallies, HANDOFF_EPSILON, forbiddenRand)
+    expect(allocation[2]).toBe(WEEKLY_BUDGET)
+    expect(allocation[0]).toBe(0)
+    expect(allocation[1]).toBe(0)
+  })
+
+  it('all-in on the best optimistic index once every arm has data', () => {
+    // At equal impressions with all means below 0.5, the higher mean also
+    // carries the (uncapped) larger variance bonus, so both terms of the
+    // Tuned index favor arm 1. (The bonuses do NOT cancel here: the 1/4
+    // variance cap never engages at these install-rate-scale means.)
+    const tallies: ArmTallies = {
+      impressions: [10000, 10000, 10000],
+      installs: [200, 1200, 700],
+    }
+    const allocation = allocateBudgetWeek('ucb', tallies, HANDOFF_EPSILON, forbiddenRand)
+    expect(allocation[1]).toBe(WEEKLY_BUDGET)
+    expect(allocationCents(allocation)).toBe(WEEKLY_BUDGET * 100)
+  })
+
+  it('a marginal leader loses to a barely-tried arm with a huge bonus', () => {
+    // Arm 1 leads on mean (12% vs 10%) but arm 0's 500-impression bonus
+    // (≈ 0.07 under the Tuned index) dwarfs arm 1's ≈ 0.008 bonus plus
+    // the 0.02 mean gap.
+    const tallies: ArmTallies = { impressions: [500, 20000], installs: [50, 2400] }
+    const allocation = allocateBudgetWeek('ucb', tallies, HANDOFF_EPSILON, forbiddenRand)
+    expect(allocation[0]).toBe(WEEKLY_BUDGET)
+  })
+
+  it('is deterministic and never consumes rand', () => {
+    const tallies: ArmTallies = { impressions: [6667, 6667, 6666], installs: [470, 130, 330] }
+    const a = allocateBudgetWeek('ucb', tallies, HANDOFF_EPSILON, forbiddenRand)
+    const b = allocateBudgetWeek('ucb', tallies, 0.9, forbiddenRand)
+    expect(a).toEqual(b)
+  })
+})
+
+describe('allocateBudgetWeek: random', () => {
+  it('puts the whole budget on exactly one arm', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      const allocation = allocateBudgetWeek(
+        'random',
+        zeroTallies(3),
+        HANDOFF_EPSILON,
+        makeRng(seed, STREAM.BUDGET_STRATEGY, 4),
+      )
+      const funded = [0, 1, 2].filter((arm) => allocation[arm] > 0)
+      expect(funded).toHaveLength(1)
+      expect(allocation[funded[0]]).toBe(WEEKLY_BUDGET)
+      expect(allocationCents(allocation)).toBe(WEEKLY_BUDGET * 100)
+    }
+  })
+
+  it('ignores the evidence: the pick distribution is roughly uniform across seeds', () => {
+    const lopsided: ArmTallies = { impressions: [20000, 100, 100], installs: [2400, 1, 1] }
+    const counts = [0, 0, 0]
+    const n = 600
+    for (let seed = 0; seed < n; seed++) {
+      const allocation = allocateBudgetWeek(
+        'random',
+        lopsided,
+        HANDOFF_EPSILON,
+        makeRng(seed, STREAM.BUDGET_STRATEGY, 4),
+      )
+      counts[[0, 1, 2].find((arm) => allocation[arm] > 0)!]++
+    }
+    for (const c of counts) {
+      expect(c / n).toBeGreaterThan(0.25)
+      expect(c / n).toBeLessThan(0.42)
+    }
+  })
+})
+
 const RATES = [0.04, 0.11, 0.06]
 const SEED = 42
 

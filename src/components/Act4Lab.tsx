@@ -4,7 +4,7 @@ import { SimulatorPanel } from './SimulatorPanel'
 import './lab.css'
 
 interface StrategyCard {
-  id: 'fixed-split' | 'epsilon-greedy' | 'thompson'
+  id: 'fixed-split' | 'epsilon-greedy' | 'thompson' | 'ucb' | 'random'
   name: string
   thinks: string
   winsAndLoses: string
@@ -68,8 +68,8 @@ const STRATEGY_CARDS: StrategyCard[] = [
     winsAndLoses:
       'It wins because exploration scales itself down: an uncertain arm sometimes samples ' +
       'high and gets tried; a well-measured loser almost never does. No knob to tune, and ' +
-      'near-optimal regret as the horizon grows: the bending curve in the chart (over a ' +
-      'short run, a lucky ε can still edge it out). It loses when the world moves: like ' +
+      'near-optimal regret as the horizon grows: the lowest bending curve in the chart ' +
+      '(over a short run, a lucky ε can still edge it out). It loses when the world moves: like ' +
       'everything on this page it never forgets old data, so a posterior built on last ' +
       'month\'s world stays confidently stale, and it\'s harder to explain to a ' +
       'stakeholder than "we test 10% of the time".',
@@ -80,6 +80,48 @@ const STRATEGY_CARDS: StrategyCard[] = [
       'traffic".',
     pseudocode:
       'every round:\n  for each arm:\n    draw a plausible rate from\n    Beta(1 + wins, 1 + misses)\n  back the arm with the highest draw',
+  },
+  {
+    id: 'ucb',
+    name: 'UCB (Upper Confidence Bound)',
+    thinks:
+      'Optimism under uncertainty. Each arm gets a score: its average so far, plus a bonus ' +
+      'for how uncertain that average still is. Play the highest score. A barely-tried arm ' +
+      'carries a big bonus (its best case could be anything); a well-tried arm is judged ' +
+      'almost purely on its record. This lab runs UCB1-Tuned, the variant whose bonus also ' +
+      'shrinks with the arm\'s observed variance, which matters at install-rate-scale odds.',
+    winsAndLoses:
+      'It wins on principle: no knob to tune, fully deterministic (same data in, same pick ' +
+      'out, which auditors and on-call engineers love), and its line bends like Thompson\'s. ' +
+      'Stretch the horizon to 20,000 rounds and watch it cross below ε-greedy\'s fixed tax. ' +
+      'One honest asterisk: the proven log(T) regret theorem belongs to plain UCB1; the ' +
+      'Tuned variant here is its empirically better sibling, presented in the same paper ' +
+      'without a proof. It loses on temperament: built for the worst case, it typically ' +
+      'pays a little more than Thompson to reach the same answer.',
+    takeaway:
+      'When you need a defensible, reproducible decision rule (no sampling, no seed, every ' +
+      'pick explainable as "highest average plus uncertainty bonus"), UCB is the one to ' +
+      'reach for. It is also the standard baseline in the research literature.',
+    pseudocode:
+      'every round:\n  for each arm:\n    bonus = sqrt(ln t / tries),\n    scaled by observed variance\n    score = average + bonus\n  back the arm with the top score',
+  },
+  {
+    id: 'random',
+    name: 'Uniform random',
+    thinks:
+      'It doesn\'t, on purpose. Every round it picks any arm with equal odds and never looks ' +
+      'at a single result. Pure exploration, zero exploitation.',
+    winsAndLoses:
+      'It never wins; it exists to be beaten. Its regret climbs in a straight line at the ' +
+      'same steep slope as the fixed split (both pay the average gap to the best arm, every ' +
+      'round, forever; one spreads it evenly, one spreads it noisily). If any strategy you ' +
+      'build cannot clearly beat this line, the strategy is broken, the metric is broken, ' +
+      'or there is nothing to learn.',
+    takeaway:
+      'This is the null hypothesis of allocation, and running it deliberately on a small ' +
+      'slice of traffic is genuinely useful: it produces the one clean, unbiased dataset in ' +
+      'the whole system, which is exactly what you retrain your models on later.',
+    pseudocode: 'every round:\n  pick any arm,\n  all equally likely',
   },
 ]
 
@@ -120,7 +162,7 @@ const EXPERIMENTS: Experiment[] = [
     id: 'drift',
     label: 'Turn the menu over',
     blurb:
-      'Three times mid-run, the offer nobody was buying becomes the top seller. None of these three ever forgets, so all three keep betting on a world that moved on. Give Thompson a 1,000-round memory instead and 40% of its regret disappears.',
+      'Three times mid-run, the offer nobody was buying becomes the top seller. None of these strategies ever forgets, so they all keep betting on a world that moved on. Give Thompson a 1,000-round memory instead and 40% of its regret disappears.',
     apply: (sim) => sim.setDrift(true),
   },
   {
@@ -146,7 +188,7 @@ const LIMITS: { term: string; body: string }[] = [
   {
     term: 'Forgetting (non-stationarity)',
     body:
-      'The "Turn the menu over" button shows the problem and none of these three solve it: they weight a result from round 1 exactly like a result from round 4,999. The fixes are a sliding window, exponential discounting, or change-point detection. Discounted Thompson sampling is the usual first reach, and in this lab a 1,000-round memory is worth about 40% of Thompson\'s regret.',
+      'The "Turn the menu over" button shows the problem and none of these five solve it: they weight a result from round 1 exactly like a result from round 4,999. The fixes are a sliding window, exponential discounting, or change-point detection. Discounted Thompson sampling is the usual first reach, and in this lab a 1,000-round memory is worth about 40% of Thompson\'s regret.',
   },
   {
     term: 'Inference vs. optimization',
@@ -166,7 +208,7 @@ const LIMITS: { term: string; body: string }[] = [
   {
     term: 'How good is "near-optimal"?',
     body:
-      'There is real theory under the hand-waving: the best achievable regret grows like log(T) for a fixed problem, and a constant ε can never reach it: its tax is linear forever, which is why ε-greedy\'s line here stays straight while Thompson\'s bends. A decaying ε fixes that. UCB gets there by a different route, adding a confidence bonus instead of sampling.',
+      'There is real theory under the hand-waving: the best achievable regret grows like log(T) for a fixed problem, and a constant ε can never reach it: its tax is linear forever, which is why ε-greedy\'s line here stays straight while Thompson\'s and UCB\'s bend. A decaying ε fixes that. Watch the race above: the two bending lines are the two built to chase that log(T) shape (Thompson provably; UCB1-Tuned empirically, with the theorem held by its plainer sibling).',
   },
   {
     term: 'The parts we skipped entirely',
@@ -177,6 +219,8 @@ const LIMITS: { term: string; body: string }[] = [
 
 export interface Act4LabProps {
   sim: Simulation
+  /** The closing CTA — Act V, the essay's prose conclusion. */
+  onGoToConclusion: () => void
 }
 
 /**
@@ -185,7 +229,7 @@ export interface Act4LabProps {
  * sandbox: hidden random rates, every control exposed) where each claim can
  * be tested immediately.
  */
-export function Act4Lab({ sim }: Act4LabProps) {
+export function Act4Lab({ sim, onGoToConclusion }: Act4LabProps) {
   const runExperiment = (experiment: Experiment) => {
     experiment.apply(sim)
     if (!sim.playing) sim.playPause()
@@ -194,7 +238,7 @@ export function Act4Lab({ sim }: Act4LabProps) {
   return (
     <div className="pg">
       <p className="lab-intro">
-        Three strategies, one question: <strong>which arm do you pull next?</strong> Whether or
+        Five strategies, one question: <strong>which arm do you pull next?</strong> Whether or
         not you've watched them race in Act II, this act is about why their regret lines bend the
         way they do, and what each strategy is worth outside this essay. Everything below runs
         on hidden, randomly drawn rates: reshuffle, tune, and reveal as much as you like.
@@ -272,6 +316,18 @@ export function Act4Lab({ sim }: Act4LabProps) {
           right metric. Point it at the wrong one and it will find, quickly and efficiently, the
           most effective way to make that mistake.
         </p>
+      </section>
+
+      <section className="pg-next-cta" aria-label="Act V: The Conclusion">
+        <h3 className="pg-next-title">Act V: leaving the playground</h3>
+        <p className="pg-next-copy">
+          One act left, and it is prose: what all of this looks like once the audience is not
+          one person and the world will not stand still. Contextual bandits, the state you can
+          feed them, and why minimizing regret is a practice, not a formula.
+        </p>
+        <button type="button" className="ct-button pg-next-button" onClick={onGoToConclusion}>
+          Act V: The Conclusion →
+        </button>
       </section>
     </div>
   )
