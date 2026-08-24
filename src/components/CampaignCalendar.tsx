@@ -19,7 +19,7 @@ export interface CampaignCalendarProps {
    */
   children?: ReactNode
   /**
-   * Act 2 handoff marker: once set, played weeks at or after `fromWeek`
+   * Act III handoff marker: once set, played weeks at or after `fromWeek`
    * render as strategy-run — a subtle 2px left border in the strategy's
    * color and a ", run by {label}" suffix on the cell's aria-label. Purely
    * presentational; nothing else about the calendar changes.

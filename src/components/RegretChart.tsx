@@ -99,8 +99,8 @@ export function RegretChart({
   t,
   horizon,
   height = 260,
-  // "EXPECTED ... given up", not "left on the table": Acts I and II use that
-  // second phrase for a realized head-to-head against the oracle's own draws
+  // "EXPECTED ... given up", not "left on the table": Act I's pilot recap and
+  // Act III's quarter results use that second phrase for a realized head-to-head against the oracle's own draws
   // — a whole number of installs that is exactly 0 under perfect play. This
   // chart plots cumulative expected regret, an average over counterfactual
   // draws, which is why it can read 21.53. One phrase for two different
@@ -111,7 +111,7 @@ export function RegretChart({
 }: RegretChartProps) {
   const [hoverRound, setHoverRound] = useState<number | null>(null)
   // Ties the SVG to its own sr-only standings text; unique per instance
-  // because Act I's race and Act III's lab can both be mounted.
+  // because Act II's race and Act IV's lab can both be mounted.
   const summaryId = useId()
   const [measuredWidth, setMeasuredWidth] = useState(FALLBACK_WIDTH)
   const wrapRef = useRef<HTMLDivElement>(null)

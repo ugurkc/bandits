@@ -254,13 +254,6 @@
   color: var(--ink);
 }
 
-.bb-question {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--ink);
-}
-
 .bb-explainer {
   margin: 0;
   font-size: 14px;

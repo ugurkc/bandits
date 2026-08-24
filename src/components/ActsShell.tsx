@@ -9,8 +9,9 @@ import { useTrialWeeks } from '../state/useTrialWeeks'
 import { Act0Intro } from './Act0Intro'
 import { Act1TrialError } from './Act1TrialError'
 import type { Act1Mode } from './Act1TrialError'
-import { Act2Rationing } from './Act2Rationing'
-import { Act3Lab } from './Act3Lab'
+import { Act2Regret } from './Act2Regret'
+import { Act3Rationing } from './Act3Rationing'
+import { Act4Lab } from './Act4Lab'
 import type { PitchOutcome } from './PitchPhase'
 import { ThemeToggle } from './ThemeToggle'
 import './acts.css'
@@ -20,7 +21,7 @@ import './acts.css'
  * hooks), but they only mean anything once rates exist — this stable
  * placeholder keeps the pilot harmless before a pitch is scored, and its
  * rewind-on-rates-change logic swaps it out for the real rates the moment
- * scoring happens. (The quarter never sees it: Act II self-seeds with
+ * scoring happens. (The quarter never sees it: Act III self-seeds with
  * example campaigns instead.)
  */
 const NO_OUTCOME_RATES = [0.05, 0.05, 0.05]
@@ -108,9 +109,10 @@ export function ActsShell() {
   }, [act, announce])
 
   // --- Cross-act state ---------------------------------------------------
-  // Act I's race simulation (pitch-derived rates once scored).
+  // Act II's race simulation (pitch-derived rates once scored); its seed
+  // also anchors Act I's pilot and Act III's quarter.
   const sim = useSimulation()
-  // Act III's free-play lab — its own independent simulation, so tuning the
+  // Act IV's free-play lab — its own independent simulation, so tuning the
   // lab never disturbs the pitch-derived race and vice versa.
   const labSim = useSimulation()
 
@@ -124,7 +126,7 @@ export function ActsShell() {
 
   const trial = useTrialWeeks(pitchOutcome?.rates ?? NO_OUTCOME_RATES, sim.config.seed)
 
-  // Act II self-seeds when the reader hasn't pitched: a scenario's example
+  // Act III self-seeds when the reader hasn't pitched: a scenario's example
   // pitches, scored through the same pipeline (see the module doc). The
   // example scenario tracks Act I's "try another scenario" cycling ONLY
   // while the quarter is untouched — a half-played quarter's rates identity
@@ -138,17 +140,17 @@ export function ActsShell() {
   const usingExample = pitchOutcome === null
   const campaignRates = pitchOutcome?.rates ?? example.rates
   const campaignLabels = pitchOutcome?.labels ?? example.labels
-  const quarter = useCampaignQuarter(campaignRates, sim.config.seed, act === 2)
+  const quarter = useCampaignQuarter(campaignRates, sim.config.seed, act === 3)
 
   const quarterUntouched = quarter.weeks.length === 0
   useEffect(() => {
-    // Never re-pin while the reader is looking at Act II. "Restart the
+    // Never re-pin while the reader is looking at Act III. "Restart the
     // quarter" empties `weeks`, which makes `quarterUntouched` true again —
     // so if they had cycled the brief in Act I at any point, a restart would
     // silently deal them three different campaigns at different hidden rates
     // while the announcement only said "back to week 1". A restart has to be
     // a rematch of the same game.
-    if (act === 2) return
+    if (act === 3) return
     if (quarterUntouched && exampleIndex !== scenarioIndex) setExampleIndex(scenarioIndex)
   }, [act, quarterUntouched, exampleIndex, scenarioIndex])
 
@@ -156,8 +158,8 @@ export function ActsShell() {
   // the whole shell every frame and silently finish its race offscreen —
   // pause it at the seam (the reader resumes with one click on return).
   useEffect(() => {
-    if (act !== 1 && sim.playing) sim.playPause()
-    if (act !== 3 && labSim.playing) labSim.playPause()
+    if (act !== 2 && sim.playing) sim.playPause()
+    if (act !== 4 && labSim.playing) labSim.playPause()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fire on act change only
   }, [act])
 
@@ -236,7 +238,7 @@ export function ActsShell() {
           tabIndex={-1}
           className={`an-panel${nav.dir ? ` an-panel--${nav.dir}` : ''}`}
         >
-          {/* Acts I–III had no h1 and no h2 — their headings started at h3, so
+          {/* Acts I–IV had no h1 and no h2 — their headings started at h3, so
               a screen-reader user navigating by heading landed in an act with
               no top-level heading to orient from. Act 0 ships its own visible
               h1 (the essay title), so this only covers the rest. The text is
@@ -264,16 +266,28 @@ export function ActsShell() {
                   setDraftPitches(['', '', ''])
                 }}
                 onBackToPitches={backToPitches}
-                onEnterRace={() => setAct1Mode('race')}
-                onSkipToLab={() => goToAct(3)}
-                onGoToAct2={() => goToAct(2)}
+                onGoToRegret={() => goToAct(2)}
+                onSkipToLab={() => goToAct(4)}
                 announce={announce}
               />
             </section>
           )}
           {act === 2 && (
-            <section className="playground-section" aria-label="Act II — Rationing">
-              <Act2Rationing
+            <section className="playground-section" aria-label="Act II — Regret">
+              <Act2Regret
+                sim={sim}
+                pitchOutcome={pitchOutcome}
+                onBackToPitches={() => {
+                  backToPitches()
+                  goToAct(1)
+                }}
+                onGoToRationing={() => goToAct(3)}
+              />
+            </section>
+          )}
+          {act === 3 && (
+            <section className="playground-section" aria-label="Act III — Rationing">
+              <Act3Rationing
                 quarter={quarter}
                 campaignLabels={campaignLabels}
                 campaignRates={campaignRates}
@@ -282,14 +296,14 @@ export function ActsShell() {
                 usingExample={usingExample}
                 exampleScenarioTitle={example.scenarioTitle}
                 onGoToAct1={() => goToAct(1)}
-                onGoToAct3={() => goToAct(3)}
+                onGoToAct4={() => goToAct(4)}
                 announce={announce}
               />
             </section>
           )}
-          {act === 3 && (
-            <section className="playground-section" aria-label="Act III — Learning from the Best">
-              <Act3Lab sim={labSim} />
+          {act === 4 && (
+            <section className="playground-section" aria-label="Act IV — Learning from the Best">
+              <Act4Lab sim={labSim} />
             </section>
           )}
         </div>

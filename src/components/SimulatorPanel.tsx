@@ -44,8 +44,8 @@ export interface SimulatorPanelProps {
 const defaultArmLabel = (i: number) => `Offer ${String.fromCharCode(65 + i)}`
 
 /**
- * The automated-race surface shared by Act I (pitch-derived race) and Act
- * III (the free-play lab): controls, the regret chart, and one card per arm.
+ * The automated-race surface shared by Act II (pitch-derived race) and
+ * Act IV (the free-play lab): controls, the regret chart, and one card per arm.
  * All simulation state lives in the `Simulation` passed in; this component
  * only derives view data from the precomputed result at the playhead.
  */

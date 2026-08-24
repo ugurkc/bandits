@@ -1,10 +1,10 @@
 /*
- * Act III — Learning from the Best: strategy cards (a3-card) and the
- * one-click experiments row (a3-experiment). Every color comes from the
+ * Act IV — Learning from the Best: strategy cards (lab-card) and the
+ * one-click experiments row (lab-experiment). Every color comes from the
  * theme tokens in src/index.css.
  */
 
-.a3-intro {
+.lab-intro {
   margin: 0;
   max-width: 680px;
   color: var(--muted);
@@ -12,17 +12,17 @@
   line-height: 1.6;
 }
 
-.a3-intro strong {
+.lab-intro strong {
   color: var(--ink);
 }
 
-.a3-cards {
+.lab-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
   gap: 16px;
 }
 
-.a3-card {
+.lab-card {
   display: grid;
   gap: 10px;
   align-content: start;
@@ -33,7 +33,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.a3-card-name {
+.lab-card-name {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -42,25 +42,25 @@
   line-height: 1.3;
 }
 
-.a3-card-chip {
+.lab-card-chip {
   width: 12px;
   height: 12px;
   border-radius: 4px;
   flex: none;
 }
 
-.a3-card-section {
+.lab-card-section {
   margin: 0;
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--muted);
 }
 
-.a3-card-section strong {
+.lab-card-section strong {
   color: var(--ink);
 }
 
-.a3-card-code {
+.lab-card-code {
   margin: 0;
   padding: 10px 12px;
   background: var(--paper);
@@ -71,23 +71,23 @@
   overflow-x: auto;
 }
 
-.a3-experiments {
+.lab-experiments {
   display: grid;
   gap: 10px;
 }
 
-.a3-experiments-title {
+.lab-experiments-title {
   margin: 0;
   font-size: 16px;
 }
 
-.a3-experiment-row {
+.lab-experiment-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
 }
 
-.a3-experiment {
+.lab-experiment {
   display: grid;
   gap: 4px;
   padding: 10px 14px;
@@ -101,29 +101,29 @@
   cursor: pointer;
 }
 
-.a3-experiment:hover {
+.lab-experiment:hover {
   border-color: var(--accent);
 }
 
-.a3-experiment:focus-visible {
+.lab-experiment:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.a3-experiment-label {
+.lab-experiment-label {
   font-size: 13px;
   font-weight: 700;
   color: var(--ink);
 }
 
-.a3-experiment-blurb {
+.lab-experiment-blurb {
   font-size: 12.5px;
   line-height: 1.5;
 }
 
 /* --- "What this leaves out": the act's closing beat --- */
 
-.a3-limits {
+.lab-limits {
   display: grid;
   gap: 12px;
   max-width: 760px;
@@ -134,38 +134,38 @@
   box-shadow: var(--shadow-sm);
 }
 
-.a3-limits-title {
+.lab-limits-title {
   margin: 0;
   font-size: 17px;
 }
 
-.a3-limits-lede,
-.a3-limits-close {
+.lab-limits-lede,
+.lab-limits-close {
   margin: 0;
   font-size: 14px;
   line-height: 1.65;
   color: var(--muted);
 }
 
-.a3-limits-close {
+.lab-limits-close {
   padding-top: 12px;
   border-top: 1px solid var(--border);
   color: var(--ink);
 }
 
-.a3-limits-list {
+.lab-limits-list {
   display: grid;
   gap: 12px;
   margin: 0;
 }
 
-.a3-limit-term {
+.lab-limit-term {
   font-size: 13px;
   font-weight: 700;
   color: var(--ink);
 }
 
-.a3-limit-body {
+.lab-limit-body {
   margin: 2px 0 0;
   font-size: 13.5px;
   line-height: 1.6;

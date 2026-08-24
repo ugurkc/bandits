@@ -270,12 +270,12 @@ body {
   gap: 16px;
 }
 
-/* --- Act I/II composition: the race screen's Act II entry CTA and the
-   completed quarter's action row. The Act II components themselves
-   (calendar, split panel, handoff, results) carry their own styles in
-   campaign.css. --- */
+/* --- Act II/III composition: the race screen's next-act CTA (Act II ->
+   the budgeted quarter) and the completed quarter's action row. The
+   quarter's own components (calendar, split panel, handoff, results)
+   carry their styles in campaign.css. --- */
 
-.pg-act2-cta {
+.pg-next-cta {
   display: grid;
   gap: 10px;
   padding: 18px 20px;
@@ -285,34 +285,36 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-.pg-act2-title {
+.pg-next-title {
   margin: 0;
   font-size: 17px;
   font-weight: 700;
   color: var(--ink);
 }
 
-.pg-act2-copy {
+.pg-next-copy {
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
   color: var(--muted);
 }
 
-.pg-act2-button {
+.pg-next-button {
   justify-self: start;
   font-weight: 700;
 }
 
-.pg-act2-actions {
+.pg-quarter-actions {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-/* Act II's example-campaigns banner: shown when the reader landed on the
-   quarter without scoring pitches in Act I (free act navigation), so the
-   self-seeded campaigns are never mistaken for the reader's own. */
+/* The no-pitch banner, shared by two acts (free act navigation): Act III's
+   example-campaigns note (the quarter self-seeds, and the banner keeps the
+   seeded campaigns from being mistaken for the reader's own) and Act II's
+   gate (the race can't self-seed — it's framed as "YOUR campaigns" — so
+   the banner points back to Act I instead). */
 .pg-example-note {
   display: flex;
   align-items: center;

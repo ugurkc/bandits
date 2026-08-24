@@ -19,11 +19,11 @@ const BASE_MAX = 0.12
  * [0.005, 0.03] on 2026-08-18: at a sub-2pp gap on a ~10% base, separating
  * the top two arms needs ~1000+ pulls each, so the lab's 5,000-round default
  * was a SHORT horizon for its own world and ε-greedy beat Thompson at every
- * horizon the UI offers — contradicting Act III's central card. Measured
+ * horizon the UI offers — contradicting Act IV's central card. Measured
  * over 1000 reshuffle-style seeds at the new range: P(Thompson < ε-greedy)
  * = 0.92 (was ~0.50), and the crossover is visible with the horizon
- * selector (ε-greedy still wins at H=1000). These rates feed ONLY Act III's
- * lab — Act I and Act II derive theirs from the reader's pitches via
+ * selector (ε-greedy still wins at H=1000). These rates feed ONLY Act IV's
+ * lab — Acts I–III derive theirs from the reader's pitches via
  * similaritiesToRates.
  */
 const GAP_MIN = 0.05

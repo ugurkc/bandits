@@ -4,7 +4,7 @@
  *
  * Deliberately its own hook, not `useCampaignQuarter` — see "Two acts — do
  * not merge them" in docs/plans/2026-08-12-simulator-design.md. The pilot's
- * five weeks precede Act II's 13-week quarter in the fiction; the two live
+ * five weeks precede Act III's 13-week quarter in the fiction; the two live
  * in separate RNG streams so pilot week w never replays quarter week w's
  * luck (see `STREAM.TRIAL_REWARD` below).
  */
@@ -80,13 +80,13 @@ export function installsLeftOnTable(
 /**
  * Plays one pilot week: the full TRIAL_WEEK_IMPRESSIONS on the picked
  * campaign, zero on the others. Reuses `sampleInstalls` directly rather than
- * Act II's `playWeek` (which is gated on summing to the $500 QUARTER budget)
+ * Act III's `playWeek` (which is gated on summing to the $500 QUARTER budget)
  * — the pilot runs the same $/CPM translation at its own smaller
  * `PILOT_WEEKLY_BUDGET`, so it buys 300 impressions instead of 500. The
  * recorded allocation is that $300, not the quarter's $500: the week's own
  * data record used to claim $500 while sampling 300 impressions, which was
  * invisible only because `weekAria` (the sole surface rendering allocation
- * dollars) is Act II-only. Draws live in Act I's own `STREAM.TRIAL_REWARD`
+ * dollars) is Act III-only. Draws live in Act I's own `STREAM.TRIAL_REWARD`
  * stream, so pilot week w never replays quarter week w's luck arm-for-arm.
  * Exported for tests (pure).
  */

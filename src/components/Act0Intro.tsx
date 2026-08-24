@@ -18,7 +18,7 @@ export interface Act0IntroProps {
 
 /**
  * Act 0 — The Introduction: the essay's header prose, images and nothing
- * else. The simulator lives in Act I; this act only sets the scene and
+ * else. The simulator arc starts in Act I; this act only sets the scene and
  * hands off.
  */
 export function Act0Intro({ onBegin }: Act0IntroProps) {

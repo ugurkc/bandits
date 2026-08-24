@@ -1,7 +1,7 @@
 import { STRATEGY_COLOR_VARS } from '../lib/bandit/types'
 import type { Simulation } from '../state/useSimulation'
 import { SimulatorPanel } from './SimulatorPanel'
-import './act3.css'
+import './lab.css'
 
 interface StrategyCard {
   id: 'fixed-split' | 'epsilon-greedy' | 'thompson'
@@ -175,17 +175,17 @@ const LIMITS: { term: string; body: string }[] = [
   },
 ]
 
-export interface Act3LabProps {
+export interface Act4LabProps {
   sim: Simulation
 }
 
 /**
- * Act III — Learning from the Best: what each strategy actually does, where
+ * Act IV — Learning from the Best: what each strategy actually does, where
  * it wins and loses, what to take home — next to a free-play lab (the
  * sandbox: hidden random rates, every control exposed) where each claim can
  * be tested immediately.
  */
-export function Act3Lab({ sim }: Act3LabProps) {
+export function Act4Lab({ sim }: Act4LabProps) {
   const runExperiment = (experiment: Experiment) => {
     experiment.apply(sim)
     if (!sim.playing) sim.playPause()
@@ -193,52 +193,52 @@ export function Act3Lab({ sim }: Act3LabProps) {
 
   return (
     <div className="pg">
-      <p className="a3-intro">
+      <p className="lab-intro">
         Three strategies, one question: <strong>which arm do you pull next?</strong> Whether or
-        not you've watched them race in Act I, this act is about why their regret lines bend the
+        not you've watched them race in Act II, this act is about why their regret lines bend the
         way they do, and what each strategy is worth outside this essay. Everything below runs
         on hidden, randomly drawn rates — reshuffle, tune, and reveal as much as you like.
       </p>
 
-      <div className="a3-cards">
+      <div className="lab-cards">
         {STRATEGY_CARDS.map((card) => (
-          <article key={card.id} className="a3-card" aria-label={card.name}>
-            <h3 className="a3-card-name">
+          <article key={card.id} className="lab-card" aria-label={card.name}>
+            <h3 className="lab-card-name">
               <span
-                className="a3-card-chip"
+                className="lab-card-chip"
                 style={{ background: STRATEGY_COLOR_VARS[card.id] }}
                 aria-hidden="true"
               />
               {card.name}
             </h3>
-            <p className="a3-card-section">
+            <p className="lab-card-section">
               <strong>How it thinks.</strong> {card.thinks}
             </p>
-            <p className="a3-card-section">
+            <p className="lab-card-section">
               <strong>Where it wins — and loses.</strong> {card.winsAndLoses}
             </p>
-            <p className="a3-card-section">
+            <p className="lab-card-section">
               <strong>Take it home.</strong> {card.takeaway}
             </p>
-            <pre className="a3-card-code" aria-label={`${card.name} pseudocode`}>
+            <pre className="lab-card-code" aria-label={`${card.name} pseudocode`}>
               {card.pseudocode}
             </pre>
           </article>
         ))}
       </div>
 
-      <section className="a3-experiments" aria-label="Lab experiments">
-        <h3 className="a3-experiments-title">Put the claims to the test</h3>
-        <div className="a3-experiment-row">
+      <section className="lab-experiments" aria-label="Lab experiments">
+        <h3 className="lab-experiments-title">Put the claims to the test</h3>
+        <div className="lab-experiment-row">
           {EXPERIMENTS.map((experiment) => (
             <button
               key={experiment.id}
               type="button"
-              className="a3-experiment"
+              className="lab-experiment"
               onClick={() => runExperiment(experiment)}
             >
-              <span className="a3-experiment-label">{experiment.label}</span>
-              <span className="a3-experiment-blurb">{experiment.blurb}</span>
+              <span className="lab-experiment-label">{experiment.label}</span>
+              <span className="lab-experiment-blurb">{experiment.blurb}</span>
             </button>
           ))}
         </div>
@@ -252,22 +252,22 @@ export function Act3Lab({ sim }: Act3LabProps) {
         chartUnit="conversions"
       />
 
-      <section className="a3-limits" aria-label="What this leaves out">
-        <h3 className="a3-limits-title">What this leaves out</h3>
-        <p className="a3-limits-lede">
+      <section className="lab-limits" aria-label="What this leaves out">
+        <h3 className="lab-limits-title">What this leaves out</h3>
+        <p className="lab-limits-lede">
           Everything above is the easy version of the problem: three fixed options, one metric,
           an audience that behaves the same for everyone. Here is what the simulator quietly
           assumes away — and what each of those assumptions is actually called.
         </p>
-        <dl className="a3-limits-list">
+        <dl className="lab-limits-list">
           {LIMITS.map((limit) => (
-            <div key={limit.term} className="a3-limit">
-              <dt className="a3-limit-term">{limit.term}</dt>
-              <dd className="a3-limit-body">{limit.body}</dd>
+            <div key={limit.term} className="lab-limit">
+              <dt className="lab-limit-term">{limit.term}</dt>
+              <dd className="lab-limit-body">{limit.body}</dd>
             </div>
           ))}
         </dl>
-        <p className="a3-limits-close">
+        <p className="lab-limits-close">
           The one worth carrying furthest: a bandit does not decide whether your metric is the
           right metric. Point it at the wrong one and it will find, quickly and efficiently, the
           most effective way to make that mistake.

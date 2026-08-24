@@ -540,9 +540,29 @@
   outline-offset: 1px;
 }
 
+/* Advancement flows right: the skip escape-hatch sits on the left, and the
+   engine status + primary score button are pushed to the right edge — the
+   same side every other "onward" control in the essay lives on. DOM order
+   matches the visual order (skip, engine, score), so tab order does too. */
 .pp-actions {
   display: flex;
   align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pp-actions .pp-skip {
+  margin-left: 0;
+}
+
+/* The engine status + score button travel as one right-pushed group, and
+   the group itself right-aligns its contents when a phone-width viewport
+   forces IT to wrap internally. */
+.pp-actions-go {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 14px;
   flex-wrap: wrap;
 }
@@ -591,6 +611,24 @@
   color: var(--muted);
   border-top: 1px solid var(--border);
   padding-top: 12px;
+}
+
+/* ---------- Act II's regret explainer (above the chart) ---------- */
+
+/* Same measure and tone as .pp-intro: teaching prose, not chart chrome. */
+.pg-regret-intro {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.pg-regret-intro p {
+  margin: 0;
+}
+
+.pg-regret-intro p + p {
+  margin-top: 12px;
 }
 
 /* ---------- Race topline (pitch context + back link) ---------- */

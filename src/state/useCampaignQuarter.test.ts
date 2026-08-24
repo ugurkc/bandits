@@ -11,7 +11,7 @@ import { WEEKS_PER_QUARTER } from '../lib/campaign/types'
 // budgetStrategies.test.ts; the hook only paces their reveal.)
 
 describe('derivePhase', () => {
-  it('is budget for every week of the quarter (Act 2 is all budget splits)', () => {
+  it('is budget for every week of the quarter (Act III is all budget splits)', () => {
     for (let week = 1; week <= WEEKS_PER_QUARTER; week++) {
       expect(derivePhase(week)).toBe('budget')
     }

@@ -1,5 +1,5 @@
 /**
- * Shared contracts for the campaign-flavored reward engine: Act II's
+ * Shared contracts for the campaign-flavored reward engine: Act III's
  * budgeted quarter (`useCampaignQuarter`) and Act I's pilot board
  * (`useTrialWeeks`, which reuses `CampaignWeekResult` — pilot weeks in
  * the `week` slot).
@@ -34,7 +34,7 @@ export const PILOT_WEEKLY_BUDGET = 300
  * mapping band; script archived in the review session's scratchpad) so a
  * week's evidence is genuinely partial — at the old $25 CPM ($500 = 20,000
  * impressions) one even-split week identified the best arm in ~100% of
- * seeds and Act 2's hedge-vs-learn tension didn't exist. Candidates
+ * seeds and Act III's hedge-vs-learn tension didn't exist. Candidates
  * {250, 500, 1000}, measured on a 2pp best-vs-second gap:
  * - P(even-split week-1 argmax = true best): 0.887 / 0.783 / 0.702 —
  *   only $1000 sits below the ~0.75 target, so hedged learning takes

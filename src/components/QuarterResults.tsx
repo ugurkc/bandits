@@ -209,7 +209,7 @@ export function QuarterResults({
                   the whole area left the row's aria-label as the sole carrier
                   of every figure, and screen readers in browse mode read a
                   non-interactive list item's contents rather than its label —
-                  so Act II's payoff screen announced four strategy names and
+                  so Act III's payoff screen announced four strategy names and
                   not one install count. */}
               <span className="qr-bar-area">
                 <span

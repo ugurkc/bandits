@@ -1,24 +1,22 @@
 import { useEffect, useRef } from 'react'
-import { STRATEGY_LABELS } from '../lib/bandit/types'
 import type { CampaignId } from '../lib/campaign/types'
 import { scenarioAt } from '../lib/similarity/scenarios'
 import type { Simulation } from '../state/useSimulation'
 import type { TrialWeeks } from '../state/useTrialWeeks'
 import { PitchPhase } from './PitchPhase'
 import type { PitchOutcome } from './PitchPhase'
-import { SimulatorPanel } from './SimulatorPanel'
 import { TrialWeekBoard } from './TrialWeekBoard'
 import { BanditBridge } from './BanditBridge'
-import { TruthReveal } from './TruthReveal'
 
 /**
  * Act I's internal flow. The pitch phase is the opening state; scoring
  * hands off to the five-week manual pilot — the scenario brief's pilot run —
- * then a bridge that names the k-armed bandit problem before the automated
- * race. From the race, a CTA points on to Act II. Skipping the pitch jumps
- * to Act III's free-play lab instead (the sandbox lives there now).
+ * then a bridge that names the k-armed bandit problem and the
+ * exploration/exploitation tension before handing off to Act II's automated
+ * race (where regret gets its name and its chart). Skipping the pitch jumps
+ * to Act IV's free-play lab instead (the sandbox lives there now).
  */
-export type Act1Mode = 'pitch' | 'trial' | 'race'
+export type Act1Mode = 'pitch' | 'trial'
 
 const CAMPAIGN_IDS: CampaignId[] = [0, 1, 2]
 
@@ -34,17 +32,16 @@ export interface Act1TrialErrorProps {
   onScored: (outcome: PitchOutcome) => void
   onNextScenario: () => void
   onBackToPitches: () => void
-  onEnterRace: () => void
-  /** "Skip to the strategy lab" — Act III. */
+  /** The bridge's closing CTA — Act II's automated race. */
+  onGoToRegret: () => void
+  /** "Skip to the strategy lab" — Act IV. */
   onSkipToLab: () => void
-  /** The race screen's "start the budgeted quarter" CTA — Act II. */
-  onGoToAct2: () => void
   announce: (message: string) => void
 }
 
 /**
- * Act I — Trial & Error: pitch three campaigns, feel five noisy pilot weeks
- * by hand, then watch three strategies race the same problem at full speed.
+ * Act I — Trial & Error: pitch three campaigns, then feel five noisy pilot
+ * weeks by hand. The automated race those weeks set up lives in Act II.
  */
 export function Act1TrialError({
   sim,
@@ -57,9 +54,8 @@ export function Act1TrialError({
   onScored,
   onNextScenario,
   onBackToPitches,
-  onEnterRace,
+  onGoToRegret,
   onSkipToLab,
-  onGoToAct2,
   announce,
 }: Act1TrialErrorProps) {
   // --- Focus + announcements at view seams -------------------------------
@@ -79,9 +75,7 @@ export function Act1TrialError({
     announce(
       mode === 'pitch'
         ? 'Pitch phase — write three campaign pitches and score them.'
-        : mode === 'trial'
-          ? 'Pilot — five weeks to try your campaigns, one pick per week.'
-          : 'Automated race — three strategies play thousands of rounds at full speed.',
+        : 'Pilot — five weeks to try your campaigns, one pick per week.',
     )
   }, [mode, announce])
 
@@ -135,7 +129,7 @@ export function Act1TrialError({
             <BanditBridge
               totalInstalls={trial.totalInstalls}
               installsLeftOnTable={trial.installsLeftOnTable}
-              onContinue={onEnterRace}
+              onContinue={onGoToRegret}
             />
           </div>
         )}
@@ -143,46 +137,8 @@ export function Act1TrialError({
     )
   }
 
-  if (mode === 'race' && pitchOutcome) {
-    return (
-      <div className="pg">
-        <div className="pg-topline" ref={toplineRef} tabIndex={-1}>
-          <span className="pg-context">
-            No calendar time passes here — this is a replay, not the next chapter. Your three
-            campaigns are the arms, and {STRATEGY_LABELS['fixed-split']}, ε-greedy and Thompson
-            are re-running the same three against the{' '}
-            {pitchOutcome.scenario.title.toLowerCase()} playerbase, decision by decision at the
-            level of a single impression, sped up. Reveal true rates to see the hidden truth.
-          </span>
-          <button type="button" className="pp-skip" onClick={onBackToPitches}>
-            ← Pitch campaigns instead
-          </button>
-        </div>
-
-        <SimulatorPanel
-          sim={sim}
-          pitchMode
-          armLabel={(i) => pitchOutcome.labels[i]}
-          revealExtra={<TruthReveal outcome={pitchOutcome} />}
-        />
-
-        <section className="pg-act2-cta" aria-label="Act II — Rationing">
-          <h3 className="pg-act2-title">Act II — now add the budget</h3>
-          <p className="pg-act2-copy">
-            Back to the calendar, still parked at the end of your pilot: the 13-week quarter
-            starts now. In real life you never run one campaign at a time: every week you split
-            a shared budget across all three. Same campaigns, same hidden truth.
-          </p>
-          <button type="button" className="ct-button pg-act2-button" onClick={onGoToAct2}>
-            Start the budgeted quarter →
-          </button>
-        </section>
-      </div>
-    )
-  }
-
-  // 'pitch' — and the fallback for 'trial'/'race' reached without a scored
-  // pitch (e.g. a deep link before any scoring).
+  // 'pitch' — and the fallback for 'trial' reached without a scored pitch
+  // (e.g. a deep link before any scoring).
   return (
     <div ref={toplineRef} tabIndex={-1} className="pg-view-focus">
       <PitchPhase

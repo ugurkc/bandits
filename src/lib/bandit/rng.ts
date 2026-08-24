@@ -25,7 +25,7 @@ export const STREAM = {
   TIE: 6,
   /** Weekly install draw for the manual campaign calendar, keyed on (week, arm). */
   WEEKLY_REWARD: 7,
-  /** Budgeted-strategy internal randomness (Act 2 posterior sampling). */
+  /** Budgeted-strategy internal randomness (Act III posterior sampling). */
   BUDGET_STRATEGY: 8,
   /**
    * Act I pilot-week install draw, keyed on (week, arm). Separate from

@@ -31,7 +31,7 @@ export interface Scenario {
   /**
    * Curated example pitches, one per box. NOT prefilled — the boxes start
    * blank; these fill in on demand via the pitch phase's generate button
-   * (and seed Act II's example campaigns when the reader lands there
+   * (and seed Act III's example campaigns when the reader lands there
    * without pitching).
    */
   examplePitches: [string, string, string]

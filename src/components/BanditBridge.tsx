@@ -7,16 +7,13 @@ export interface BanditBridgeProps {
 }
 
 /**
- * The beat between Act I's five-week pilot and the automated race: recap the
- * reader's own noisy results, name the concrete cost of guessing (the
- * installs a perfect-foresight oracle's REALIZED run of the same five weeks
- * would have earned — same seed, same draws, so the gap is attributable to
- * picks, not luck), ask the question the algorithms answer, then name what
- * they just did — the k-armed bandit problem — before handing off. Also
- * sets up Act II: names the simplification (one campaign at a time, no
- * budget to split) as deliberate scaffolding, not the finished picture —
- * strategies first, at a simple scale, then the budgeting constraint that
- * makes it look like the reader's actual day-to-day problem.
+ * The beat between Act I's five-week pilot and Act II's automated race:
+ * recap the reader's own noisy results, name the concrete cost of guessing
+ * (the installs a perfect-foresight oracle's REALIZED run of the same five
+ * weeks would have earned — same seed, same draws, so the gap is
+ * attributable to picks, not luck), then name what they just did — the
+ * k-armed bandit problem and the exploration/exploitation balance — and
+ * drop the word "regret" as the tease Act II picks up by name.
  */
 export function BanditBridge({ totalInstalls, installsLeftOnTable, onContinue }: BanditBridgeProps) {
   return (
@@ -34,7 +31,6 @@ export function BanditBridge({ totalInstalls, installsLeftOnTable, onContinue }:
           learn from.
         </p>
       )}
-      <p className="bb-question">How do we plan the quarter ahead of us?</p>
       <p className="bb-explainer">
         What you just did has a name: the <strong>k-armed bandit problem</strong> — k = 3
         campaigns here, each one an "arm" you can pull, and each of your five weeks was really
@@ -42,18 +38,19 @@ export function BanditBridge({ totalInstalls, installsLeftOnTable, onContinue }:
         to pull next, given only noisy results so far.
       </p>
       <p className="bb-explainer">
-        One honest caveat: picking a single campaign to run each week, with no way to split
-        spend, doesn't look much like real ad budgets — normally you'd run several campaigns
-        side by side, dividing a shared budget across them. We'll start with this simpler
-        version to build intuition for how these strategies actually think, then bring back
-        the budgeting constraint so the problem starts looking like the one you'd actually face
-        day to day. Next, three different strategies replay those same three campaigns — but
-        where you were locked in for a whole week at a time, they re-decide at every single
-        impression, which is part of why they do better: hit the button and watch thousands of
-        those tiny yes-or-no decisions, sped up.
+        Most people, when facing this scenario, try all the options for the first three weeks,
+        and then fill the remaining two weeks with the option that has worked the best. If this
+        is what you did, you are not alone. A very human way to tackle the delicate balance
+        between <strong>exploration &amp; exploitation</strong>.
+      </p>
+      <p className="bb-explainer">
+        So, when do we stop exploring and start exploiting? How much do we explore a single
+        option to increase our certainty of its performance? Customer acquisition is the
+        lifeline for our game — we surely don't want to <strong>regret</strong> having selected
+        bad options.
       </p>
       <button type="button" className="ct-button bb-cta" onClick={onContinue}>
-        See the strategies race →
+        Act II — see the strategies race →
       </button>
     </section>
   )

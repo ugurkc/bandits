@@ -47,8 +47,8 @@ describe('defaultBaseRates', () => {
 
   it.each(ks)('k=%i: best-vs-second gap lands in [0.05, 0.065]', (k) => {
     // Widened 2026-08-18. At the old sub-2pp gap the lab's own 5000-round
-    // default was too short for Thompson's advantage to appear, so Act III's
-    // central card was false on screen at every selectable horizon.
+    // default was too short for Thompson's advantage to appear, so the lab's (now
+    // Act IV's) central card was false on screen at every selectable horizon.
     for (const seed of seeds) {
       const sorted = [...defaultBaseRates(k, seed)].sort((a, b) => b - a)
       const gap = sorted[0] - sorted[1]

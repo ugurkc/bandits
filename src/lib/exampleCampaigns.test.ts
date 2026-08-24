@@ -6,7 +6,7 @@ import { SCENARIOS } from './similarity/scenarios'
 /**
  * The truth-aligned example pitch sits in a documented slot per scenario
  * (see the content rules in scenarios.ts): slots 2, 3, 1 — indices 1, 2, 0.
- * The lexical engine scoring the curated examples must agree, or Act II's
+ * The lexical engine scoring the curated examples must agree, or Act III's
  * self-seeded quarter would quietly teach that a distractor converts best.
  */
 const ALIGNED_INDEX = [1, 2, 0]

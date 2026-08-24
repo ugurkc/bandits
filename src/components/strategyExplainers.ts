@@ -2,8 +2,8 @@ import type { StrategyId } from '../lib/bandit/types'
 
 /**
  * One-line plain-English explainer per strategy. Shown on the HandoffCard's
- * buttons (Act II) and reused as title/aria enrichment on the race chart's
- * legend (Act I's race AND Act III's lab), so every surface tells one story
+ * buttons (Act III) and reused as title/aria enrichment on the race chart's
+ * legend (Act II's race AND Act IV's lab), so every surface tells one story
  * about each strategy — which is why the wording is deliberately
  * surface-neutral ("share"/"effort", not "budget": the race and the lab
  * have no budget in their fiction). Its own module (not HandoffCard) so

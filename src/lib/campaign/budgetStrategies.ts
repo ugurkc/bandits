@@ -1,5 +1,5 @@
 /**
- * Act 2's budgeted strategy variants: the three Act 1 strategies, re-expressed
+ * Act III's budgeted strategy variants: the three race strategies, re-expressed
  * as weekly dollar allocators. Each week a strategy looks at the cumulative
  * per-arm impression/install tallies and splits `WEEKLY_BUDGET` across all
  * k arms — same strategy identities (ids, labels, colors) as the automated
@@ -234,7 +234,7 @@ export function realizedOracleQuarter(
  * Act I's realized oracle: `sampleInstalls` on the argmax arm for each
  * period 1..`days` at `impressionsPerDay`, under the caller's stream tag
  * (Act I passes `STREAM.TRIAL_REWARD` so pilot-week draws stay separate
- * from Act II's weekly draws; the `days` naming is historical — Act I's
+ * from Act III's weekly draws; the `days` naming is historical — Act I's
  * periods are pilot WEEKS since the acts restructure). Same CRN guarantee
  * as `realizedOracleQuarter`: picking the best arm every period realizes
  * exactly this total. Pure and deterministic.

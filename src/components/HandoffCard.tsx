@@ -9,8 +9,8 @@ export interface HandoffCardProps {
 }
 
 /**
- * Act 2's payoff card: after the reader has split enough weeks by hand, offer
- * to hand the rest of the quarter to one of the strategies they met in Act 1
+ * Act III's payoff card: after the reader has split enough weeks by hand, offer
+ * to hand the rest of the quarter to one of the strategies they met in Act II's race
  * — in budgeted form, seeded with the tallies from their own manual weeks, so
  * it finishes *their* quarter rather than starting a fresh one.
  *

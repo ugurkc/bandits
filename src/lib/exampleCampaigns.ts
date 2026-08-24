@@ -1,7 +1,7 @@
 /**
  * Deterministic example campaigns for acts entered without playing Act I.
  *
- * Free act navigation means Act II can be the reader's first stop — but the
+ * Free act navigation means Act III can be the reader's first stop — but the
  * quarter needs three campaigns with hidden rates, which normally come from
  * the reader's own scored pitches. This builds the same shape from a
  * scenario's curated example pitches, scored with the synchronous lexical

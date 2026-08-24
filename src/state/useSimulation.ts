@@ -14,7 +14,7 @@ const DEFAULT_SEED = 42
 // while ε-greedy's explore tax saturates in k, so at k=4 a well-behaved
 // ε-greedy is not clearly beaten even with the widened rate gap (measured
 // median Thompson/ε-greedy 0.61 at k=3 vs 0.81 at k=4). Three arms is also
-// what Acts I and II use, so the lab opens on the same shape.
+// what Acts I–III use, so the lab opens on the same shape.
 const DEFAULT_K = 3
 const DEFAULT_HORIZON = 5000
 const DEFAULT_EPSILON = 0.1

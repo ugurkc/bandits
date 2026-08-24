@@ -5,22 +5,27 @@ deployed to `https://ugurkc.github.io/bandits/` on every push to `main`.
 
 ## What's here
 
-The essay is built: a k-armed bandit simulator wrapped in **four
-horizontally-navigable acts** (acts bar + `#act-0`…`#act-3` hash routing,
-free navigation, every act self-seeds). `src/components/ActsShell.tsx` owns
-the act index and ALL cross-act state; the act components are pure views.
+The essay is built: a k-armed bandit simulator wrapped in **five
+horizontally-navigable acts** (acts bar + `#act-0`…`#act-4` hash routing,
+free navigation; every act self-seeds except Act II, which gates instead —
+see below). `src/components/ActsShell.tsx` owns the act index and ALL
+cross-act state; the act components are pure views.
 
 - **Act 0 — The Introduction** (`Act0Intro`): the header prose from
   `src/content/meta.md`, images, and a "Begin Act I" CTA. No simulator.
 - **Act I — Trial & Error** (`Act1TrialError`): pitch three ad campaigns
   (blank boxes + worked example + generate button; scored by semantic or
   lexical similarity against a hidden truth) → a five-week manual pilot
-  (`useTrialWeeks`, `TrialWeekBoard`) → the automated strategy race
-  (`SimulatorPanel`).
-- **Act II — Rationing** (`Act2Rationing`): the budgeted 13-week quarter
+  (`useTrialWeeks`, `TrialWeekBoard`) → a bridge into Act II.
+- **Act II — Regret** (`Act2Regret`): the automated strategy race
+  (`SimulatorPanel`) replaying the reader's own pitched campaigns, with the
+  essay's regret explainer above the chart. Can't self-seed — it's framed
+  as "YOUR campaigns" — so it gates with a pointer back to Act I when no
+  pitch has been scored yet.
+- **Act III — Rationing** (`Act3Rationing`): the budgeted 13-week quarter
   (`useCampaignQuarter`); self-seeds with example campaigns
   (`src/lib/exampleCampaigns.ts`) when the reader hasn't pitched.
-- **Act III — Learning from the Best** (`Act3Lab`): per-strategy teaching
+- **Act IV — Learning from the Best** (`Act4Lab`): per-strategy teaching
   cards plus a free-play lab on its own independent `useSimulation`.
 
 `docs/plans/2026-08-12-simulator-design.md` is the living design doc — the

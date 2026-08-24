@@ -470,3 +470,41 @@ The race-view internals (controls + chart + arm cards + throttled
 `statsAt` derivation) were extracted from the old `Playground` into
 `SimulatorPanel`, shared by Act I's race and Act III's lab; `Playground`
 itself is gone.
+
+## Regret gets its own act (2026-08-24)
+
+The four-act structure above became **five**: the automated strategy race
+moved out of Act I into a new **Act II — Regret** (`Act2Regret`), and
+every act from the old Act II onward shifted up by one — Rationing is now
+Act III (`Act3Rationing`, renamed from `Act2Rationing`), and the lab is
+now Act IV (`Act4Lab`, renamed from `Act3Lab`; `act3.css` → `lab.css`,
+`a3-*` classes → `lab-*`). Hash routing grew to `#act-0`…`#act-4`.
+
+- **Why split it out**: regret is the essay's one formal concept, and it
+  was previously taught as an aside bolted onto Act I's race screen — a
+  chart caption's "(Statisticians call this regret.)" plus a paragraph in
+  `BanditBridge`. Giving it a named act puts the explanation where the
+  chart actually is, and the act title itself primes the reader before
+  they hit play.
+- **Act I's bridge** (`BanditBridge`) keeps the pilot recap and the
+  k-armed-bandit-problem naming, and gained new copy: an
+  exploration/exploitation paragraph (most readers try all three options
+  first, then exploit the best one — a very human answer to "when do we
+  stop exploring?") ending on the word "regret" as a tease the new act
+  picks up by name. The old "one honest caveat" paragraph (single-campaign
+  vs. real budgets, promising to "bring back the budgeting constraint")
+  was cut along with the `bb-question` line ("How do we plan the quarter
+  ahead of us?") it was answering — that setup now belongs to Act II's
+  own closing CTA into Act III instead.
+- **Act II can't self-seed** the way Act III does: its whole framing is
+  "YOUR campaigns, re-run," so a reader who deep-links `#act-2` (or
+  navigates there) without a scored pitch sees a gate note pointing back
+  to Act I rather than a race over borrowed campaigns.
+- **Act I lost its race entirely** — `Act1Mode` is now `'pitch' | 'trial'`
+  (no more `'race'`), and `SimulatorPanel` no longer imports into
+  `Act1TrialError`. The bridge's CTA (`onGoToRegret`) navigates to Act II
+  instead of swapping the mode in place.
+- **PitchPhase's action row was reordered**: "Skip to the strategy lab"
+  moved to the left, the engine-status line and "Score my pitches" grouped
+  on the right (`.pp-actions-go`) — advancement now lives on the
+  right-hand side everywhere in the essay, escape hatches on the left.

@@ -26,7 +26,7 @@ interface DragState {
 }
 
 /** Movement, in CSS px, below which a pointerdown/up pair counts as a tap
- * (select) rather than a drag — same threshold as Act II's calendar. */
+ * (select) rather than a drag — same threshold as Act III's calendar. */
 const DRAG_THRESHOLD = 6
 
 /**

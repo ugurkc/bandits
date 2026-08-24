@@ -64,7 +64,7 @@ describe('the pilot budget explains the pilot volume', () => {
   it('records the pilot budget on the played week, not the quarter budget', () => {
     // The week's own record used to be stamped $500 by oneHotAllocation while
     // sampling only 300 impressions — invisible only because weekAria renders
-    // allocation dollars in Act II alone.
+    // allocation dollars in Act III alone.
     const result = playTrialWeek(1, 1, [0.02, 0.07, 0.12], 42)
     expect(result.allocation).toEqual({ 1: PILOT_WEEKLY_BUDGET })
   })
@@ -92,7 +92,7 @@ describe('playTrialWeek', () => {
     }
   })
 
-  it("does not replay Act II's WEEKLY_REWARD draws (pilot week w ≠ quarter week w)", () => {
+  it("does not replay Act III's WEEKLY_REWARD draws (pilot week w ≠ quarter week w)", () => {
     // Same (seed, week, arm) key, different stream tag: at least one of
     // the five weeks must realize a different install count per seed —
     // identical across ALL weeks would mean the streams are not separated.

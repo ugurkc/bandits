@@ -31,7 +31,7 @@ export interface PitchPhaseProps {
   onPitchesChange: (pitches: string[]) => void
   onScored: (outcome: PitchOutcome) => void
   onNextScenario: () => void
-  /** Skips Act I's pitch→pilot→race arc entirely — jumps to Act III's lab. */
+  /** Skips the pitch→pilot→race arc entirely — jumps to Act IV's lab. */
   onSkip: () => void
 }
 
@@ -90,7 +90,7 @@ export function PitchPhase({ scenario, seed, pitches, onPitchesChange, onScored,
   // the world can move inside that window: "Try another scenario" stays live,
   // and so does the whole acts nav. Committing a result computed against a
   // brief the reader has since left would drop them into a pilot for a
-  // scenario they are no longer looking at — and if they stepped into Act II
+  // scenario they are no longer looking at — and if they stepped into Act III
   // meanwhile, swap that quarter's campaigns out mid-week. A round resolving
   // into a changed world is therefore discarded. This ref holds the key that
   // is CURRENT at resolve time; the closure's own values are the stale ones.
@@ -201,23 +201,31 @@ export function PitchPhase({ scenario, seed, pitches, onPitchesChange, onScored,
         ))}
       </div>
 
+      {/* Skip on the left, score on the right: advancement lives on the
+          right-hand side everywhere in the essay, and the escape hatch
+          shouldn't sit where the "onward" button is expected. */}
       <div className="pp-actions">
-        <button
-          type="button"
-          className="ct-button pp-score"
-          onClick={() => void score()}
-          disabled={scoring || tooShort}
-        >
-          {scoring ? 'Scoring…' : 'Score my pitches'}
-        </button>
-        <span className="pp-engine" role="status">
-          {semanticReady
-            ? 'semantic model ready — scoring runs in your browser'
-            : 'semantic model loading in the background — a lexical scorer stands in if it isn’t ready'}
-        </span>
         <button type="button" className="pp-skip" onClick={onSkip}>
           Skip to the strategy lab →
         </button>
+        {/* One flex item, so a narrow viewport wraps status + button to the
+            next line TOGETHER, still right-aligned — not the score button
+            alone falling to the left edge. */}
+        <span className="pp-actions-go">
+          <span className="pp-engine" role="status">
+            {semanticReady
+              ? 'semantic model ready — scoring runs in your browser'
+              : 'semantic model loading in the background — a lexical scorer stands in if it isn’t ready'}
+          </span>
+          <button
+            type="button"
+            className="ct-button pp-score"
+            onClick={() => void score()}
+            disabled={scoring || tooShort}
+          >
+            {scoring ? 'Scoring…' : 'Score my pitches'}
+          </button>
+        </span>
       </div>
 
       {tooShort && (

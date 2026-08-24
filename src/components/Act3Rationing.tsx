@@ -15,13 +15,13 @@ import { QuarterResults } from './QuarterResults'
 import type { StrategyComparison } from './QuarterResults'
 
 /**
- * Act II's handoff gate (the design doc's `HANDOFF_MIN_WEEKS`): the reader
+ * Act III's handoff gate (the design doc's `HANDOFF_MIN_WEEKS`): the reader
  * must split at least this many weeks by hand — feeling the tension —
  * before the card offering to hand the rest to a strategy appears.
  */
 const HANDOFF_MIN_WEEKS = 2
 
-export interface Act2RationingProps {
+export interface Act3RationingProps {
   quarter: CampaignQuarter
   campaignLabels: string[]
   /** The 3 campaigns' true install rates (pitched or example-seeded). */
@@ -36,17 +36,17 @@ export interface Act2RationingProps {
   usingExample: boolean
   exampleScenarioTitle: string
   onGoToAct1: () => void
-  onGoToAct3: () => void
+  onGoToAct4: () => void
   announce: (message: string) => void
 }
 
 /**
- * Act II — Rationing: the budgeted quarter. Every week the reader splits
+ * Act III — Rationing: the budgeted quarter. Every week the reader splits
  * $500 across all three campaigns; after feeling the hedge-vs-learn tension
  * for a couple of weeks, they can hand the remainder to one of the
- * strategies from Act I, seeded with their own accumulated data.
+ * strategies from Act II's race, seeded with their own accumulated data.
  */
-export function Act2Rationing({
+export function Act3Rationing({
   quarter,
   campaignLabels,
   campaignRates,
@@ -55,16 +55,16 @@ export function Act2Rationing({
   usingExample,
   exampleScenarioTitle,
   onGoToAct1,
-  onGoToAct3,
+  onGoToAct4,
   announce,
-}: Act2RationingProps) {
+}: Act3RationingProps) {
   const toplineRef = useRef<HTMLDivElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
   // Once a handoff exists, the comparison must use the ε that handoff ACTUALLY
   // ran at — which lives in the quarter itself, not here. An earlier version
   // kept it in this component's own state, which was dead on arrival: this
-  // component unmounts on every act navigation, and navigating to Act I is the
+  // component unmounts on every act navigation, and navigating to Act II is the
   // only way to reach the ε slider in the first place.
   const comparisonEpsilon = quarter.handoff?.epsilon ?? epsilon
 
@@ -182,7 +182,7 @@ export function Act2Rationing({
               oracleInstalls={realizedOracleQuarter(campaignRates, seed)}
             />
           </div>
-          <div className="pg-act2-actions">
+          <div className="pg-quarter-actions">
             <button
               type="button"
               className="ct-button"
@@ -194,8 +194,8 @@ export function Act2Rationing({
             >
               Restart the quarter
             </button>
-            <button type="button" className="ct-button" onClick={onGoToAct3}>
-              Act III — Learning from the Best →
+            <button type="button" className="ct-button" onClick={onGoToAct4}>
+              Act IV — Learning from the Best →
             </button>
           </div>
         </>

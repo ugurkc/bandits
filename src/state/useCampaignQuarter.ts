@@ -1,5 +1,5 @@
 /**
- * Owns Act 2's budgeted-quarter play-through state: which weeks have been
+ * Owns Act III's budgeted-quarter play-through state: which weeks have been
  * played, the derived phase, and the actions that advance the quarter.
  * Analogous in spirit to `useSimulation.ts` — pure helpers factored out for
  * testability, actions wrapped in `useCallback`.
@@ -16,7 +16,7 @@ import type { CampaignWeekResult, WeekAllocation } from '../lib/campaign/types'
 import { WEEKS_PER_QUARTER } from '../lib/campaign/types'
 
 /**
- * Act II has no pick concept — picking single campaigns is Act I's pilot
+ * Act III has no pick concept — picking single campaigns is Act I's pilot
  * board (`useTrialWeeks`). Every unplayed week is a budget split ('budget'),
  * 'auto' while a handoff is appending the strategy's weeks (see `handOff`),
  * and 'complete' once all `WEEKS_PER_QUARTER` weeks are played.
@@ -58,7 +58,7 @@ export interface CampaignQuarter {
    * `epsilon` is the value the handoff ACTUALLY ran at, recorded here so the
    * debrief's comparison can't drift from the reader's own run when the
    * race-screen slider moves afterwards. It lives in the hook (not in the
-   * Act II component) because that component unmounts on every act
+   * Act III component) because that component unmounts on every act
    * navigation — which is precisely when the slider becomes reachable.
    */
   handoff: { strategyId: StrategyId; fromWeek: number; epsilon: number } | null
@@ -92,7 +92,7 @@ export function useCampaignQuarter(
   rates: number[],
   seed: number,
   /**
-   * False while Act II is off screen: holds the handoff reveal rather than
+   * False while Act III is off screen: holds the handoff reveal rather than
    * letting it finish where nobody can see it. Defaults true so the hook
    * stays usable (and testable) without a visibility source.
    */
@@ -132,7 +132,7 @@ export function useCampaignQuarter(
   // reset() and the (rates, seed) rewind stop the animation simply by
   // clearing `pending`.
   //
-  // `active` holds the queue while Act II is off screen. This hook lives in
+  // `active` holds the queue while Act III is off screen. This hook lives in
   // the always-mounted shell, so without it a reader who navigates away
   // mid-handoff comes back to a quarter that finished without them — and the
   // whole point of pacing the reveal is that they WATCH the strategy
