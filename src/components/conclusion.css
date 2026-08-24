@@ -48,3 +48,40 @@
 .concl-list li::marker {
   color: var(--muted);
 }
+
+/* The further-reading shelf: linked title + authors on one line, the
+   why-read-it note as its own quieter line beneath. */
+.concl-refs {
+  gap: 14px;
+}
+
+.concl-refs a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-soft);
+  text-underline-offset: 3px;
+}
+
+.concl-refs a:hover {
+  text-decoration-color: var(--accent);
+}
+
+.concl-refs a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.concl-ref-meta {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.concl-ref-note {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
