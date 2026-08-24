@@ -6,6 +6,13 @@
 .an-bar {
   display: flex;
   align-items: center;
+  /* Without this the row (arrows + tabs) only takes its own shrink-to-fit
+     width and sits flush against the left edge of this centered box, while
+     the content below spans the box's full width — the two read as
+     misaligned even though both boxes are correctly centered. Centering the
+     row's content lines the visible cluster up with the wider content
+     beneath it. */
+  justify-content: center;
   gap: 10px;
   max-width: 1100px;
   margin: 0 auto;
