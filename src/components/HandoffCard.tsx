@@ -31,7 +31,7 @@ export function HandoffCard({ remainingWeeks, epsilon, onHandOff }: HandoffCardP
         <strong>
           {remainingWeeks} {weeksNoun}
         </strong>{' '}
-        for you — picking up from the weeks you already played, not starting over. Everything your
+        for you, picking up from the weeks you already played, not starting over. Everything your
         splits have revealed so far becomes its starting evidence.
       </p>
       <div className="hc-buttons">
@@ -40,7 +40,7 @@ export function HandoffCard({ remainingWeeks, epsilon, onHandOff }: HandoffCardP
             key={id}
             type="button"
             className="hc-button"
-            aria-label={`Hand the remaining ${remainingWeeks} ${weeksNoun} to ${strategyLabel(id, epsilon)} — ${STRATEGY_EXPLAINERS[id]}`}
+            aria-label={`Hand the remaining ${remainingWeeks} ${weeksNoun} to ${strategyLabel(id, epsilon)}: ${STRATEGY_EXPLAINERS[id]}`}
             onClick={() => onHandOff(id)}
           >
             <span className="hc-button-name">

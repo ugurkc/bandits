@@ -170,15 +170,15 @@ export function QuarterResults({
         </h3>
         {leftOnTable > 0 ? (
           <p className="qr-left">
-            A perfect-foresight planner — {fmtDollars(WEEKLY_BUDGET)} on the truly best campaign
-            every week, in this exact world — would have earned about{' '}
+            A perfect-foresight planner ({fmtDollars(WEEKLY_BUDGET)} on the truly best campaign
+            every week, in this exact world) would have earned about{' '}
             <strong>{leftOnTable.toLocaleString()} more</strong>. That's what this quarter left on
             the table: same weeks, same luck, different splits.
           </p>
         ) : (
           <p className="qr-left">
-            A perfect-foresight planner — {fmtDollars(WEEKLY_BUDGET)} on the truly best campaign
-            every week, in this exact world — would have done no better. Nothing left on the
+            A perfect-foresight planner ({fmtDollars(WEEKLY_BUDGET)} on the truly best campaign
+            every week, in this exact world) would have done no better. Nothing left on the
             table this quarter.
           </p>
         )}
@@ -207,7 +207,7 @@ export function QuarterResults({
         <h4 className="qr-subhead">Full-quarter comparison</h4>
         <p className="qr-note">
           Each strategy given all 13 weeks from scratch, in the same world you played. Perfect
-          foresight is that world's own ceiling — all-in on the truly best campaign, same draws.
+          foresight is that world's own ceiling: all-in on the truly best campaign, same draws.
         </p>
         <ul className="qr-compare">
           {bars.map((b) => (

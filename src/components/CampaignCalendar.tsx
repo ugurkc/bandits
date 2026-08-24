@@ -92,7 +92,7 @@ export function CampaignCalendar({ quarter, campaignLabels, children, handoff }:
           className={`cc-cell cc-cell--current${phase === 'budget' ? ' cc-cell--budget' : ''}`}
           aria-label={
             phase === 'budget'
-              ? `Week ${week}: current week — split the budget below`
+              ? `Week ${week}: current week, split the budget below`
               : isAuto
                 ? `Week ${week}: being played by ${handoff.label}`
                 : `Week ${week}: current week`

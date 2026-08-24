@@ -82,8 +82,8 @@ export function Act3Rationing({
       const total = quarter.totalInstalls.toLocaleString()
       announce(
         quarter.handoff
-          ? `${strategyLabel(quarter.handoff.strategyId, quarter.handoff.epsilon)} played the remaining weeks — quarter complete, ${total} installs.`
-          : `Quarter complete — ${total} installs.`,
+          ? `${strategyLabel(quarter.handoff.strategyId, quarter.handoff.epsilon)} played the remaining weeks. Quarter complete, ${total} installs.`
+          : `Quarter complete: ${total} installs.`,
       )
       resultsRef.current?.focus()
     }
@@ -126,7 +126,7 @@ export function Act3Rationing({
         <section className="pg-example-note" aria-label="Example campaigns in play">
           <p className="pg-example-note-copy">
             You're rationing with three <strong>example campaigns</strong> for the{' '}
-            {exampleScenarioTitle.toLowerCase()} scenario — score your own pitches in Act I and
+            {exampleScenarioTitle.toLowerCase()} scenario. Score your own pitches in Act I and
             a fresh quarter starts with them.
           </p>
           <button type="button" className="pp-skip" onClick={onGoToAct1}>
@@ -156,7 +156,7 @@ export function Act3Rationing({
             // The reader's race-screen ε rides along, so the budgeted
             // ε-greedy is the strategy they tuned, not a silent 0.1.
             quarter.handOff(id, epsilon)
-            announce(`Handed off to ${strategyLabel(id, epsilon)} — playing the remaining weeks.`)
+            announce(`Handed off to ${strategyLabel(id, epsilon)}: playing the remaining weeks.`)
             // The activation unmounts this card (phase leaves 'budget') —
             // park focus on the topline while the animation drains rather
             // than letting it fall to <body>.
@@ -189,14 +189,14 @@ export function Act3Rationing({
               className="ct-button"
               onClick={() => {
                 quarter.reset()
-                announce('Quarter restarted — back to week 1.')
+                announce('Quarter restarted: back to week 1.')
                 toplineRef.current?.focus()
               }}
             >
               Restart the quarter
             </button>
             <button type="button" className="ct-button" onClick={onGoToAct4}>
-              Act IV — Learning from the Best →
+              Act IV: Learning from the Best →
             </button>
           </div>
         </>

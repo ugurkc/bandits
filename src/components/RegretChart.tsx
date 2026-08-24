@@ -387,7 +387,7 @@ export function RegretChart({
             key={s.id}
             className="rc-legend-item"
             title={STRATEGY_EXPLAINERS[s.id]}
-            aria-label={`${s.label} — ${STRATEGY_EXPLAINERS[s.id]}`}
+            aria-label={`${s.label}: ${STRATEGY_EXPLAINERS[s.id]}`}
           >
             <span className="rc-legend-chip" style={{ background: s.colorVar }} aria-hidden="true" />
             {s.label}
@@ -469,7 +469,7 @@ export function RegretChart({
             {hoverRows.map((row) => (
               <span key={row.id} className="rc-tooltip-row">
                 <span className="rc-tooltip-chip" style={{ background: row.colorVar }} aria-hidden="true" />
-                <strong>{row.value === null ? '—' : fmtValue(row.value)}</strong>
+                <strong>{row.value === null ? 'N/A' : fmtValue(row.value)}</strong>
                 <span className="rc-tooltip-label">{row.label}</span>
               </span>
             ))}

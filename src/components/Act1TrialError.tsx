@@ -74,8 +74,8 @@ export function Act1TrialError({
     toplineRef.current?.focus()
     announce(
       mode === 'pitch'
-        ? 'Pitch phase — write three campaign pitches and score them.'
-        : 'Pilot — five weeks to try your campaigns, one pick per week.',
+        ? 'Pitch phase: write three campaign pitches and score them.'
+        : 'Pilot: five weeks to try your campaigns, one pick per week.',
     )
   }, [mode, announce])
 
@@ -96,7 +96,7 @@ export function Act1TrialError({
     if (trial.complete) {
       announce(
         `Week ${played.week}: ran ${label}, ${played.totalInstalls.toLocaleString()} installs. ` +
-          `Pilot complete — ${trial.totalInstalls.toLocaleString()} installs total.`,
+          `Pilot complete: ${trial.totalInstalls.toLocaleString()} installs total.`,
       )
       bridgeRef.current?.focus()
     } else {
@@ -110,7 +110,7 @@ export function Act1TrialError({
         <div className="pg-topline" ref={toplineRef} tabIndex={-1}>
           <span className="pg-context">
             Your pilot: five weeks to find which campaign works. Each week, pick the one
-            campaign to run — try it, see what happens, switch if it’s not working.
+            campaign to run: try it, see what happens, switch if it’s not working.
           </span>
           <button type="button" className="pp-skip" onClick={onBackToPitches}>
             ← Pitch campaigns instead

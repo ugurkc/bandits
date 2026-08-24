@@ -216,7 +216,7 @@ export function TrialWeekBoard({ trial, campaignLabels, campaignPitches, onPick 
                 className={`td-card${selected === id ? ' td-card--selected' : ''}`}
                 style={{ borderColor: selected === id ? CAMPAIGN_COLOR_VARS[id] : undefined }}
                 aria-pressed={selected === id}
-                aria-label={`${campaignLabels[id]} — select, then use the Lock it in button; or drag onto week ${currentWeek}`}
+                aria-label={`${campaignLabels[id]}: select, then use the Lock it in button; or drag onto week ${currentWeek}`}
                 onPointerDown={onCardPointerDown(id)}
                 onPointerMove={onCardPointerMove}
                 onPointerUp={onCardPointerUp}

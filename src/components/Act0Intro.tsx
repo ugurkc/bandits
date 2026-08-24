@@ -53,7 +53,7 @@ export function Act0Intro({ onBegin }: Act0IntroProps) {
               <img
                 className="essay-intro-image"
                 src={`${import.meta.env.BASE_URL}images/ol-reliable.png`}
-                alt='SpongeBob SquarePants opens a briefcase labeled "Ol’ Reliable" to reveal a note inside reading "TRYING A F TON" — the go-to move for figuring out what actually works.'
+                alt='SpongeBob SquarePants opens a briefcase labeled "Ol’ Reliable" to reveal a note inside reading "TRYING A F TON": the go-to move for figuring out what actually works.'
                 loading="lazy"
                 width={978}
                 height={1470}
@@ -63,7 +63,7 @@ export function Act0Intro({ onBegin }: Act0IntroProps) {
         </Fragment>
       ))}
       <button type="button" className="ct-button essay-begin" onClick={onBegin}>
-        Begin Act I — Trial &amp; Error →
+        Begin Act I: Trial &amp; Error →
       </button>
     </header>
   )

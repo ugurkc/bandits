@@ -44,8 +44,8 @@ const MIN_PITCH_CHARS = 12
  * the reader toward one of its curated examples.
  */
 const WORKED_EXAMPLE =
-  '"Plan the perfect job: a split-screen spot where four friends pull off a flawless heist — ' +
-  'one distraction, one safecrack, one getaway — selling the fantasy of a crew that clicks."'
+  '"Plan the perfect job: a split-screen spot where four friends pull off a flawless heist: ' +
+  'one distraction, one safecrack, one getaway, selling the fantasy of a crew that clicks."'
 
 /**
  * Act I's opening state: the reader pitches three ad campaigns against a
@@ -169,7 +169,7 @@ export function PitchPhase({ scenario, seed, pitches, onPitchesChange, onScored,
         <span className="pp-example-label">What a pitch looks like</span>
         <p className="pp-example-text">{WORKED_EXAMPLE}</p>
         <p className="pp-example-note">
-          A concrete hook plus who it's for. Write three of your own below — or generate examples
+          A concrete hook plus who it's for. Write three of your own below, or generate examples
           into the empty boxes and edit from there.
         </p>
       </div>
@@ -214,8 +214,8 @@ export function PitchPhase({ scenario, seed, pitches, onPitchesChange, onScored,
         <span className="pp-actions-go">
           <span className="pp-engine" role="status">
             {semanticReady
-              ? 'semantic model ready — scoring runs in your browser'
-              : 'semantic model loading in the background — a lexical scorer stands in if it isn’t ready'}
+              ? 'semantic model ready: scoring runs in your browser'
+              : 'semantic model loading in the background: a lexical scorer stands in if it isn’t ready'}
           </span>
           <button
             type="button"
@@ -236,7 +236,7 @@ export function PitchPhase({ scenario, seed, pitches, onPitchesChange, onScored,
 
       <p className="pp-privacy">
         Everything here runs in your browser. Your pitches are never stored and never sent
-        anywhere — the only network request is downloading the scoring model itself.
+        anywhere. The only network request is downloading the scoring model itself.
       </p>
     </section>
   )

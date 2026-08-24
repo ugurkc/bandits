@@ -14,5 +14,5 @@ export const STRATEGY_EXPLAINERS: Record<StrategyId, string> = {
   'epsilon-greedy':
     'backs the current leader with most of its effort, keeps testing the rest with the remainder',
   thompson:
-    'draws a random guess from what it knows about each option so far, then bets on whichever guess wins — a coin flip early on, a near-certainty once the evidence is in',
+    'draws a random guess from what it knows about each option so far, then bets on whichever guess wins: a coin flip early on, a near-certainty once the evidence is in',
 }

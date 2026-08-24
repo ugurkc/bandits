@@ -84,7 +84,7 @@ export const ArmCard = memo(function ArmCard({
             </span>
             <span className="ac-meta" title="Estimated conversion rate">
               <span className="sr-only">estimate </span>
-              {row.estimate === null ? '—' : pct(row.estimate)}
+              {row.estimate === null ? 'N/A' : pct(row.estimate)}
             </span>
           </Fragment>
         ))}

@@ -105,7 +105,7 @@ export function ActsShell() {
     // panel is taller than the viewport and already partially visible).
     window.scrollTo({ top: 0 })
     panelRef.current?.focus({ preventScroll: true })
-    announce(`${ACTS[act].num} — ${ACTS[act].title}`)
+    announce(`${ACTS[act].num}: ${ACTS[act].title}`)
   }, [act, announce])
 
   // --- Cross-act state ---------------------------------------------------
@@ -244,11 +244,11 @@ export function ActsShell() {
               h1 (the essay title), so this only covers the rest. The text is
               the act metadata already shown in the nav, not new copy. */}
           {act !== 0 && (
-            <h1 className="sr-only">{`${ACTS[act].num} — ${ACTS[act].title}`}</h1>
+            <h1 className="sr-only">{`${ACTS[act].num}: ${ACTS[act].title}`}</h1>
           )}
           {act === 0 && <Act0Intro onBegin={() => goToAct(1)} />}
           {act === 1 && (
-            <section className="playground-section" aria-label="Act I — Trial and Error">
+            <section className="playground-section" aria-label="Act I: Trial and Error">
               <Act1TrialError
                 sim={sim}
                 mode={act1Mode}
@@ -273,7 +273,7 @@ export function ActsShell() {
             </section>
           )}
           {act === 2 && (
-            <section className="playground-section" aria-label="Act II — Regret">
+            <section className="playground-section" aria-label="Act II: Regret">
               <Act2Regret
                 sim={sim}
                 pitchOutcome={pitchOutcome}
@@ -286,7 +286,7 @@ export function ActsShell() {
             </section>
           )}
           {act === 3 && (
-            <section className="playground-section" aria-label="Act III — Rationing">
+            <section className="playground-section" aria-label="Act III: Rationing">
               <Act3Rationing
                 quarter={quarter}
                 campaignLabels={campaignLabels}
@@ -302,7 +302,7 @@ export function ActsShell() {
             </section>
           )}
           {act === 4 && (
-            <section className="playground-section" aria-label="Act IV — Learning from the Best">
+            <section className="playground-section" aria-label="Act IV: Learning from the Best">
               <Act4Lab sim={labSim} />
             </section>
           )}

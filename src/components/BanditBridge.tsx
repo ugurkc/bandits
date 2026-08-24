@@ -20,19 +20,19 @@ export function BanditBridge({ totalInstalls, installsLeftOnTable, onContinue }:
     <section className="bb-wrap" aria-label="From the pilot to the bandit problem">
       <p className="bb-recap">
         Five pilot weeks, five picks, <strong>{totalInstalls.toLocaleString()} installs</strong>{' '}
-        total — and probably a different campaign in your gut than the one you started with.
+        total, and probably a different campaign in your gut than the one you started with.
       </p>
       {installsLeftOnTable > 0 && (
         <p className="bb-recap">
-          Here's the catch: if you'd put every week on the campaign that truly converts best — in
-          this exact world, same weeks, same luck — you'd have earned about{' '}
+          Here's the catch: if you'd put every week on the campaign that truly converts best (in
+          this exact world, same weeks, same luck) you'd have earned about{' '}
           <strong>{installsLeftOnTable.toLocaleString()} more installs</strong>. That gap is what
-          guessing costs — and this was the easy version, just three campaigns and five weeks to
+          guessing costs, and this was the easy version, just three campaigns and five weeks to
           learn from.
         </p>
       )}
       <p className="bb-explainer">
-        What you just did has a name: the <strong>k-armed bandit problem</strong> — k = 3
+        What you just did has a name: the <strong>k-armed bandit problem</strong>: k = 3
         campaigns here, each one an "arm" you can pull, and each of your five weeks was really
         hundreds of individual bets happening at once. The question is how to decide which arm
         to pull next, given only noisy results so far.
@@ -46,11 +46,11 @@ export function BanditBridge({ totalInstalls, installsLeftOnTable, onContinue }:
       <p className="bb-explainer">
         So, when do we stop exploring and start exploiting? How much do we explore a single
         option to increase our certainty of its performance? Customer acquisition is the
-        lifeline for our game — we surely don't want to <strong>regret</strong> having selected
+        lifeline for our game: we surely don't want to <strong>regret</strong> having selected
         bad options.
       </p>
       <button type="button" className="ct-button bb-cta" onClick={onContinue}>
-        Act II — see the strategies race →
+        Act II: see the strategies race →
       </button>
     </section>
   )
