@@ -137,12 +137,23 @@ export function PitchPhase({ scenario, seed, pitches, onPitchesChange, onScored,
 
   return (
     <section className="pp" aria-label="Pitch your ad campaigns">
-      <p className="pp-intro">
-        Every ad campaign is a bet on what players actually want to hear. Pitch three campaign
-        concepts for the scenario below — a hidden truth about this playerbase decides how well
-        each one converts to installs, and you'll get to try them by hand before three strategies
-        race to find your best bet automatically.
-      </p>
+      <div className="pp-intro">
+        <p>
+          Welcome to our playground! I have created a bunch of scenarios about games of
+          different genres, and what you need to do, is describe campaign ads that will target
+          the audience. For each scenario, I've described in a text hidden what people are
+          looking for and thus will react well to, and hidden it from you, the reader.
+        </p>
+        <p>
+          After you've described your campaign ideas, a tiny semantic model will score how well
+          your idea resonates with the hidden expectation, and your goal is to find out the
+          winning strategy by running the campaigns week over week.
+        </p>
+        <p>
+          Alternatively, you can auto-generate campaigns to advance but I highly urge you to get
+          your hands dirty, lets play!
+        </p>
+      </div>
 
       <div className="pp-scenario">
         <div className="pp-scenario-head">

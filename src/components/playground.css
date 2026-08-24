@@ -421,11 +421,18 @@
 }
 
 .pp-intro {
-  margin: 0;
   max-width: 680px;
   color: var(--muted);
   font-size: 15px;
   line-height: 1.6;
+}
+
+.pp-intro p {
+  margin: 0;
+}
+
+.pp-intro p + p {
+  margin-top: 12px;
 }
 
 .pp-scenario {
