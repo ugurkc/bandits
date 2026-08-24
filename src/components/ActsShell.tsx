@@ -99,6 +99,15 @@ export function ActsShell() {
   const panelRef = useRef<HTMLDivElement>(null)
   const prevActRef = useRef(act)
   useEffect(() => {
+    // The tab strip scrolls horizontally on narrow screens (six tabs), and
+    // both a CTA-driven navigation and a deep-link initial load can land on
+    // an act whose tab sits outside the strip's viewport — the bar then
+    // shows the wrong acts as "current-ish". 'nearest' keeps this a no-op
+    // when the tab is already visible. Deliberately ABOVE the same-act
+    // early return so the mount case (deep link) is covered too.
+    document
+      .querySelector('.an-tab--active')
+      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     if (prevActRef.current === act) return
     prevActRef.current = act
     // A navigation from a scrolled position would otherwise land the reader
@@ -106,13 +115,6 @@ export function ActsShell() {
     // panel is taller than the viewport and already partially visible).
     window.scrollTo({ top: 0 })
     panelRef.current?.focus({ preventScroll: true })
-    // The tab strip scrolls horizontally on narrow screens (six tabs), and
-    // a CTA-driven navigation can land on an act whose tab sits outside the
-    // strip's viewport — the bar then shows the wrong acts as "current-ish".
-    // 'nearest' keeps this a no-op when the tab is already visible.
-    document
-      .querySelector('.an-tab--active')
-      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     announce(`${ACTS[act].num}: ${ACTS[act].title}`)
   }, [act, announce])
 

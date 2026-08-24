@@ -1,7 +1,8 @@
 /*
  * Act V — The Conclusion: a prose column mirroring Act 0's intro typography
- * (the two acts are the essay's bookends). Every color comes from the theme
- * tokens in src/index.css.
+ * (the two acts are the essay's bookends), broken into short h3 sections
+ * with lists so it reads as a takeaway page, not a wall of paragraphs.
+ * Every color comes from the theme tokens in src/index.css.
  */
 
 .concl {
@@ -17,9 +18,33 @@
   color: var(--ink);
 }
 
+.concl-heading {
+  margin: 28px 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .concl p {
   margin: 0 0 16px;
   font-size: 17px;
   line-height: 1.65;
   color: var(--ink);
+}
+
+.concl-list {
+  margin: 0 0 16px;
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.concl-list li {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.concl-list li::marker {
+  color: var(--muted);
 }
